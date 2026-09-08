@@ -1,12 +1,369 @@
-@import 'tailwindcss';
+@import url("https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Vazirmatn:wght@100..900&display=swap");
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
+@source "../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php";
+@source "../../storage/framework/views/*.php";
 @source "../**/*.blade.php";
 @source "../**/*.js";
 @source "../**/*.vue";
 
+/* =========================================================
+   THEME
+========================================================= */
+
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --color-ink: #211c2b;
+    --color-rose: #eaa8b2;
+    --color-blush: #fff3f4;
+    --color-plum: #7b506f;
+    --color-sand: #f5ede5;
+    --color-cream: #fffaf9;
+
+    --font-sans: "Vazirmatn", Tahoma, sans-serif;
+
+    --shadow-soft: 0 20px 70px rgba(78, 53, 82, 0.12);
+    --shadow-card: 0 12px 40px rgba(78, 53, 82, 0.08);
+}
+
+/* =========================================================
+   FONTS
+========================================================= */
+
+
+/* =========================================================
+   BASE
+========================================================= */
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    font-family: "Vazirmatn", Tahoma, sans-serif;
+    background: #fffaf9;
+    color: #211c2b;
+}
+
+html.dark body {
+    background: #1c1721;
+    color: #ffffff;
+}
+
+.serif {
+    font-family: "DM Serif Display", Georgia, serif;
+}
+
+button,
+a,
+select,
+input {
+    font-family: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+/* =========================================================
+   SCROLLBAR
+========================================================= */
+
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.filter-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(123, 80, 111, 0.25) transparent;
+}
+
+.filter-scroll::-webkit-scrollbar {
+    width: 4px;
+}
+
+.filter-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.filter-scroll::-webkit-scrollbar-thumb {
+    background: rgba(123, 80, 111, 0.25);
+    border-radius: 999px;
+}
+
+/* =========================================================
+   PRODUCT CARD
+========================================================= */
+
+.product-card:hover .product-image {
+    transform: scale(1.045);
+}
+
+.product-card .quick-actions {
+    opacity: 0;
+    transform: translateY(8px);
+}
+
+.product-card:hover .quick-actions {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+@media (max-width: 1023px) {
+    .product-card .quick-actions {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* =========================================================
+   FILTER OPTIONS
+========================================================= */
+
+.filter-option {
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.filter-option:hover {
+    border-color: rgba(123, 80, 111, 0.4);
+}
+
+.filter-option.active {
+    background: #211c2b;
+    color: #ffffff;
+    border-color: #211c2b;
+}
+
+html.dark .filter-option.active {
+    background: #eaa8b2;
+    color: #211c2b;
+    border-color: #eaa8b2;
+}
+
+/* =========================================================
+   CHECKBOX
+========================================================= */
+
+.check {
+    appearance: none;
+    -webkit-appearance: none;
+
+    width: 16px;
+    height: 16px;
+
+    border: 1px solid rgba(33, 28, 43, 0.25);
+    border-radius: 4px;
+
+    background: transparent;
+
+    display: inline-grid;
+    place-items: center;
+
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.check::after {
+    content: "✓";
+
+    font-size: 10px;
+    color: white;
+
+    transform: scale(0);
+    transition: transform 0.15s ease;
+}
+
+.check:checked {
+    background: #211c2b;
+    border-color: #211c2b;
+}
+
+.check:checked::after {
+    transform: scale(1);
+}
+
+html.dark .check {
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+html.dark .check:checked {
+    background: #eaa8b2;
+    border-color: #eaa8b2;
+}
+
+html.dark .check::after {
+    color: #211c2b;
+}
+
+/* =========================================================
+   PRICE RANGE
+========================================================= */
+
+.price-range {
+    appearance: none;
+    -webkit-appearance: none;
+
+    height: 4px;
+    border-radius: 999px;
+
+    background: rgba(33, 28, 43, 0.12);
+
+    outline: none;
+}
+
+.price-range::-webkit-slider-thumb {
+    appearance: none;
+    -webkit-appearance: none;
+
+    width: 18px;
+    height: 18px;
+
+    border-radius: 50%;
+
+    background: #211c2b;
+    border: 3px solid #fffaf9;
+
+    box-shadow: 0 2px 8px rgba(33, 28, 43, 0.2);
+
+    cursor: pointer;
+}
+
+.price-range::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+
+    border-radius: 50%;
+
+    background: #211c2b;
+    border: 3px solid #fffaf9;
+
+    box-shadow: 0 2px 8px rgba(33, 28, 43, 0.2);
+
+    cursor: pointer;
+}
+
+html.dark .price-range {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+html.dark .price-range::-webkit-slider-thumb {
+    background: #eaa8b2;
+    border-color: #1c1721;
+}
+
+html.dark .price-range::-moz-range-thumb {
+    background: #eaa8b2;
+    border-color: #1c1721;
+}
+
+/* =========================================================
+   COLOR FILTER
+========================================================= */
+
+.color-filter,
+.mobile-color-filter {
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.color-filter:hover,
+.mobile-color-filter:hover {
+    transform: scale(1.08);
+}
+
+.color-filter.active,
+.mobile-color-filter.active {
+    box-shadow:
+        0 0 0 2px #fffaf9,
+        0 0 0 4px #7b506f;
+}
+
+html.dark .color-filter.active,
+html.dark .mobile-color-filter.active {
+    box-shadow:
+        0 0 0 2px #1c1721,
+        0 0 0 4px #eaa8b2;
+}
+
+/* =========================================================
+   MOBILE FILTER SHEET
+========================================================= */
+
+.overlay {
+    transition:
+        opacity 0.3s ease,
+        visibility 0.3s ease;
+}
+
+.hidden-overlay {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.visible-overlay {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.mobile-sheet {
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.mobile-sheet.closed {
+    transform: translateY(100%);
+}
+
+.mobile-sheet.open {
+    transform: translateY(0);
+}
+
+/* =========================================================
+   DARK MODE
+========================================================= */
+
+html.dark {
+    color-scheme: dark;
+}
+
+html.dark select {
+    color: #ffffff;
+    background-color: #241d27;
+}
+
+html.dark select option {
+    background: #241d27;
+    color: #ffffff;
+}
+
+/* =========================================================
+   ANIMATION
+========================================================= */
+
+.fade-in {
+    animation: fadeIn 0.45s ease both;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
