@@ -20,31 +20,32 @@ const products = ref([]);
 
 const categoryNames = {
     clothing: 'لباس',
-    bag: 'کیف',
-    shoe: 'کفش',
+    bags: 'کیف',
+    shoes: 'کفش',
     glasses: 'عینک',
-    accessory: 'اکسسوری',
+    accessories: 'اکسسوری',
 };
 
 const subcategoryNames = {
-    dress: 'پیراهن',
-    jacket: 'کت و ژاکت',
-    shirt: 'شومیز',
-    set: 'ست',
-    shoulder: 'دوشی',
-    handbag: 'دستی',
-    tote: 'Tote',
-    clutch: 'کلاچ',
-    heels: 'پاشنه‌دار',
-    loafer: 'لوفر',
-    sneakers: 'کتانی',
+    mantos: 'مانتو',
+    shirts: 'شومیز',
+    'evening-dresses': 'لباس مجلسی',
+    'casual-dresses': 'لباس روزمره',
+
+    handbags: 'کیف دستی',
+    'shoulder-bags': 'کیف دوشی',
+    'evening-bags': 'کیف مجلسی',
+
+    'women-shoes': 'کفش زنانه',
     sandals: 'صندل',
-    sunglasses: 'آفتابی',
-    optical: 'طبی',
-    belt: 'کمربند',
-    scarf: 'شال',
+    boots: 'بوت',
+
+    'optical-glasses': 'عینک طبی',
+    sunglasses: 'عینک آفتابی',
+
     jewelry: 'زیورآلات',
-    watch: 'ساعت',
+    watches: 'ساعت',
+    'other-accessories': 'سایر',
 };
 
 const materialNames = {
@@ -70,13 +71,13 @@ const colorNames = {
 const categoryDescription = {
     clothing:
         'انتخابی از لباس‌های NOORÉ برای استایل روزمره و لحظه‌های خاص.',
-    bag:
+    bags:
         'کیف‌های منتخب NOORÉ برای کامل کردن استایل شما.',
-    shoe:
+    shoes:
         'کفش‌هایی با فرم ظریف و طراحی ماندگار برای هر استایل.',
     glasses:
         'عینک‌های منتخب NOORÉ برای تکمیل ظاهر شما.',
-    accessory:
+    accessories:
         'اکسسوری‌های ظریف برای ساختن جزئیات متفاوت در استایل.',
 };
 
@@ -92,13 +93,15 @@ const state = reactive({
     size: null,
     color: null,
     material: null,
+    frameMaterial: null,
     maxPrice: 5000000,
     stock: false,
     sort: 'popular',
     visibleCount: 16,
-    
+    bagType: null,
 });
 const apiCategories = ref([]);
+const categoryFilters = ref([]);
 const mobileFiltersOpen = ref(false);
 const mobileNavOpen = ref(false);
 const isDark = ref(false);
@@ -145,39 +148,61 @@ if (state.categories.length) {
         })
     );
 }
-    if (state.subcategories.length) {
-        result = result.filter((product) =>
-            state.subcategories.includes(product.subcategory)
-        );
-    }
+if (state.subcategories.length) {
+    result = result.filter((product) =>
+        product.categories?.some((productCategory) =>
+            state.subcategories.includes(productCategory.slug)
+        )
+    );
+}
 
-    if (state.size) {
-        result = result.filter((product) =>
-            product.sizes.includes(state.size)
-        );
-    }
+ if (state.size) {
+    result = result.filter(
+        (product) =>
+            product.attributes?.size?.some(
+                (item) => item.value === state.size
+            ) ||
+            product.attributes?.['shoe-size']?.some(
+                (item) => item.value === state.size
+            )
+    );
+}
 
-    if (state.color) {
-        result = result.filter(
-            (product) => product.color === state.color
-        );
-    }
+ if (state.color) {
+    result = result.filter(
+        (product) =>
+            product.attributes?.color?.some(
+                (item) => item.value === state.color
+            )
+    );
+}
 
-    if (state.material) {
-        result = result.filter(
-            (product) => product.material === state.material
-        );
-    }
+   if (state.material) {
+    result = result.filter(
+        (product) =>
+            product.attributes?.material?.some(
+                (item) => item.value === state.material
+            )
+    );
+}
+if (state.bagType) {
+    result = result.filter(
+        (product) =>
+            product.attributes?.['bag-type']?.some(
+                (item) => item.value === state.bagType
+            )
+    );
+}
 
     result = result.filter(
         (product) => product.price <= state.maxPrice
     );
 
-    if (state.stock) {
-        result = result.filter(
-            (product) => product.stock
-        );
-    }
+if (state.stock) {
+    result = result.filter(
+        (product) => product.in_stock
+    );
+}
 
     if (state.sort === 'cheap') {
         result.sort((a, b) => a.price - b.price);
@@ -202,57 +227,339 @@ const visibleProducts = computed(() =>
 );
 
 const availableSubcategories = computed(() => {
-    let source = products.value;
-
-    if (state.categories.length) {
-        source = source.filter((product) =>
-            state.categories.includes(product.category)
-        );
+    if (!state.categories.length) {
+        return [];
     }
 
-    return [
-        ...new Set(
-            source.map(
-                (product) => product.subcategory
-            )
-        ),
-    ];
+    const children = [];
+
+    state.categories.forEach((selectedSlug) => {
+        const category = apiCategories.value.find(
+            (item) => item.slug === selectedSlug
+        );
+
+        if (category?.children?.length) {
+            children.push(
+                ...category.children.map(
+                    (child) => child.slug
+                )
+            );
+        }
+    });
+
+    return [...new Set(children)];
 });
 
 const availableMaterials = computed(() => {
-    let source = products.value;
+    if (!state.categories.length) {
+        return [];
+    }
+        if (
+        state.categories.length === 1 &&
+        state.categories[0] === 'glasses'
+    ) {
+        return [];
+    }
 
-    if (state.categories.length) {
-        source = source.filter((product) =>
-            state.categories.includes(product.category)
+    const filter = categoryFilters.value.find(
+        (item) => item.slug === 'material'
+    );
+
+    if (!filter?.values?.length) {
+        return [];
+    }
+
+    let categoryProducts = products.value.filter((product) =>
+        product.categories?.some((productCategory) =>
+            state.categories.some((selectedSlug) => {
+
+                if (productCategory.slug === selectedSlug) {
+                    return true;
+                }
+
+                const parentCategory = apiCategories.value.find(
+                    (category) =>
+                        category.slug === selectedSlug
+                );
+
+                return parentCategory?.children?.some(
+                    (child) =>
+                        child.slug === productCategory.slug
+                );
+            })
+        )
+    );
+
+    if (state.subcategories.length) {
+        categoryProducts = categoryProducts.filter((product) =>
+            product.categories?.some((productCategory) =>
+                state.subcategories.includes(
+                    productCategory.slug
+                )
+            )
         );
     }
 
-    return [
-        ...new Set(
-            source.map(
-                (product) => product.material
+    const usedMaterialValues = new Set();
+
+    categoryProducts.forEach((product) => {
+        product.attributes?.material?.forEach((material) => {
+            usedMaterialValues.add(material.value);
+        });
+    });
+
+    return filter.values.filter((material) =>
+        usedMaterialValues.has(material.value)
+    );
+});
+
+const availableFrameMaterials = computed(() => {
+    if (!state.categories.length) {
+        return [];
+    }
+
+    const filter = categoryFilters.value.find(
+        (item) => item.slug === 'frame-material'
+    );
+
+    if (!filter?.values?.length) {
+        return [];
+    }
+
+    let categoryProducts = products.value.filter((product) =>
+        product.categories?.some((productCategory) =>
+            state.categories.some((selectedSlug) => {
+
+                if (productCategory.slug === selectedSlug) {
+                    return true;
+                }
+
+                const parentCategory = apiCategories.value.find(
+                    (category) =>
+                        category.slug === selectedSlug
+                );
+
+                return parentCategory?.children?.some(
+                    (child) =>
+                        child.slug === productCategory.slug
+                );
+            })
+        )
+    );
+
+    if (state.subcategories.length) {
+        categoryProducts = categoryProducts.filter((product) =>
+            product.categories?.some((productCategory) =>
+                state.subcategories.includes(
+                    productCategory.slug
+                )
             )
-        ),
-    ];
+        );
+    }
+
+    const usedValues = new Set();
+
+    categoryProducts.forEach((product) => {
+        product.attributes?.['frame-material']?.forEach(
+            (item) => {
+                usedValues.add(item.value);
+            }
+        );
+    });
+
+    return filter.values.filter((item) =>
+        usedValues.has(item.value)
+    );
+});
+
+const availableColors = computed(() => {
+    if (!state.categories.length) {
+        return [];
+    }
+
+    const filter = categoryFilters.value.find(
+        (item) => item.slug === 'color'
+    );
+
+    if (!filter?.values?.length) {
+        return [];
+    }
+
+    let categoryProducts = products.value.filter((product) =>
+        product.categories?.some((productCategory) =>
+            state.categories.some((selectedSlug) => {
+
+                if (productCategory.slug === selectedSlug) {
+                    return true;
+                }
+
+                const parentCategory = apiCategories.value.find(
+                    (category) =>
+                        category.slug === selectedSlug
+                );
+
+                return parentCategory?.children?.some(
+                    (child) =>
+                        child.slug === productCategory.slug
+                );
+            })
+        )
+    );
+
+    if (state.subcategories.length) {
+        categoryProducts = categoryProducts.filter((product) =>
+            product.categories?.some((productCategory) =>
+                state.subcategories.includes(
+                    productCategory.slug
+                )
+            )
+        );
+    }
+
+    const usedColorValues = new Set();
+
+    categoryProducts.forEach((product) => {
+        product.attributes?.color?.forEach((color) => {
+            usedColorValues.add(color.value);
+        });
+    });
+
+    return filter.values.filter((color) =>
+        usedColorValues.has(color.value)
+    );
 });
 
 const availableSizes = computed(() => {
-    let source = products.value;
+    if (!state.categories.length) {
+        return [];
+    }
 
-    if (state.categories.length) {
-        source = source.filter((product) =>
-            state.categories.includes(product.category)
+    let categoryProducts = products.value.filter((product) =>
+        product.categories?.some((productCategory) =>
+            state.categories.some((selectedSlug) => {
+
+                if (productCategory.slug === selectedSlug) {
+                    return true;
+                }
+
+                const parentCategory = apiCategories.value.find(
+                    (category) =>
+                        category.slug === selectedSlug
+                );
+
+                return parentCategory?.children?.some(
+                    (child) =>
+                        child.slug === productCategory.slug
+                );
+            })
+        )
+    );
+
+    if (state.subcategories.length) {
+        categoryProducts = categoryProducts.filter((product) =>
+            product.categories?.some((productCategory) =>
+                state.subcategories.includes(
+                    productCategory.slug
+                )
+            )
         );
     }
 
-    return [
-        ...new Set(
-            source.flatMap(
-                (product) => product.sizes
+    const usedSizeValues = new Set();
+
+    categoryProducts.forEach((product) => {
+
+        product.attributes?.size?.forEach((size) => {
+            usedSizeValues.add(size.value);
+        });
+
+        product.attributes?.['shoe-size']?.forEach((size) => {
+            usedSizeValues.add(size.value);
+        });
+
+    });
+
+    const filter = categoryFilters.value.find(
+        (item) =>
+            item.slug === 'size' ||
+            item.slug === 'shoe-size'
+    );
+
+    if (!filter?.values?.length) {
+        return [];
+    }
+
+    return filter.values
+        .filter((size) =>
+            usedSizeValues.has(size.value)
+        )
+        .map((size) => size.value);
+});
+
+const availableBagTypes = computed(() => {
+    if (!state.categories.length) {
+        return [];
+    }
+
+    let categoryProducts = products.value.filter((product) =>
+        product.categories?.some((productCategory) =>
+            state.categories.some((selectedSlug) => {
+
+                if (productCategory.slug === selectedSlug) {
+                    return true;
+                }
+
+                const parentCategory = apiCategories.value.find(
+                    (category) =>
+                        category.slug === selectedSlug
+                );
+
+                return parentCategory?.children?.some(
+                    (child) =>
+                        child.slug === productCategory.slug
+                );
+            })
+        )
+    );
+
+    if (state.subcategories.length) {
+        categoryProducts = categoryProducts.filter((product) =>
+            product.categories?.some((productCategory) =>
+                state.subcategories.includes(
+                    productCategory.slug
+                )
             )
-        ),
-    ];
+        );
+    }
+
+    const usedValues = new Set();
+
+    categoryProducts.forEach((product) => {
+        product.attributes?.['bag-type']?.forEach((item) => {
+            usedValues.add(item.value);
+        });
+    });
+
+    const filter = categoryFilters.value.find(
+        (item) => item.slug === 'bag-type'
+    );
+    console.log(
+    'BAG TYPE FILTER:',
+    JSON.stringify(filter, null, 2)
+);
+
+console.log(
+    'BAG TYPE USED VALUES:',
+    [...usedValues]
+);
+
+    if (!filter?.values?.length) {
+        return [];
+    }
+
+    return filter.values.filter((item) =>
+        usedValues.has(item.value)
+    );
 });
 
 const categoryCounts = computed(() => {
@@ -329,6 +636,40 @@ const activeFilters = computed(() => {
         });
     }
 
+if (state.frameMaterial) {
+    const frameMaterialFilter = categoryFilters.value.find(
+        (item) => item.slug === 'frame-material'
+    );
+
+    const frameMaterial = frameMaterialFilter?.values?.find(
+        (item) => item.value === state.frameMaterial
+    );
+
+    filters.push({
+        type: 'frameMaterial',
+        value: state.frameMaterial,
+        label:
+            frameMaterial?.label ||
+            state.frameMaterial,
+    });
+}
+
+    if (state.bagType) {
+    const bagTypeFilter = categoryFilters.value.find(
+        (item) => item.slug === 'bag-type'
+    );
+
+    const bagType = bagTypeFilter?.values?.find(
+        (item) => item.value === state.bagType
+    );
+
+    filters.push({
+        type: 'bagType',
+        value: state.bagType,
+        label: bagType?.label || state.bagType,
+    });
+}
+
     if (state.maxPrice < 5000000) {
         filters.push({
             type: 'price',
@@ -381,7 +722,7 @@ const pageDescription = computed(() => {
 const shoeSelected = computed(() => {
     return (
         state.categories.length === 1 &&
-        state.categories[0] === 'shoe'
+        state.categories[0] === 'shoes'
     );
 });
 
@@ -405,17 +746,29 @@ function toggleCategory(category) {
         state.categories.splice(index, 1);
     }
 
+    if (state.categories.length === 1) {
+        loadCategoryFilters(state.categories[0]);
+    } else {
+        categoryFilters.value = [];
+    }
+
     cleanInvalidFilters();
     state.visibleCount = 16;
 }
 
 function selectCategory(category) {
     state.categories = [category];
+
+    categoryFilters.value = [];
+
     state.subcategories = [];
     state.size = null;
     state.color = null;
     state.material = null;
+    state.bagType = null;
     state.visibleCount = 16;
+
+    loadCategoryFilters(category);
 
     mobileNavOpen.value = false;
 
@@ -452,10 +805,28 @@ function selectSize(size) {
 }
 
 function selectMaterial(material) {
+    console.log('SELECTED MATERIAL:', material);
+
     state.material =
         state.material === material
             ? null
             : material;
+
+    state.visibleCount = 16;
+}
+function selectFrameMaterial(frameMaterial) {
+    state.frameMaterial =
+        state.frameMaterial === frameMaterial
+            ? null
+            : frameMaterial;
+
+    state.visibleCount = 16;
+}
+function selectBagType(bagType) {
+    state.bagType =
+        state.bagType === bagType
+            ? null
+            : bagType;
 
     state.visibleCount = 16;
 }
@@ -499,6 +870,10 @@ function removeFilter(filter) {
             state.material = null;
             break;
 
+        case 'bagType':
+            state.bagType = null;
+            break;
+
         case 'price':
             state.maxPrice = 5000000;
             break;
@@ -508,7 +883,7 @@ function removeFilter(filter) {
             break;
     }
 
-    cleanInvalidFilters();
+    state.visibleCount = 16;
 }
 
 function cleanInvalidFilters() {
@@ -520,14 +895,25 @@ function cleanInvalidFilters() {
                 )
         );
 
-    if (
-        state.material &&
-        !availableMaterials.value.includes(
-            state.material
-        )
-    ) {
-        state.material = null;
-    }
+if (
+    state.material &&
+    !availableMaterials.value.some(
+        (item) =>
+            item.value === state.material
+    )
+) {
+    state.material = null;
+}
+
+if (
+    state.bagType &&
+    !availableBagTypes.value.some(
+        (item) =>
+            item.value === state.bagType
+    )
+) {
+    state.bagType = null;
+}
 
     if (
         state.size &&
@@ -545,6 +931,7 @@ function clearAllFilters() {
     state.size = null;
     state.color = null;
     state.material = null;
+    state.bagType = null;
     state.maxPrice = 5000000;
     state.stock = false;
     state.visibleCount = 16;
@@ -588,17 +975,27 @@ function toggleTheme() {
 }
 
 function productDescription(product) {
-    switch (product.category) {
-        case 'clothing':
+    const categorySlug = product.categories?.[0]?.slug;
+
+    switch (categorySlug) {
+        case 'mantos':
+        case 'shirts':
+        case 'evening-dresses':
+        case 'casual-dresses':
             return 'Elegant wardrobe';
 
-        case 'bag':
+        case 'handbags':
+        case 'shoulder-bags':
+        case 'evening-bags':
             return 'Essential bags';
 
-        case 'shoe':
+        case 'women-shoes':
+        case 'sandals':
+        case 'boots':
             return 'Modern footwear';
 
-        case 'glasses':
+        case 'sunglasses':
+        case 'optical-glasses':
             return 'The eyewear edit';
 
         default:
@@ -633,8 +1030,21 @@ async function loadProducts() {
         const response = await axios.get('/api/products');
 
         products.value = response.data.data;
+        console.log(
+    'SHOE PRODUCT:',
+    JSON.stringify(
+        products.value.find(
+            product => product.name === 'کفش زنانه کلاسیک'
+        ),
+        null,
+        2
+    )
+);
 
-        console.log('FIRST PRODUCT:', JSON.stringify(products.value[0], null, 2));
+        console.log('PRODUCT API RAW:', response.data);
+        console.log('PRODUCT COUNT:', response.data.data?.length);
+
+        // بقیه کدهای قبلی...
     } catch (error) {
         console.error('API ERROR:', error);
     }
@@ -656,8 +1066,32 @@ async function loadCategories() {
         );
     }
 }
+async function loadCategoryFilters(categorySlug) {
+    try {
+        const response = await axios.get(
+            `http://127.0.0.1:8000/api/categories/${categorySlug}/filters`
+        );
+
+        categoryFilters.value = response.data.data;
+        console.log(
+    'AVAILABLE BAG TYPES AFTER API:',
+    availableBagTypes.value
+);
+
+       console.log(
+    'CATEGORY FILTERS:',
+    JSON.stringify(categoryFilters.value, null, 2)
+);
+    } catch (error) {
+        console.error(
+            'CATEGORY FILTERS API ERROR:',
+            error
+        );
+    }
+}
 
 onMounted(() => {
+    console.log('APP VUE IS RUNNING');
     const savedTheme =
         localStorage.getItem('theme');
 
@@ -670,6 +1104,10 @@ onMounted(() => {
     }
     loadProducts();
     loadCategories();
+     console.log(
+        'TEST BAG TYPES:',
+        availableBagTypes.value
+    );
 });
 </script>
 
@@ -764,7 +1202,7 @@ onMounted(() => {
                         href="#"
                         class="hover:text-plum"
                         @click.prevent="
-                            selectCategory('bag')
+                            selectCategory('bags')
                         "
                     >
                         کیف
@@ -774,7 +1212,7 @@ onMounted(() => {
                         href="#"
                         class="hover:text-plum"
                         @click.prevent="
-                            selectCategory('shoe')
+                            selectCategory('shoes')
                         "
                     >
                         کفش
@@ -868,7 +1306,7 @@ onMounted(() => {
                     <a
                         href="#"
                         @click.prevent="
-                            selectCategory('bag')
+                            selectCategory('bags')
                         "
                     >
                         کیف
@@ -877,7 +1315,7 @@ onMounted(() => {
                     <a
                         href="#"
                         @click.prevent="
-                            selectCategory('shoe')
+                            selectCategory('shoes')
                         "
                     >
                         کفش
@@ -895,7 +1333,7 @@ onMounted(() => {
                     <a
                         href="#"
                         @click.prevent="
-                            selectCategory('accessory')
+                            selectCategory('accessories')
                         "
                     >
                         اکسسوری
@@ -1355,32 +1793,102 @@ onMounted(() => {
                                     v-for="
                                         material in availableMaterials
                                     "
-                                    :key="material"
+                                    :key="material.id"
                                     type="button"
                                     class="filter-option rounded-full border border-black/10 px-3 py-2 text-[10px] dark:border-white/10"
                                     :class="{
                                         active:
                                             state.material ===
-                                            material,
+                                            material.value,
                                     }"
                                     @click="
                                         selectMaterial(
-                                            material
+                                            material.value
                                         )
                                     "
                                 >
-                                    {{
-                                        materialNames[
-                                            material
-                                        ] || material
-                                    }}
+                                    {{ material.label }}
                                 </button>
 
                             </div>
 
                         </div>
 
+                        <!-- Frame Material -->
 
+<div
+    v-if="availableFrameMaterials.length"
+    class="border-b border-black/10 py-6 dark:border-white/10"
+>
+    <h3
+        class="mb-4 text-xs font-semibold"
+    >
+        جنس فریم
+    </h3>
+
+    <div
+        class="flex flex-wrap gap-2"
+    >
+        <button
+            v-for="frameMaterial in availableFrameMaterials"
+            :key="`frame-material-${frameMaterial.id}`"
+            type="button"
+            class="filter-option rounded-full border border-black/10 px-3 py-2 text-[10px] dark:border-white/10"
+            :class="{
+                active:
+                    state.frameMaterial ===
+                    frameMaterial.value,
+            }"
+            @click="
+                selectFrameMaterial(
+                    frameMaterial.value
+                )
+            "
+        >
+            {{ frameMaterial.label }}
+        </button>
+    </div>
+</div>
+
+                <!-- Bag Type -->
+
+                <div
+                    v-if="availableBagTypes.length"
+                    class="border-b border-black/10 py-6 dark:border-white/10"
+                >
+
+                    <h3
+                        class="mb-4 text-xs font-semibold"
+                    >
+                        نوع کیف
+                    </h3>
+
+                    <div
+                        class="flex flex-wrap gap-2"
+                    >
+
+                        <button
+                            v-for="bagType in availableBagTypes"
+                           
+                            type="button"
+                            class="filter-option rounded-full border border-black/10 px-3 py-2 text-[10px] dark:border-white/10"
+                            :class="{
+                                active:
+                                    state.bagType ===
+                                    bagType.value,
+                            }"
+                            @click="
+                                selectBagType(
+                                    bagType.value
+                                )
+                            "
+                        >
+                            {{ bagType.label }}
+                        </button>
+
+                    </div>
+
+                </div>
                         <!-- Colors -->
 
                         <div
@@ -1393,81 +1901,28 @@ onMounted(() => {
                                 رنگ
                             </h3>
 
-                            <div
-                                class="flex flex-wrap gap-3"
-                            >
+                            <div class="flex flex-wrap gap-3">
 
-                                <button
-                                    type="button"
-                                    aria-label="مشکی"
-                                    class="color-filter h-7 w-7 rounded-full border-2 border-white bg-[#211c2b] shadow ring-1 ring-black/10"
-                                    :class="{
-                                        active:
-                                            state.color ===
-                                            'black',
-                                    }"
-                                    @click="
-                                        selectColor('black')
-                                    "
-                                />
+    <button
+        v-for="color in availableColors"
+        :key="color.id"
+        type="button"
+        :aria-label="color.label"
+        class="color-filter h-7 w-7 rounded-full border-2 border-white shadow ring-1 ring-black/10"
+        :style="{
+            backgroundColor:
+                color.hex_color || '#cccccc'
+        }"
+        :class="{
+            active:
+                state.color === color.value,
+        }"
+        @click="
+            selectColor(color.value)
+        "
+    />
 
-                                <button
-                                    type="button"
-                                    aria-label="کرم"
-                                    class="color-filter h-7 w-7 rounded-full border-2 border-white bg-[#eadfd8] shadow ring-1 ring-black/10"
-                                    :class="{
-                                        active:
-                                            state.color ===
-                                            'cream',
-                                    }"
-                                    @click="
-                                        selectColor('cream')
-                                    "
-                                />
-
-                                <button
-                                    type="button"
-                                    aria-label="صورتی"
-                                    class="color-filter h-7 w-7 rounded-full border-2 border-white bg-[#eaa8b2] shadow ring-1 ring-black/10"
-                                    :class="{
-                                        active:
-                                            state.color ===
-                                            'pink',
-                                    }"
-                                    @click="
-                                        selectColor('pink')
-                                    "
-                                />
-
-                                <button
-                                    type="button"
-                                    aria-label="قهوه‌ای"
-                                    class="color-filter h-7 w-7 rounded-full border-2 border-white bg-[#9a7662] shadow ring-1 ring-black/10"
-                                    :class="{
-                                        active:
-                                            state.color ===
-                                            'brown',
-                                    }"
-                                    @click="
-                                        selectColor('brown')
-                                    "
-                                />
-
-                                <button
-                                    type="button"
-                                    aria-label="سفید"
-                                    class="color-filter h-7 w-7 rounded-full border-2 border-white bg-white shadow ring-1 ring-black/10"
-                                    :class="{
-                                        active:
-                                            state.color ===
-                                            'white',
-                                    }"
-                                    @click="
-                                        selectColor('white')
-                                    "
-                                />
-
-                            </div>
+</div>
 
                         </div>
 
@@ -1603,7 +2058,7 @@ onMounted(() => {
                                 </span>
 
                                 <span
-                                    v-if="!product.stock"
+                                    v-if="!product.in_stock"
                                     class="absolute left-3 top-3 z-10 rounded-full bg-black/70 px-3 py-1.5 text-[9px] text-white"
                                 >
                                     ناموجود
@@ -1664,28 +2119,10 @@ onMounted(() => {
                                             <span
                                                 class="text-[8px] text-plum dark:text-rose"
                                             >
-                                                {{
-                                                    categoryNames[
-                                                        product.category
-                                                    ]
-                                                }}
+                                                {{ product.categories?.[0]?.name || '' }}
                                             </span>
 
-                                            <span
-                                                class="text-[8px] text-black/20 dark:text-white/20"
-                                            >
-                                                ·
-                                            </span>
-
-                                            <span
-                                                class="text-[8px] text-black/35 dark:text-white/35"
-                                            >
-                                                {{
-                                                    subcategoryNames[
-                                                        product.subcategory
-                                                    ]
-                                                }}
-                                            </span>
+                                            
 
                                         </div>
 
@@ -1719,24 +2156,35 @@ onMounted(() => {
 
                                 </div>
 
+<div
+    v-if="
+        product.attributes?.size?.length ||
+        product.attributes?.['shoe-size']?.length
+    "
+    class="mt-3 flex gap-2"
+>
+    <!-- سایز معمولی لباس -->
+    <template v-if="product.attributes?.size?.length">
+        <span
+            v-for="item in product.attributes.size"
+            :key="`size-${item.id}`"
+            class="text-[8px] text-black/35 dark:text-white/35"
+        >
+            {{ item.label }}
+        </span>
+    </template>
 
-                                <div
-                                    v-if="product.sizes?.length"
-                                    class="mt-3 flex gap-2"
-                                >
-
-                                    <span
-                                        v-for="
-                                            size in product.sizes
-                                        "
-                                        :key="size"
-                                        class="text-[8px] text-black/35 dark:text-white/35"
-                                    >
-                                        {{ size }}
-                                    </span>
-
-                                </div>
-
+    <!-- سایز کفش -->
+    <template v-else-if="product.attributes?.['shoe-size']?.length">
+        <span
+            v-for="item in product.attributes['shoe-size']"
+            :key="`shoe-size-${item.id}`"
+            class="text-[8px] text-black/35 dark:text-white/35"
+        >
+            {{ item.label }}
+        </span>
+    </template>
+</div>
                             </div>
 
                         </article>
@@ -2028,53 +2476,39 @@ onMounted(() => {
 
                 <!-- Material -->
 
-                <div
-                    v-if="
-                        availableMaterials.length
-                    "
-                    class="border-b border-black/10 py-6 dark:border-white/10"
-                >
+               <div
+    v-if="availableMaterials.length"
+    class="border-b border-black/10 py-6 dark:border-white/10"
+>
+    <h3
+        class="mb-4 text-xs font-semibold"
+    >
+        جنس
+    </h3>
 
-                    <h3
-                        class="mb-4 text-xs font-semibold"
-                    >
-                        جنس
-                    </h3>
-
-                    <div
-                        class="flex flex-wrap gap-2"
-                    >
-
-                        <button
-                            v-for="
-                                material in availableMaterials
-                            "
-                            :key="
-                                `mobile-material-${material}`
-                            "
-                            type="button"
-                            class="filter-option rounded-full border border-black/10 px-3 py-2 text-[10px] dark:border-white/10"
-                            :class="{
-                                active:
-                                    state.material ===
-                                    material,
-                            }"
-                            @click="
-                                selectMaterial(
-                                    material
-                                )
-                            "
-                        >
-                            {{
-                                materialNames[
-                                    material
-                                ] || material
-                            }}
-                        </button>
-
-                    </div>
-
-                </div>
+    <div
+        class="flex flex-wrap gap-2"
+    >
+        <button
+            v-for="material in availableMaterials"
+            :key="`mobile-material-${material.id}`"
+            type="button"
+            class="filter-option rounded-full border border-black/10 px-3 py-2 text-[10px] dark:border-white/10"
+            :class="{
+                active:
+                    state.material ===
+                    material.value,
+            }"
+            @click="
+                selectMaterial(
+                    material.value
+                )
+            "
+        >
+            {{ material.label }}
+        </button>
+    </div>
+</div>
 
 
                 <!-- Colors -->
@@ -2087,79 +2521,28 @@ onMounted(() => {
                         رنگ
                     </h3>
 
-                    <div class="flex gap-3">
+                    <div class="flex flex-wrap gap-3">
 
-                        <button
-                            type="button"
-                            aria-label="مشکی"
-                            class="mobile-color-filter h-8 w-8 rounded-full bg-[#211c2b] ring-1 ring-black/10"
-                            :class="{
-                                active:
-                                    state.color ===
-                                    'black',
-                            }"
-                            @click="
-                                selectColor('black')
-                            "
-                        />
+    <button
+        v-for="color in availableColors"
+        :key="`mobile-color-${color.id}`"
+        type="button"
+        :aria-label="color.label"
+        class="mobile-color-filter h-8 w-8 rounded-full ring-1 ring-black/10"
+        :style="{
+            backgroundColor:
+                color.hex_color || '#cccccc'
+        }"
+        :class="{
+            active:
+                state.color === color.value,
+        }"
+        @click="
+            selectColor(color.value)
+        "
+    />
 
-                        <button
-                            type="button"
-                            aria-label="کرم"
-                            class="mobile-color-filter h-8 w-8 rounded-full bg-[#eadfd8] ring-1 ring-black/10"
-                            :class="{
-                                active:
-                                    state.color ===
-                                    'cream',
-                            }"
-                            @click="
-                                selectColor('cream')
-                            "
-                        />
-
-                        <button
-                            type="button"
-                            aria-label="صورتی"
-                            class="mobile-color-filter h-8 w-8 rounded-full bg-[#eaa8b2] ring-1 ring-black/10"
-                            :class="{
-                                active:
-                                    state.color ===
-                                    'pink',
-                            }"
-                            @click="
-                                selectColor('pink')
-                            "
-                        />
-
-                        <button
-                            type="button"
-                            aria-label="قهوه‌ای"
-                            class="mobile-color-filter h-8 w-8 rounded-full bg-[#9a7662] ring-1 ring-black/10"
-                            :class="{
-                                active:
-                                    state.color ===
-                                    'brown',
-                            }"
-                            @click="
-                                selectColor('brown')
-                            "
-                        />
-
-                        <button
-                            type="button"
-                            aria-label="سفید"
-                            class="mobile-color-filter h-8 w-8 rounded-full bg-white ring-1 ring-black/10"
-                            :class="{
-                                active:
-                                    state.color ===
-                                    'white',
-                            }"
-                            @click="
-                                selectColor('white')
-                            "
-                        />
-
-                    </div>
+</div>
 
                 </div>
 

@@ -23,6 +23,7 @@ class Product extends Model
         'is_featured',
         'published_at',
         'sort_order',
+        'stock',
     ];
 
     protected $casts = [
@@ -32,6 +33,7 @@ class Product extends Model
         'is_featured' => 'boolean',
         'published_at' => 'datetime',
         'sort_order' => 'integer',
+        'stock' => 'integer',
     ];
 
     /**

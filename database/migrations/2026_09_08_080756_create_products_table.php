@@ -21,7 +21,9 @@ return new class extends Migration
 
             $table->decimal('price', 15, 2);
 
-            $table->decimal('compare_at_price', 15, 2)->nullable();
+$table->unsignedInteger('stock')->default(0);
+
+$table->decimal('compare_at_price', 15, 2)->nullable();
 
             $table->boolean('is_active')->default(true);
             $table->boolean('is_featured')->default(false);
