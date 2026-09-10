@@ -119,13 +119,10 @@ const formatPrice = (price) =>
     `${faNumber(price)} تومان`;
 
 const activeCategory = computed(() => {
-    return state.categories.length === 1 ? state.categories[0] : null;
+    return state.categories.length === 1
+        ? state.categories[0]
+        : null;
 });
-
-const productAttributeValues = (product, slug) => [
-    ...(product.attributes?.[slug] || []),
-    ...(product.variants || []).flatMap(v => v.attributes?.[slug] || []),
-];
 
 const filteredProducts = computed(() => {
     let result = [...products.value];
@@ -174,7 +171,7 @@ if (state.subcategories.length) {
  if (state.color) {
     result = result.filter(
         (product) =>
-            productAttributeValues(product, 'color').some(
+            product.attributes?.color?.some(
                 (item) => item.value === state.color
             )
     );
@@ -201,7 +198,7 @@ if (state.subcategories.length) {
     if (state.bagType) {
     result = result.filter(
         (product) =>
-            productAttributeValues(product, 'bag-type').some(
+            product.attributes?.['bag-type']?.some(
                 (item) => item.value === state.bagType
             )
     );
@@ -222,8 +219,11 @@ if (state.stock) {
     } else if (state.sort === 'expensive') {
         result.sort((a, b) => b.price - a.price);
     } else if (state.sort === 'newest') {
-        result.sort((a, b) => new Date(b.published_at || 0) - new Date(a.published_at || 0));
+        result.reverse();
     } else {
+        result.sort(
+            (a, b) => b.popularity - a.popularity
+        );
     }
 
     return result;
@@ -257,7 +257,7 @@ const availableSubcategories = computed(() => {
         }
     });
 
-    return [...new Set(children)].filter(slug => products.value.some(product => product.categories?.some(category => category.slug === slug)));
+    return [...new Set(children)];
 });
 
 const availableMaterials = computed(() => {
@@ -313,7 +313,7 @@ const availableMaterials = computed(() => {
     const usedMaterialValues = new Set();
 
     categoryProducts.forEach((product) => {
-        productAttributeValues(product, 'material').forEach((material) => {
+        product.attributes?.material?.forEach((material) => {
             usedMaterialValues.add(material.value);
         });
     });
@@ -370,7 +370,7 @@ const availableFrameMaterials = computed(() => {
     const usedValues = new Set();
 
     categoryProducts.forEach((product) => {
-        productAttributeValues(product, 'frame-material').forEach(
+        product.attributes?.['frame-material']?.forEach(
             (item) => {
                 usedValues.add(item.value);
             }
@@ -429,7 +429,7 @@ const availableColors = computed(() => {
     const usedColorValues = new Set();
 
     categoryProducts.forEach((product) => {
-        productAttributeValues(product, 'color').forEach((color) => {
+        product.attributes?.color?.forEach((color) => {
             usedColorValues.add(color.value);
         });
     });
@@ -479,11 +479,11 @@ const availableSizes = computed(() => {
 
     categoryProducts.forEach((product) => {
 
-        productAttributeValues(product, 'size').forEach((size) => {
+        product.attributes?.size?.forEach((size) => {
             usedSizeValues.add(size.value);
         });
 
-        productAttributeValues(product, 'shoe-size').forEach((size) => {
+        product.attributes?.['shoe-size']?.forEach((size) => {
             usedSizeValues.add(size.value);
         });
 
@@ -545,7 +545,7 @@ const availableBagTypes = computed(() => {
     const usedValues = new Set();
 
     categoryProducts.forEach((product) => {
-        productAttributeValues(product, 'bag-type').forEach((item) => {
+        product.attributes?.['bag-type']?.forEach((item) => {
             usedValues.add(item.value);
         });
     });
@@ -747,7 +747,11 @@ function toggleCategory(category) {
         state.categories.splice(index, 1);
     }
 
-    loadCategoryFiltersForSelectedCategories();
+    if (state.categories.length === 1) {
+        loadCategoryFilters(state.categories[0]);
+    } else {
+        categoryFilters.value = [];
+    }
 
     cleanInvalidFilters();
     state.visibleCount = 16;
@@ -1086,19 +1090,6 @@ async function loadCategories() {
         );
     }
 }
-async function loadCategoryFiltersForSelectedCategories() {
-    if (!state.categories.length) { categoryFilters.value = []; return; }
-    const responses = await Promise.all(state.categories.map(slug => axios.get(`/api/categories/${slug}/filters`)));
-    const merged = new Map();
-    responses.flatMap(r => r.data?.data || []).forEach(filter => {
-        const current = merged.get(filter.slug) || { ...filter, values: [] };
-        const values = new Map(current.values.map(v => [v.value, v]));
-        filter.values.forEach(v => values.set(v.value, v));
-        current.values = [...values.values()]; merged.set(filter.slug, current);
-    });
-    categoryFilters.value = [...merged.values()];
-}
-
 async function loadCategoryFilters(categorySlug) {
     try {
         const response = await axios.get(

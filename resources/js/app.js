@@ -2,5 +2,6 @@ import './bootstrap';
 import { createApp } from 'vue';
 
 import App from './App.vue';
+import Admin from './Admin.vue';
 
-createApp(App).mount('#app');
+createApp(location.pathname.startsWith('/admin') ? Admin : App).mount('#app');

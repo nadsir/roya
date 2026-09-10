@@ -30,32 +30,20 @@ public function index(Request $request)
     |--------------------------------------------------------------------------
     */
 
-    if ($request->filled('category')) {
-        $category = \App\Models\Category::where(
-            'slug',
-            $request->category
-        )->firstOrFail();
-
-        $categoryIds = collect([$category->id]);
-
-        $collectChildren = function ($categories) use (&$collectChildren, &$categoryIds) {
-            foreach ($categories as $child) {
-                $categoryIds->push($child->id);
-
-                $collectChildren($child->children);
-            }
-        };
-
-        $collectChildren(
-            $category->children()->get()
-        );
-
-        $query->whereHas('categories', function ($categoryQuery) use ($categoryIds) {
-            $categoryQuery->whereIn(
-                'categories.id',
-                $categoryIds->unique()->values()
-            );
-        });
+    $categories = $request->input('category', $request->input('categories', []));
+    $categories = is_array($categories) ? $categories : explode(',', (string) $categories);
+    $categories = array_values(array_filter($categories));
+    if ($categories) {
+        $categoryIds = collect();
+        foreach ($categories as $slug) {
+            $category = \App\Models\Category::where('slug', $slug)->firstOrFail();
+            $categoryIds->push($category->id);
+            $collectChildren = function ($items) use (&$collectChildren, &$categoryIds) {
+                foreach ($items as $child) { $categoryIds->push($child->id); $collectChildren($child->children); }
+            };
+            $collectChildren($category->children()->get());
+        }
+        $query->whereHas('categories', fn ($q) => $q->whereIn('categories.id', $categoryIds->unique()));
     }
 
     /*
@@ -66,6 +54,7 @@ public function index(Request $request)
 
     $filters = $request->except([
         'category',
+        'categories',
         'page',
     ]);
 
@@ -80,15 +69,14 @@ public function index(Request $request)
             continue;
         }
 
-        $query->whereHas('attributeValues', function ($attributeQuery) use (
-            $attributeSlug,
-            $values
-        ) {
-            $attributeQuery
-                ->whereIn('value', $values)
-                ->whereHas('attribute', function ($attributeQuery) use ($attributeSlug) {
-                    $attributeQuery->where('slug', $attributeSlug);
+        $query->where(function ($q) use ($attributeSlug, $values) {
+            $q->whereHas('attributeValues', function ($attributeQuery) use ($attributeSlug, $values) {
+                $attributeQuery->whereIn('value', $values)->whereHas('attribute', fn ($a) => $a->where('slug', $attributeSlug));
+            })->orWhereHas('variants', function ($variantQuery) use ($attributeSlug, $values) {
+                $variantQuery->where('is_active', true)->whereHas('attributeValues', function ($attributeQuery) use ($attributeSlug, $values) {
+                    $attributeQuery->whereIn('value', $values)->whereHas('attribute', fn ($a) => $a->where('slug', $attributeSlug));
                 });
+            });
         });
     }
 
