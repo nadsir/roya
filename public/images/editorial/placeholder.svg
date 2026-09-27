@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="1600" viewBox="0 0 1280 1600" fill="none">
+  <defs>
+    <linearGradient id="paper" x1="0" y1="0" x2="1280" y2="1600" gradientUnits="userSpaceOnUse"><stop stop-color="#eee6da"/><stop offset="1" stop-color="#c5b7a2"/></linearGradient>
+    <linearGradient id="fold" x1="265" y1="140" x2="1100" y2="1550" gradientUnits="userSpaceOnUse"><stop stop-color="#faf6ee"/><stop offset=".42" stop-color="#e8dfd0"/><stop offset=".7" stop-color="#b09b7e"/><stop offset="1" stop-color="#ded3c1"/></linearGradient>
+    <linearGradient id="shadow" x1="0" y1="0" x2="900" y2="300" gradientUnits="userSpaceOnUse"><stop stop-color="#493c2e" stop-opacity=".18"/><stop offset="1" stop-color="#493c2e" stop-opacity="0"/></linearGradient>
+  </defs>
+  <path fill="url(#paper)" d="M0 0h1280v1600H0z"/>
+  <path d="M740-80C220 210 115 584 436 808c194 136 311 307 229 523-39 102-114 237-45 389h660V-80Z" fill="url(#fold)"/>
+  <path d="M791-80C309 225 162 566 473 807c239 185 330 380 173 793" stroke="#fffcf6" stroke-opacity=".46" stroke-width="3"/>
+  <path d="M-80 1350c303-393 762-426 1440-206v456H-80Z" fill="url(#shadow)"/>
+  <path d="M90 94h1100v1412H90z" stroke="#695540" stroke-opacity=".22"/>
+  <text x="175" y="1155" fill="#66523c" fill-opacity=".46" font-family="Georgia,serif" font-style="italic" font-size="660">G.</text>
+</svg>

@@ -1,0 +1,387 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Vazirmatn:wght@100..900&display=swap");
+@import "tailwindcss";
+@import "./storefront.css";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@source "../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php";
+@source "../../storage/framework/views/*.php";
+@source "../**/*.blade.php";
+@source "../**/*.js";
+@source "../**/*.vue";
+
+/* =========================================================
+   THEME
+========================================================= */
+
+@theme {
+    /* Storefront base colors - light industrial */
+    --color-ink: #1a1a1a;
+    --color-rose: #FFCD00;
+    --color-blush: #fffef5;
+    --color-sand: #f0f0ec;
+    --color-cream: #fafaf8;
+
+    --font-sans: "Vazirmatn", Tahoma, sans-serif;
+
+    --shadow-soft: 0 20px 70px rgba(0, 0, 0, 0.06);
+    --shadow-card: 0 12px 40px rgba(0, 0, 0, 0.04);
+
+    /* Homepage brand colors - Caterpillar yellow */
+    --color-brand-50: #fefce8;
+    --color-brand-100: #fef9c3;
+    --color-brand-400: #FFCD00;
+    --color-brand-500: #FFCD00;
+    --color-brand-600: #e6b800;
+    --color-brand-accent: #FFCD00;
+    --color-brand-hover: #ffe033;
+    --color-brand-glow: rgba(255, 205, 0, 0.35);
+
+    /* Light palette */
+    --color-bg: #fafaf8;
+    --color-bg-card: #ffffff;
+    --color-bg-elevated: #f5f5f2;
+    --color-text: #1a1a1a;
+    --color-text-secondary: #555555;
+    --color-text-muted: #888888;
+    --color-border: #e0e0dc;
+    --color-border-light: #f0f0ec;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+/* =========================================================
+    DARK MODE
+========================================================= */
+
+.dark {
+    --color-ink: #e5e5e5;
+    --color-cream: #0c0c0c;
+    --color-sand: #1e1e1e;
+    --color-blush: #111111;
+
+    --color-bg: #0c0c0c;
+    --color-bg-card: #161616;
+    --color-bg-elevated: #1e1e1e;
+    --color-text: #e5e5e5;
+    --color-text-secondary: #999999;
+    --color-text-muted: #666666;
+    --color-border: #2a2a2a;
+    --color-border-light: #222222;
+
+    --color-white: #161616;
+    --color-black: #e5e5e5;
+
+    --color-gray-50: #161616;
+    --color-gray-100: #1e1e1e;
+    --color-gray-200: #2a2a2a;
+    --color-gray-300: #3a3a3a;
+    --color-gray-400: #555555;
+    --color-gray-500: #777777;
+    --color-gray-600: #999999;
+    --color-gray-700: #bbbbbb;
+    --color-gray-800: #dddddd;
+    --color-gray-900: #f0f0f0;
+
+    --color-slate-50: #141414;
+    --color-slate-100: #1c1c1c;
+    --color-slate-200: #2a2a2a;
+    --color-slate-300: #3a3a3a;
+    --color-slate-400: #555555;
+    --color-slate-500: #777777;
+    --color-slate-600: #999999;
+    --color-slate-700: #bbbbbb;
+    --color-slate-800: #dddddd;
+    --color-slate-900: #f0f0f0;
+}
+
+/* =========================================================
+    BASE
+========================================================= */
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    font-family: "Vazirmatn", Tahoma, sans-serif;
+    background: var(--color-cream);
+    color: var(--color-ink);
+}
+
+.serif {
+    font-family: "DM Serif Display", Georgia, serif;
+}
+
+button,
+a,
+select,
+input {
+    font-family: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+/* =========================================================
+    SCROLLBAR
+========================================================= */
+
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.filter-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(26, 26, 26, 0.2) transparent;
+}
+
+.filter-scroll::-webkit-scrollbar {
+    width: 4px;
+}
+
+.filter-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.filter-scroll::-webkit-scrollbar-thumb {
+    background: rgba(26, 26, 26, 0.2);
+    border-radius: 999px;
+}
+
+/* =========================================================
+    PRODUCT CARD
+========================================================= */
+
+.product-card:hover .product-image {
+    transform: scale(1.045);
+}
+
+.product-card .quick-actions {
+    opacity: 0;
+    transform: translateY(8px);
+}
+
+.product-card:hover .quick-actions {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+@media (max-width: 1023px) {
+    .product-card .quick-actions {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* =========================================================
+    FILTER OPTIONS
+========================================================= */
+
+.filter-option {
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.filter-option:hover {
+    border-color: rgba(26, 26, 26, 0.15);
+}
+
+.filter-option.active {
+    background: #FFCD00;
+    color: #1a1a1a;
+    border-color: #FFCD00;
+}
+
+/* =========================================================
+    CHECKBOX
+========================================================= */
+
+.check {
+    appearance: none;
+    -webkit-appearance: none;
+
+    width: 16px;
+    height: 16px;
+
+    border: 1px solid rgba(26, 26, 26, 0.25);
+    border-radius: 4px;
+
+    background: transparent;
+
+    display: inline-grid;
+    place-items: center;
+
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.check::after {
+    content: "\2713";
+
+    font-size: 10px;
+    color: var(--color-ink);
+
+    transform: scale(0);
+    transition: transform 0.15s ease;
+}
+
+.check:checked {
+    background: #FFCD00;
+    border-color: #FFCD00;
+}
+
+.check:checked::after {
+    transform: scale(1);
+}
+
+/* =========================================================
+    PRICE RANGE
+========================================================= */
+
+.price-range {
+    appearance: none;
+    -webkit-appearance: none;
+
+    height: 4px;
+    border-radius: 999px;
+
+    background: rgba(26, 26, 26, 0.12);
+
+    outline: none;
+}
+
+.price-range::-webkit-slider-thumb {
+    appearance: none;
+    -webkit-appearance: none;
+
+    width: 18px;
+    height: 18px;
+
+    border-radius: 50%;
+
+    background: var(--color-ink);
+    border: 3px solid var(--color-cream);
+
+    box-shadow: 0 2px 8px rgba(26, 26, 26, 0.15);
+
+    cursor: pointer;
+}
+
+.price-range::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+
+    border-radius: 50%;
+
+    background: var(--color-ink);
+    border: 3px solid var(--color-cream);
+
+    box-shadow: 0 2px 8px rgba(26, 26, 26, 0.15);
+
+    cursor: pointer;
+}
+
+/* =========================================================
+    COLOR FILTER
+========================================================= */
+
+.color-filter,
+.mobile-color-filter {
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.color-filter:hover,
+.mobile-color-filter:hover {
+    transform: scale(1.08);
+}
+
+.color-filter.active,
+.mobile-color-filter.active {
+    box-shadow:
+        0 0 0 2px #fafaf8,
+        0 0 0 4px #1a1a1a;
+}
+
+/* =========================================================
+    MOBILE FILTER SHEET
+========================================================= */
+
+.overlay {
+    transition:
+        opacity 0.3s ease,
+        visibility 0.3s ease;
+}
+
+.hidden-overlay {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.visible-overlay {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.mobile-sheet {
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.mobile-sheet.closed {
+    transform: translateY(100%);
+}
+
+.mobile-sheet.open {
+    transform: translateY(0);
+}
+
+/* =========================================================
+    SELECT LIGHT MODE
+========================================================= */
+
+select {
+    color: var(--color-ink);
+    background-color: var(--color-white);
+}
+
+select option {
+    background: var(--color-white);
+    color: var(--color-ink);
+}
+
+/* =========================================================
+    ANIMATION
+========================================================= */
+
+.fade-in {
+    animation: fadeIn 0.45s ease both;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

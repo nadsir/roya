@@ -1,0 +1,148 @@
+.navigation {
+background-color: #f3f3f3;
+border-bottom: 1px solid #dbdbdb;
+height: 45px;
+line-height: 35px;
+}
+.navigation ul li {
+background-color: white;
+display: inline-block;
+margin-left: 10px;
+padding: 5px;
+}
+.main {
+background-color: white;
+border-radius: 25px;
+}
+.footer {
+background-color: #5b6c7d;
+border-bottom-left-radius: 5px;
+border-bottom-right-radius: 5px;
+border-top: 5px solid #9fb0c1;
+margin-top: -10px;
+min-height: 60px;
+}
+.col-xs-1, .col-sm-1, .col-md-1, .col-lg-1, .col-xs-2, .col-sm-2, .col-md-2, .col-lg-2, .col-xs-3, .col-sm-3, .col-md-3, .col-lg-3, .col-xs-4, .col-sm-4, .col-md-4, .col-lg-4, .col-xs-5, .col-sm-5, .col-md-5, .col-lg-5, .col-xs-6, .col-sm-6, .col-md-6, .col-lg-6, .col-xs-7, .col-sm-7, .col-md-7, .col-lg-7, .col-xs-8, .col-sm-8, .col-md-8, .col-lg-8, .col-xs-9, .col-sm-9, .col-md-9, .col-lg-9, .col-xs-10, .col-sm-10, .col-md-10, .col-lg-10, .col-xs-11, .col-sm-11, .col-md-11, .col-lg-11, .col-xs-12, .col-sm-12, .col-md-12, .col-lg-12 {
+padding: 5px;
+}
+img.BankLogos {
+background-color: white;
+border-radius: 5px;
+margin: 0 auto;
+opacity: 0.8;
+width: 452px;
+}
+img.yourLogo {
+background-color: white;
+border-radius: 5px;
+margin: 10px;
+opacity: 0.8;
+width: 452px;
+}
+.payForm .form-control, .payForm .control-label {
+font-weight: normal;
+text-align: right !important;
+}
+.payForm {
+color: #333;
+display: block;
+padding-left: 22px;
+padding-right: 22px;
+padding-top: 5px;
+}
+.fcopyright {
+color: white;
+line-height: 2;
+padding-left: 5px;
+padding-right: 5px;
+padding-top: 10px;
+text-align: center;
+}
+.fcopyright a {
+color: gold;
+}
+h2.titleService {
+background-image: url("../images/aqayepardakht.png");
+background-position: center center;
+background-repeat: no-repeat;
+border-radius: 5px;
+color: #9fb0c1;
+font-size: 25px;
+padding: 90px 0 0;
+text-align: center;
+width: 100%;
+}
+.pgNotice {
+display: block;
+margin-bottom: 10px;
+text-align: center;
+}
+.logoBank {
+margin: 0 auto;
+width: 215px;
+}
+.bmlogo {
+background-image: url("../images/bm.png");
+border: 2px solid #F65B1B;
+margin-left: 5px;
+}
+.bslogo {
+background-image: url("../images/bs.png");
+}
+.bslogo, .bmlogo {
+background-position: center center;
+background-repeat: no-repeat;
+border-radius: 13px 13px 10px 10px;
+display: inline-block;
+height: 114px;
+width: 103px;
+}
+.btnpgPay {
+float: right;
+margin-left: 5px;
+margin-top: 5px;
+}
+.btnpgClose {
+margin-top: 5px;
+}
+.btnpgPay .btn, .btnpgClose .btn {
+width: 105px;
+}
+.tprice{
+background-image: url("../images/tprice.png");
+}
+.tCode{
+background-image: url("../images/tCode.png");
+}
+.gSite{
+background-image: url("../images/siteLink.png");
+}
+.nFamily{
+background-image: url("../images/user.png");
+}
+.sPhone{
+background-image: url("../images/support.png");
+}
+.mailUser{
+background-image: url("../images/mail.png");
+}
+.dRegister{
+background-image: url("../images/date.png");
+}
+.aNumber{
+background-image: url("../images/aNumber.png");
+}
+.aStatus{
+background-image: url("../images/status.png");
+}
+.sPhone,.nFamily,.gSite,.tCode ,.tprice,.mailUser,.dRegister,.aNumber,.aStatus{
+background-position: 99% center;
+background-repeat: no-repeat;
+text-indent: 32px;
+}
+.Unverified {
+color: red;
+}
+.Accepted {
+color: green;
+}

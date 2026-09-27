@@ -1,0 +1,4235 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>توربوپارت | مرجع تخصصی قطعات خودرو</title>
+  <meta
+    name="description"
+    content="توربوپارت؛ مرجع تخصصی قطعات خودروهای داخلی، چینی و وارداتی با امکان خرید تکی و عمده."
+  />
+
+  <!-- =========================================================
+       FONT
+  ========================================================== -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet"
+  >
+
+  <!-- =========================================================
+       FONT AWESOME
+  ========================================================== -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+  />
+
+  <!-- =========================================================
+       TAILWIND
+  ========================================================== -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+
+      theme: {
+        extend: {
+
+          fontFamily: {
+            sans: ['Vazirmatn', 'sans-serif'],
+          },
+
+          colors: {
+
+            brand: {
+              50: '#fff7ed',
+              100: '#ffedd5',
+              400: '#fb923c',
+              500: '#f97316',
+              600: '#ea580c',
+
+              accent: '#FF5E14',
+              hover: '#FF7A33',
+
+              glow: 'rgba(255, 94, 20, 0.35)'
+            },
+
+            dark: {
+              950: '#07080b',
+              900: '#0d1017',
+              850: '#121622',
+              800: '#181d2c',
+              750: '#1e2535',
+              700: '#232a3d',
+
+              border: 'rgba(255, 255, 255, 0.08)',
+              glass: 'rgba(18, 22, 34, 0.75)'
+            }
+          },
+
+          boxShadow: {
+            'glow-orange':
+              '0 0 35px -5px rgba(255, 94, 20, 0.45)',
+
+            'glow-cyan':
+              '0 0 35px -5px rgba(6, 182, 212, 0.35)',
+
+            'inner-light':
+              'inset 0 1px 0 0 rgba(255, 255, 255, 0.1)'
+          },
+
+          animation: {
+            'pulse-slow':
+              'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+
+            'float':
+              'float 5s ease-in-out infinite',
+          },
+
+          keyframes: {
+
+            float: {
+              '0%, 100%': {
+                transform: 'translateY(0px)'
+              },
+
+              '50%': {
+                transform: 'translateY(-10px)'
+              }
+            }
+
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- =========================================================
+       CUSTOM CSS
+  ========================================================== -->
+  <style>
+
+    :root {
+      color-scheme: dark;
+    }
+
+    html {
+      scroll-padding-top: 110px;
+    }
+
+    body {
+      min-width: 320px;
+    }
+
+    /* =======================================================
+       SCROLLBAR
+    ======================================================== */
+
+    .scrollbar-none {
+      scrollbar-width: none;
+    }
+
+    .scrollbar-none::-webkit-scrollbar {
+      display: none;
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #0d1017;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #232a3d;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #ea580c;
+    }
+
+    /* =======================================================
+       BACKGROUND
+    ======================================================== */
+
+    .carbon-pattern {
+      background-color: #0d1017;
+
+      background-image:
+        radial-gradient(
+          rgba(255, 255, 255, 0.05) 1px,
+          transparent 0
+        );
+
+      background-size: 24px 24px;
+    }
+
+    .mesh-gradient {
+
+      background-image:
+        radial-gradient(
+          at 80% 0%,
+          rgba(255, 94, 20, 0.15) 0px,
+          transparent 50%
+        ),
+
+        radial-gradient(
+          at 0% 50%,
+          rgba(6, 182, 212, 0.1) 0px,
+          transparent 50%
+        ),
+
+        radial-gradient(
+          at 100% 100%,
+          rgba(234, 88, 12, 0.12) 0px,
+          transparent 50%
+        );
+    }
+
+    /* =======================================================
+       LIGHT MODE
+    ======================================================== */
+
+    body.light {
+      color-scheme: light;
+      background-color: #f8fafc;
+      color: #1e293b;
+    }
+
+    body.light .carbon-pattern {
+
+      background-color: #f8fafc;
+
+      background-image:
+        radial-gradient(
+          rgba(15, 23, 42, 0.06) 1px,
+          transparent 0
+        );
+    }
+
+    body.light .bg-dark-950 {
+      background-color: #f8fafc !important;
+    }
+
+    body.light .bg-dark-900 {
+      background-color: #ffffff !important;
+    }
+
+    body.light .bg-dark-900\/80,
+    body.light .bg-dark-900\/95,
+    body.light .bg-dark-900\/90 {
+      background-color: rgba(255, 255, 255, 0.94) !important;
+    }
+
+    body.light .bg-dark-900\/60 {
+      background-color: rgba(255, 255, 255, 0.82) !important;
+    }
+
+    body.light .bg-dark-850 {
+      background-color: #f1f5f9 !important;
+    }
+
+    body.light .bg-dark-850\/90 {
+      background-color: rgba(241, 245, 249, 0.95) !important;
+    }
+
+    body.light .bg-dark-850\/60 {
+      background-color: rgba(241, 245, 249, 0.8) !important;
+    }
+
+    body.light .bg-dark-850\/40 {
+      background-color: rgba(241, 245, 249, 0.65) !important;
+    }
+
+    body.light .bg-dark-800 {
+      background-color: #e2e8f0 !important;
+    }
+
+    body.light .bg-dark-750 {
+      background-color: #cbd5e1 !important;
+    }
+
+    body.light .bg-dark-700 {
+      background-color: #cbd5e1 !important;
+    }
+
+    body.light .text-white {
+      color: #0f172a !important;
+    }
+
+    body.light .text-slate-200 {
+      color: #334155 !important;
+    }
+
+    body.light .text-slate-300 {
+      color: #475569 !important;
+    }
+
+    body.light .text-slate-400,
+    body.light .text-slate-500 {
+      color: #64748b !important;
+    }
+
+    body.light .border-dark-border,
+    body.light .border-dark-border\/50,
+    body.light .border-dark-border\/60,
+    body.light .border-dark-border\/40 {
+      border-color: rgba(15, 23, 42, 0.12) !important;
+    }
+
+    body.light .border-white\/5 {
+      border-color: rgba(15, 23, 42, 0.08) !important;
+    }
+
+    body.light .bg-black\/80 {
+      background-color: rgba(15, 23, 42, 0.45) !important;
+    }
+
+    /* =======================================================
+       FORM ELEMENTS
+    ======================================================== */
+
+    select {
+      background-image: none;
+    }
+
+    input::placeholder {
+      opacity: 0.75;
+    }
+
+    /* =======================================================
+       CARD HOVER
+    ======================================================== */
+
+    .product-card,
+    .category-card,
+    .trust-card {
+      transform: translateY(0);
+    }
+
+    .product-card:hover,
+    .category-card:hover,
+    .trust-card:hover {
+      transform: translateY(-3px);
+    }
+
+    /* =======================================================
+       MOBILE DRAWER
+    ======================================================== */
+
+    body.drawer-open {
+      overflow: hidden;
+    }
+
+    /* =======================================================
+       FOCUS
+    ======================================================== */
+
+    :focus-visible {
+      outline: 2px solid #ff5e14;
+      outline-offset: 2px;
+    }
+
+  </style>
+</head>
+
+<body
+  class="bg-dark-950 text-slate-200 font-sans antialiased overflow-x-hidden selection:bg-brand-accent selection:text-white carbon-pattern"
+>
+
+  <!-- =========================================================
+       TOP ANNOUNCEMENT BAR
+  ========================================================== -->
+
+  <div
+    class="bg-gradient-to-r from-dark-900 via-brand-600/30 to-dark-900 border-b border-dark-border text-xs py-2 px-4 relative z-50"
+  >
+
+    <div
+      class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2"
+    >
+
+      <div class="flex items-center gap-2">
+
+        <span
+          class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-brand-accent text-white"
+        >
+          ویژه همکاران B2B
+        </span>
+
+        <span class="text-slate-300 hidden sm:inline">
+          شرایط ویژه خرید عمده و همکاری با فروشگاه‌ها و تعمیرگاه‌ها
+        </span>
+
+      </div>
+
+      <div class="hidden sm:flex items-center gap-4 text-slate-400">
+
+        <a
+          href="#wholesale"
+          class="hover:text-brand-400 transition-colors flex items-center gap-1 font-semibold text-brand-400"
+        >
+          <i class="fa-solid fa-file-invoice-dollar"></i>
+          درخواست پیش‌فاکتور عمده
+        </a>
+
+        <span class="text-dark-700">|</span>
+
+        <div class="flex items-center gap-1">
+
+          <i class="fa-solid fa-headset text-brand-accent"></i>
+
+          <span>
+            پشتیبانی:
+            <span
+              class="font-bold text-slate-200"
+              dir="ltr"
+            >
+              021-88990000
+            </span>
+          </span>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =========================================================
+       HEADER
+  ========================================================== -->
+
+  <header
+    class="sticky top-0 z-40 backdrop-blur-xl bg-dark-900/80 border-b border-dark-border"
+  >
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+      <div class="flex items-center justify-between h-20 gap-4">
+
+        <!-- LOGO -->
+
+        <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+
+          <button
+            id="mobileMenuBtn"
+            type="button"
+            aria-label="باز کردن منو"
+            class="lg:hidden text-slate-300 hover:text-white p-2 text-xl"
+          >
+            <i class="fa-solid fa-bars-staggered"></i>
+          </button>
+
+          <a
+            href="#"
+            class="flex items-center gap-3 group"
+          >
+
+            <div
+              class="w-11 h-11 rounded-xl bg-gradient-to-br from-brand-accent to-orange-700 flex items-center justify-center shadow-glow-orange group-hover:scale-105 transition-transform shrink-0"
+            >
+              <i class="fa-solid fa-bolt-lightning text-white text-xl"></i>
+            </div>
+
+            <div class="min-w-0">
+
+              <span
+                class="text-2xl font-extrabold tracking-tight text-white block"
+              >
+                توربو<span class="text-brand-accent">پارت</span>
+              </span>
+
+              <span
+                class="text-[10px] text-slate-400 tracking-widest block uppercase font-medium"
+              >
+                TurboPart Store
+              </span>
+
+            </div>
+
+          </a>
+
+        </div>
+
+
+        <!-- SEARCH -->
+
+        <div class="hidden md:flex flex-1 max-w-xl mx-4">
+
+          <form
+            id="searchForm"
+            class="relative w-full"
+          >
+
+            <div
+              class="absolute inset-y-0 right-0 flex items-center pr-3.5 pointer-events-none text-slate-400"
+            >
+              <i class="fa-solid fa-magnifying-glass"></i>
+            </div>
+
+            <input
+              id="searchInput"
+              type="search"
+              autocomplete="off"
+              placeholder="جستجوی کد فنی، نام قطعه، برند یا خودرو..."
+              class="w-full pl-28 pr-11 py-2.5 bg-dark-850 border border-dark-border rounded-xl text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-brand-accent focus:ring-2 focus:ring-brand-accent/20 transition-all"
+            />
+
+            <button
+              type="submit"
+              class="absolute left-1.5 top-1.5 bottom-1.5 px-3.5 bg-dark-700 hover:bg-brand-accent hover:text-white text-slate-300 text-xs rounded-lg transition-all flex items-center gap-1 font-medium"
+            >
+              <i class="fa-solid fa-magnifying-glass"></i>
+              جستجو
+            </button>
+
+          </form>
+
+        </div>
+
+
+        <!-- HEADER ACTIONS -->
+
+        <div class="flex items-center gap-1.5 sm:gap-3 shrink-0">
+
+          <!-- THEME -->
+
+          <button
+            id="themeToggle"
+            type="button"
+            aria-label="تغییر حالت رنگی"
+            class="p-2.5 rounded-xl bg-dark-850 border border-dark-border text-slate-300 hover:text-brand-accent transition-all"
+          >
+            <i
+              id="themeIcon"
+              class="fa-solid fa-sun"
+            ></i>
+          </button>
+
+
+          <!-- B2B -->
+
+          <a
+            href="#wholesale"
+            class="hidden sm:flex items-center gap-2 px-3.5 py-2 rounded-xl bg-dark-800 border border-dark-border hover:border-brand-accent/50 text-xs font-semibold text-slate-200 hover:text-brand-accent transition-all"
+          >
+
+            <i class="fa-solid fa-boxes-stacked text-brand-accent"></i>
+
+            <span>
+              حساب همکار / عمده
+            </span>
+
+          </a>
+
+
+          <!-- CART -->
+
+          <button
+            id="cartButton"
+            type="button"
+            aria-label="سبد خرید"
+            class="relative p-2.5 rounded-xl bg-dark-850 border border-dark-border text-slate-300 hover:text-white hover:border-slate-600 transition-all"
+          >
+
+            <i class="fa-solid fa-cart-shopping text-lg"></i>
+
+            <span
+              id="cartCount"
+              class="absolute -top-1 -right-1 min-w-5 h-5 px-1 bg-brand-accent text-white text-[11px] font-bold rounded-full flex items-center justify-center shadow-lg"
+            >
+              ۰
+            </span>
+
+          </button>
+
+
+          <!-- LOGIN -->
+
+          <button
+            id="loginButton"
+            type="button"
+            class="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-brand-accent to-orange-600 hover:from-brand-hover hover:to-orange-500 text-white text-sm font-bold shadow-glow-orange transition-all active:scale-95"
+          >
+
+            <i class="fa-regular fa-user"></i>
+
+            <span class="hidden sm:inline">
+              ورود / ثبت‌نام
+            </span>
+
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <!-- DESKTOP CATEGORY NAV -->
+
+      <nav
+        class="hidden lg:flex items-center justify-between py-2.5 border-t border-dark-border/50 text-xs font-medium text-slate-300"
+      >
+
+        <div class="flex items-center gap-7">
+
+          <a
+            href="#categories"
+            class="flex items-center gap-2 text-brand-accent font-bold hover:text-brand-400"
+          >
+            <i class="fa-solid fa-layer-group"></i>
+            دسته‌بندی تمام قطعات
+          </a>
+
+          <a href="#products" class="hover:text-white transition-colors">
+            موتوری و گیربکس
+          </a>
+
+          <a href="#products" class="hover:text-white transition-colors">
+            سیستم ترمز
+          </a>
+
+          <a href="#products" class="hover:text-white transition-colors">
+            جلوبندی و تعلیق
+          </a>
+
+          <a href="#products" class="hover:text-white transition-colors">
+            برق و ECU
+          </a>
+
+          <a href="#products" class="hover:text-white transition-colors">
+            روغن و فیلتر
+          </a>
+
+          <a
+            href="#products"
+            class="hover:text-white transition-colors text-yellow-400 flex items-center gap-1"
+          >
+            <i class="fa-solid fa-fire text-brand-accent"></i>
+            پیشنهادهای ویژه
+          </a>
+
+        </div>
+
+        <div class="flex items-center gap-3 text-slate-400">
+
+          <span>
+            ضمانت اصالت کالا
+          </span>
+
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+
+          <span>
+            ارسال سریع
+          </span>
+
+        </div>
+
+      </nav>
+
+    </div>
+
+  </header>
+
+
+  <!-- =========================================================
+       MOBILE DRAWER
+  ========================================================== -->
+
+  <div
+    id="mobileDrawer"
+    class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden"
+  >
+
+    <div
+      class="w-[min(86vw,320px)] h-full bg-dark-900 border-l border-dark-border p-5 flex flex-col justify-between"
+    >
+
+      <div>
+
+        <div
+          class="flex items-center justify-between pb-4 border-b border-dark-border"
+        >
+
+          <span class="font-bold text-lg text-white">
+            منوی دسترسی
+          </span>
+
+          <button
+            id="closeDrawerBtn"
+            type="button"
+            aria-label="بستن منو"
+            class="text-slate-400 hover:text-white text-xl"
+          >
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+
+        </div>
+
+
+        <div class="mt-4 space-y-2 text-sm">
+
+          <a
+            href="#vehicle-finder"
+            class="mobile-menu-link block p-3 rounded-xl bg-dark-800 text-brand-accent font-bold"
+          >
+            <i class="fa-solid fa-car ml-2"></i>
+            انتخاب بر اساس خودرو
+          </a>
+
+          <a
+            href="#categories"
+            class="mobile-menu-link block p-3 hover:bg-dark-800 rounded-xl text-slate-300"
+          >
+            <i class="fa-solid fa-layer-group ml-2"></i>
+            دسته‌بندی قطعات
+          </a>
+
+          <a
+            href="#products"
+            class="mobile-menu-link block p-3 hover:bg-dark-800 rounded-xl text-slate-300"
+          >
+            <i class="fa-solid fa-tags ml-2"></i>
+            محصولات
+          </a>
+
+          <a
+            href="#wholesale"
+            class="mobile-menu-link block p-3 hover:bg-dark-800 rounded-xl text-amber-400 font-bold"
+          >
+            <i class="fa-solid fa-boxes-stacked ml-2"></i>
+            خرید عمده
+          </a>
+
+          <a
+            href="#authenticity"
+            class="mobile-menu-link block p-3 hover:bg-dark-800 rounded-xl text-slate-300"
+          >
+            <i class="fa-solid fa-shield-halved ml-2"></i>
+            استعلام اصالت
+          </a>
+
+        </div>
+
+      </div>
+
+
+      <div
+        class="pt-4 border-t border-dark-border text-xs text-slate-400"
+      >
+
+        <p>
+          تلفن پشتیبانی:
+          <span dir="ltr">
+            ۰۲۱-۸۸۹۹۰۰۰۰
+          </span>
+        </p>
+
+        <p class="mt-1">
+          پاسخگویی در ساعات کاری
+        </p>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =========================================================
+       MAIN
+  ========================================================== -->
+
+  <main>
+
+
+    <!-- =======================================================
+         HERO
+    ======================================================== -->
+
+    <section
+      class="relative min-h-[640px] pt-10 pb-20 overflow-hidden mesh-gradient"
+    >
+
+      <div
+        class="absolute top-1/4 -right-40 w-96 h-96 bg-brand-accent/20 rounded-full blur-3xl pointer-events-none"
+      ></div>
+
+      <div
+        class="absolute bottom-10 -left-40 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"
+      ></div>
+
+
+      <div
+        class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10"
+      >
+
+        <div class="grid lg:grid-cols-12 gap-12 items-center">
+
+
+          <!-- HERO CONTENT -->
+
+          <div
+            class="lg:col-span-7 space-y-6 text-center lg:text-right"
+          >
+
+            <div
+              class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-dark-850/90 border border-brand-accent/40 text-brand-400 text-xs font-semibold shadow-inner-light"
+            >
+
+              <span
+                class="w-2 h-2 rounded-full bg-brand-accent animate-pulse"
+              ></span>
+
+              مرجع تخصصی قطعات خودروهای داخلی، چینی و وارداتی
+
+            </div>
+
+
+            <h1
+              class="text-3xl sm:text-5xl lg:text-6xl font-black text-white leading-tight"
+            >
+
+              قطعه مناسب، قیمت رقابتی؛
+
+              <br>
+
+              <span
+                class="text-transparent bg-clip-text bg-gradient-to-r from-brand-accent via-orange-400 to-amber-300"
+              >
+                ساده‌تر از همیشه پیدا کن!
+              </span>
+
+            </h1>
+
+
+            <p
+              class="text-slate-300 text-base sm:text-lg max-w-2xl mx-auto lg:mx-0 leading-relaxed"
+            >
+              تأمین قطعات خودرو با امکان خرید تکی و عمده، بررسی سازگاری با خودرو و پشتیبانی تخصصی برای انتخاب قطعه مناسب.
+            </p>
+
+
+            <!-- HERO STATS -->
+
+            <div
+              class="pt-4 grid grid-cols-3 gap-3 sm:gap-4 max-w-lg mx-auto lg:mx-0 border-y border-dark-border py-4"
+            >
+
+              <div>
+
+                <div
+                  class="text-xl sm:text-3xl font-black text-white font-mono"
+                >
+                  +۵۰,۰۰۰
+                </div>
+
+                <div class="text-[10px] sm:text-xs text-slate-400 mt-1">
+                  تنوع قطعات
+                </div>
+
+              </div>
+
+
+              <div>
+
+                <div
+                  class="text-xl sm:text-3xl font-black text-brand-accent font-mono"
+                >
+                  B2B
+                </div>
+
+                <div class="text-[10px] sm:text-xs text-slate-400 mt-1">
+                  فروش همکاری
+                </div>
+
+              </div>
+
+
+              <div>
+
+                <div
+                  class="text-xl sm:text-3xl font-black text-cyan-400 font-mono"
+                >
+                  OEM
+                </div>
+
+                <div class="text-[10px] sm:text-xs text-slate-400 mt-1">
+                  جستجوی کد فنی
+                </div>
+
+              </div>
+
+            </div>
+
+
+            <!-- HERO BUTTONS -->
+
+            <div
+              class="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-2"
+            >
+
+              <a
+                href="#vehicle-finder"
+                class="px-7 py-3.5 rounded-xl bg-gradient-to-r from-brand-accent to-orange-600 hover:from-brand-hover hover:to-orange-500 text-white font-bold shadow-glow-orange flex items-center gap-3 transition-all hover:scale-105 active:scale-95"
+              >
+
+                <i class="fa-solid fa-car-side text-lg"></i>
+
+                <span>
+                  انتخاب خودرو و قطعه
+                </span>
+
+              </a>
+
+
+              <a
+                href="#wholesale"
+                class="px-6 py-3.5 rounded-xl bg-dark-850 hover:bg-dark-800 border border-dark-border hover:border-slate-500 text-slate-200 font-semibold flex items-center gap-2 transition-all"
+              >
+
+                <i class="fa-solid fa-truck-ramp-box text-brand-accent"></i>
+
+                <span>
+                  خرید عمده
+                </span>
+
+              </a>
+
+            </div>
+
+          </div>
+
+
+          <!-- VEHICLE FINDER -->
+
+          <div
+            class="lg:col-span-5"
+            id="vehicle-finder"
+          >
+
+            <div
+              class="relative rounded-3xl p-1 bg-gradient-to-b from-brand-accent/40 via-dark-border to-transparent shadow-2xl"
+            >
+
+              <div
+                class="bg-dark-900/95 backdrop-blur-2xl rounded-[22px] p-6 sm:p-8 border border-white/5"
+              >
+
+                <!-- FINDER HEADER -->
+
+                <div
+                  class="flex items-center justify-between pb-4 border-b border-dark-border"
+                >
+
+                  <div class="flex items-center gap-3">
+
+                    <div
+                      class="w-9 h-9 rounded-lg bg-brand-accent/10 border border-brand-accent/30 flex items-center justify-center text-brand-accent"
+                    >
+                      <i class="fa-solid fa-sliders"></i>
+                    </div>
+
+                    <div>
+
+                      <h3 class="font-bold text-white text-base">
+                        یافتن سریع قطعه
+                      </h3>
+
+                      <p class="text-xs text-slate-400">
+                        خودرو را انتخاب کنید تا قطعات سازگار نمایش داده شوند
+                      </p>
+
+                    </div>
+
+                  </div>
+
+                  <span
+                    class="hidden sm:inline text-[11px] font-mono text-cyan-400 bg-cyan-950/60 border border-cyan-800/40 px-2 py-0.5 rounded"
+                  >
+                    Smart Match
+                  </span>
+
+                </div>
+
+
+                <!-- FINDER FORM -->
+
+                <form
+                  id="vehicleFinderForm"
+                  class="space-y-4 mt-6"
+                >
+
+                  <!-- BRAND -->
+
+                  <div>
+
+                    <label
+                      for="vehicleBrand"
+                      class="block text-xs font-semibold text-slate-300 mb-1.5"
+                    >
+                      ۱. کمپانی سازنده
+                    </label>
+
+                    <div class="relative">
+
+                      <select
+                        id="vehicleBrand"
+                        class="w-full bg-dark-850 border border-dark-border rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:border-brand-accent focus:outline-none appearance-none cursor-pointer"
+                        required
+                      >
+
+                        <option value="">
+                          انتخاب کمپانی
+                        </option>
+
+                        <option value="ikco">
+                          ایران خودرو
+                        </option>
+
+                        <option value="saipa">
+                          سایپا
+                        </option>
+
+                        <option value="mvm">
+                          مدیران خودرو
+                        </option>
+
+                        <option value="bahman">
+                          بهمن موتور
+                        </option>
+
+                        <option value="kmc">
+                          کرمان موتور
+                        </option>
+
+                        <option value="hyundai">
+                          هیوندای
+                        </option>
+
+                        <option value="kia">
+                          کیا
+                        </option>
+
+                        <option value="toyota">
+                          تویوتا
+                        </option>
+
+                      </select>
+
+                      <i
+                        class="fa-solid fa-chevron-down absolute left-4 top-3.5 text-xs text-slate-400 pointer-events-none"
+                      ></i>
+
+                    </div>
+
+                  </div>
+
+
+                  <!-- MODEL + YEAR -->
+
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+
+                    <div>
+
+                      <label
+                        for="vehicleModel"
+                        class="block text-xs font-semibold text-slate-300 mb-1.5"
+                      >
+                        ۲. مدل خودرو
+                      </label>
+
+                      <div class="relative">
+
+                        <select
+                          id="vehicleModel"
+                          disabled
+                          class="w-full bg-dark-850 border border-dark-border rounded-xl px-3 py-2.5 text-sm text-slate-200 focus:border-brand-accent focus:outline-none appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                          required
+                        >
+
+                          <option value="">
+                            ابتدا کمپانی را انتخاب کنید
+                          </option>
+
+                        </select>
+
+                        <i
+                          class="fa-solid fa-chevron-down absolute left-3 top-3.5 text-xs text-slate-400 pointer-events-none"
+                        ></i>
+
+                      </div>
+
+                    </div>
+
+
+                    <div>
+
+                      <label
+                        for="vehicleYear"
+                        class="block text-xs font-semibold text-slate-300 mb-1.5"
+                      >
+                        ۳. سال ساخت
+                      </label>
+
+                      <div class="relative">
+
+                        <select
+                          id="vehicleYear"
+                          disabled
+                          class="w-full bg-dark-850 border border-dark-border rounded-xl px-3 py-2.5 text-sm text-slate-200 focus:border-brand-accent focus:outline-none appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                          required
+                        >
+
+                          <option value="">
+                            ابتدا مدل را انتخاب کنید
+                          </option>
+
+                        </select>
+
+                        <i
+                          class="fa-solid fa-chevron-down absolute left-3 top-3.5 text-xs text-slate-400 pointer-events-none"
+                        ></i>
+
+                      </div>
+
+                    </div>
+
+                  </div>
+
+
+                  <!-- CATEGORY -->
+
+                  <div>
+
+                    <label
+                      for="vehiclePart"
+                      class="block text-xs font-semibold text-slate-300 mb-1.5"
+                    >
+                      ۴. دسته‌بندی قطعه
+                    </label>
+
+                    <div class="relative">
+
+                      <select
+                        id="vehiclePart"
+                        class="w-full bg-dark-850 border border-dark-border rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:border-brand-accent focus:outline-none appearance-none cursor-pointer"
+                        required
+                      >
+
+                        <option value="">
+                          انتخاب دسته‌بندی
+                        </option>
+
+                        <option value="all">
+                          تمام قطعات سازگار
+                        </option>
+
+                        <option value="brake">
+                          لنت و دیسک ترمز
+                        </option>
+
+                        <option value="timing">
+                          کیت تایم و تسمه
+                        </option>
+
+                        <option value="suspension">
+                          جلوبندی و کمک‌فنر
+                        </option>
+
+                        <option value="cooling">
+                          رادیاتور و خنک‌کننده
+                        </option>
+
+                        <option value="electrical">
+                          شمع، کوئل و برق
+                        </option>
+
+                        <option value="filter">
+                          روغن و فیلتر
+                        </option>
+
+                      </select>
+
+                      <i
+                        class="fa-solid fa-chevron-down absolute left-4 top-3.5 text-xs text-slate-400 pointer-events-none"
+                      ></i>
+
+                    </div>
+
+                  </div>
+
+
+                  <!-- SUBMIT -->
+
+                  <button
+                    type="submit"
+                    class="w-full py-3.5 rounded-xl bg-gradient-to-r from-brand-accent to-orange-600 hover:from-brand-hover hover:to-orange-500 text-white font-bold text-sm shadow-glow-orange flex items-center justify-center gap-2 transition-all active:scale-[.98]"
+                  >
+
+                    <i class="fa-solid fa-magnifying-glass-chart"></i>
+
+                    <span>
+                      نمایش قطعات سازگار
+                    </span>
+
+                  </button>
+
+                </form>
+
+
+                <!-- FINDER FOOTER -->
+
+                <div
+                  class="flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400 pt-4 mt-4 border-t border-dark-border/40"
+                >
+
+                  <span class="flex items-center gap-1.5">
+                    <i class="fa-solid fa-check-double text-emerald-400"></i>
+                    بررسی سازگاری
+                  </span>
+
+                  <span class="flex items-center gap-1.5">
+                    <i class="fa-solid fa-arrow-rotate-left text-brand-accent"></i>
+                    امکان مرجوعی طبق شرایط فروش
+                  </span>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =======================================================
+         TRUST FEATURES
+    ======================================================== -->
+
+    <section
+      class="border-y border-dark-border bg-dark-900/60 py-8"
+    >
+
+      <div
+        class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
+      >
+
+        <div
+          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5"
+        >
+
+          <!-- TRUST 1 -->
+
+          <div
+            class="trust-card flex items-center gap-3.5 p-4 rounded-2xl bg-dark-850/40 border border-dark-border/50 transition-all duration-300"
+          >
+
+            <div
+              class="w-12 h-12 rounded-xl bg-brand-accent/10 border border-brand-accent/20 flex items-center justify-center text-brand-accent text-xl shrink-0"
+            >
+              <i class="fa-solid fa-certificate"></i>
+            </div>
+
+            <div>
+
+              <h4 class="font-bold text-sm text-white">
+                ضمانت اصالت کالا
+              </h4>
+
+              <p class="text-xs text-slate-400 mt-1 leading-5">
+                امکان پیگیری اصالت و بررسی مشخصات کالا
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <!-- TRUST 2 -->
+
+          <div
+            class="trust-card flex items-center gap-3.5 p-4 rounded-2xl bg-dark-850/40 border border-dark-border/50 transition-all duration-300"
+          >
+
+            <div
+              class="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 text-xl shrink-0"
+            >
+              <i class="fa-solid fa-truck-fast"></i>
+            </div>
+
+            <div>
+
+              <h4 class="font-bold text-sm text-white">
+                ارسال سریع
+              </h4>
+
+              <p class="text-xs text-slate-400 mt-1 leading-5">
+                ارسال تهران و ارسال به سراسر کشور
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <!-- TRUST 3 -->
+
+          <div
+            class="trust-card flex items-center gap-3.5 p-4 rounded-2xl bg-dark-850/40 border border-dark-border/50 transition-all duration-300"
+          >
+
+            <div
+              class="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 text-xl shrink-0"
+            >
+              <i class="fa-solid fa-hand-holding-dollar"></i>
+            </div>
+
+            <div>
+
+              <h4 class="font-bold text-sm text-white">
+                قیمت همکاری
+              </h4>
+
+              <p class="text-xs text-slate-400 mt-1 leading-5">
+                شرایط ویژه خرید عمده و فروشگاهی
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <!-- TRUST 4 -->
+
+          <div
+            class="trust-card flex items-center gap-3.5 p-4 rounded-2xl bg-dark-850/40 border border-dark-border/50 transition-all duration-300"
+          >
+
+            <div
+              class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 text-xl shrink-0"
+            >
+              <i class="fa-solid fa-headset"></i>
+            </div>
+
+            <div>
+
+              <h4 class="font-bold text-sm text-white">
+                مشاوره تخصصی
+              </h4>
+
+              <p class="text-xs text-slate-400 mt-1 leading-5">
+                راهنمایی برای انتخاب قطعه مناسب خودرو
+              </p>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =======================================================
+         CATEGORIES
+    ======================================================== -->
+
+    <section
+      id="categories"
+      class="py-16 bg-dark-950"
+    >
+
+      <div
+        class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
+      >
+
+        <!-- SECTION HEADER -->
+
+        <div
+          class="flex flex-col md:flex-row md:items-end md:justify-between gap-5 mb-8"
+        >
+
+          <div>
+
+            <span
+              class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-brand-accent/10 text-brand-400 border border-brand-accent/20 mb-3"
+            >
+              <i class="fa-solid fa-layer-group ml-2"></i>
+              دسته‌بندی قطعات
+            </span>
+
+            <h2
+              class="text-2xl sm:text-3xl font-black text-white"
+            >
+              قطعات مورد نیاز خودروی شما
+            </h2>
+
+            <p
+              class="text-sm text-slate-400 mt-2 max-w-2xl leading-6"
+            >
+              از سیستم ترمز و جلوبندی تا قطعات موتوری، برقی و مصرفی؛ دسته‌بندی مورد نظر خود را انتخاب کنید.
+            </p>
+
+          </div>
+
+
+          <a
+            href="#products"
+            class="inline-flex items-center gap-2 text-sm font-bold text-brand-accent hover:text-brand-400 transition-colors"
+          >
+
+            مشاهده همه قطعات
+
+            <i class="fa-solid fa-arrow-left text-xs"></i>
+
+          </a>
+
+        </div>
+
+
+        <!-- BENTO GRID -->
+
+        <div
+          class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5"
+        >
+
+          <!-- BRAKE -->
+
+          <a
+            href="#products"
+            class="category-card md:col-span-2 lg:col-span-2 min-h-[300px] rounded-3xl p-7 bg-gradient-to-br from-dark-850 to-dark-900 border border-dark-border hover:border-brand-accent/50 transition-all duration-300 relative overflow-hidden group"
+          >
+
+            <div
+              class="absolute -left-10 -bottom-10 w-56 h-56 bg-brand-accent/15 rounded-full blur-3xl group-hover:scale-125 transition-transform duration-500"
+            ></div>
+
+            <div
+              class="absolute left-8 bottom-6 opacity-10 group-hover:opacity-20 transition-opacity"
+            >
+              <i class="fa-solid fa-compact-disc text-[160px] text-brand-accent"></i>
+            </div>
+
+
+            <div
+              class="relative z-10 h-full flex flex-col justify-between gap-8"
+            >
+
+              <div class="flex items-center justify-between">
+
+                <span
+                  class="px-3 py-1 rounded-full text-xs font-bold bg-brand-accent/20 text-brand-400 border border-brand-accent/30"
+                >
+                  پرفروش
+                </span>
+
+                <i
+                  class="fa-solid fa-compact-disc text-3xl text-slate-600 group-hover:text-brand-accent transition-colors"
+                ></i>
+
+              </div>
+
+
+              <div>
+
+                <h3
+                  class="text-2xl sm:text-3xl font-black text-white"
+                >
+                  سیستم ترمز
+                </h3>
+
+                <p
+                  class="text-sm text-slate-400 max-w-md mt-3 leading-6"
+                >
+                  لنت، دیسک، بوستر، پمپ ترمز و قطعات مرتبط با سیستم ترمز خودرو.
+                </p>
+
+              </div>
+
+
+              <div
+                class="inline-flex items-center gap-2 text-sm font-bold text-white"
+              >
+
+                مشاهده محصولات
+
+                <i class="fa-solid fa-chevron-left text-[10px]"></i>
+
+              </div>
+
+            </div>
+
+          </a>
+
+
+          <!-- TIMING -->
+
+          <a
+            href="#products"
+            class="category-card min-h-[300px] rounded-3xl p-7 bg-gradient-to-br from-dark-850 to-dark-900 border border-dark-border hover:border-cyan-500/50 transition-all duration-300 relative overflow-hidden group"
+          >
+
+            <div
+              class="relative z-10 h-full flex flex-col justify-between gap-8"
+            >
+
+              <div class="flex justify-between items-start">
+
+                <span
+                  class="px-3 py-1 rounded-full text-xs font-bold bg-cyan-950 text-cyan-400 border border-cyan-800/40"
+                >
+                  قطعات موتوری
+                </span>
+
+                <i
+                  class="fa-solid fa-gears text-3xl text-slate-600 group-hover:text-cyan-400 transition-colors"
+                ></i>
+
+              </div>
+
+
+              <div>
+
+                <h3 class="text-xl font-bold text-white">
+                  کیت تایم و تسمه
+                </h3>
+
+                <p class="text-xs text-slate-400 mt-3 leading-6">
+                  کیت تسمه تایم، تسمه دینام، هرزگرد و متعلقات موتور.
+                </p>
+
+              </div>
+
+
+              <span
+                class="text-xs font-bold text-cyan-400 flex items-center gap-1"
+              >
+                مشاهده محصولات
+                <i class="fa-solid fa-arrow-left text-[10px]"></i>
+              </span>
+
+            </div>
+
+          </a>
+
+
+          <!-- SUSPENSION -->
+
+          <a
+            href="#products"
+            class="category-card min-h-[300px] rounded-3xl p-7 bg-gradient-to-br from-dark-850 to-dark-900 border border-dark-border hover:border-amber-500/50 transition-all duration-300 relative overflow-hidden group"
+          >
+
+            <div
+              class="relative z-10 h-full flex flex-col justify-between gap-8"
+            >
+
+              <div class="flex justify-between items-start">
+
+                <span
+                  class="px-3 py-1 rounded-full text-xs font-bold bg-amber-950 text-amber-400 border border-amber-800/40"
+                >
+                  جلوبندی
+                </span>
+
+                <i
+                  class="fa-solid fa-car-burst text-3xl text-slate-600 group-hover:text-amber-400 transition-colors"
+                ></i>
+
+              </div>
+
+
+              <div>
+
+                <h3 class="text-xl font-bold text-white">
+                  جلوبندی و کمک‌فنر
+                </h3>
+
+                <p class="text-xs text-slate-400 mt-3 leading-6">
+                  کمک‌فنر، طبق، سیبک، جعبه فرمان و قطعات تعلیق.
+                </p>
+
+              </div>
+
+
+              <span
+                class="text-xs font-bold text-amber-400 flex items-center gap-1"
+              >
+                مشاهده محصولات
+                <i class="fa-solid fa-arrow-left text-[10px]"></i>
+              </span>
+
+            </div>
+
+          </a>
+
+
+          <!-- SMALL CARD -->
+
+          <a
+            href="#products"
+            class="category-card rounded-3xl p-5 bg-dark-850 border border-dark-border hover:border-brand-accent/50 transition-all group"
+          >
+
+            <div class="flex items-center gap-4">
+
+              <div
+                class="w-12 h-12 rounded-2xl bg-dark-800 flex items-center justify-center text-brand-accent text-xl group-hover:scale-110 transition-transform shrink-0"
+              >
+                <i class="fa-solid fa-plug-circle-bolt"></i>
+              </div>
+
+              <div>
+
+                <h4 class="font-bold text-white text-sm">
+                  شمع و برق خودرو
+                </h4>
+
+                <span class="text-xs text-slate-400 mt-1 block">
+                  شمع، کوئل و وایر
+                </span>
+
+              </div>
+
+            </div>
+
+          </a>
+
+
+          <!-- SMALL CARD -->
+
+          <a
+            href="#products"
+            class="category-card rounded-3xl p-5 bg-dark-850 border border-dark-border hover:border-emerald-500/50 transition-all group"
+          >
+
+            <div class="flex items-center gap-4">
+
+              <div
+                class="w-12 h-12 rounded-2xl bg-dark-800 flex items-center justify-center text-emerald-400 text-xl group-hover:scale-110 transition-transform shrink-0"
+              >
+                <i class="fa-solid fa-oil-can"></i>
+              </div>
+
+              <div>
+
+                <h4 class="font-bold text-white text-sm">
+                  روغن و فیلتر
+                </h4>
+
+                <span class="text-xs text-slate-400 mt-1 block">
+                  روغن موتور و فیلترها
+                </span>
+
+              </div>
+
+            </div>
+
+          </a>
+
+
+          <!-- SMALL CARD -->
+
+          <a
+            href="#products"
+            class="category-card rounded-3xl p-5 bg-dark-850 border border-dark-border hover:border-purple-500/50 transition-all group"
+          >
+
+            <div class="flex items-center gap-4">
+
+              <div
+                class="w-12 h-12 rounded-2xl bg-dark-800 flex items-center justify-center text-purple-400 text-xl group-hover:scale-110 transition-transform shrink-0"
+              >
+                <i class="fa-solid fa-microchip"></i>
+              </div>
+
+              <div>
+
+                <h4 class="font-bold text-white text-sm">
+                  سنسور و ECU
+                </h4>
+
+                <span class="text-xs text-slate-400 mt-1 block">
+                  سنسورها و کامپیوتر خودرو
+                </span>
+
+              </div>
+
+            </div>
+
+          </a>
+
+
+          <!-- SMALL CARD -->
+
+          <a
+            href="#products"
+            class="category-card rounded-3xl p-5 bg-dark-850 border border-dark-border hover:border-rose-500/50 transition-all group"
+          >
+
+            <div class="flex items-center gap-4">
+
+              <div
+                class="w-12 h-12 rounded-2xl bg-dark-800 flex items-center justify-center text-rose-400 text-xl group-hover:scale-110 transition-transform shrink-0"
+              >
+                <i class="fa-solid fa-fan"></i>
+              </div>
+
+              <div>
+
+                <h4 class="font-bold text-white text-sm">
+                  خنک‌کننده موتور
+                </h4>
+
+                <span class="text-xs text-slate-400 mt-1 block">
+                  رادیاتور و واترپمپ
+                </span>
+
+              </div>
+
+            </div>
+
+          </a>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =======================================================
+         PRODUCTS
+    ======================================================== -->
+
+    <section
+      id="products"
+      class="py-16 bg-dark-900/80 border-t border-dark-border"
+    >
+
+      <div
+        class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
+      >
+
+        <!-- HEADER -->
+
+        <div
+          class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-5"
+        >
+
+          <div>
+
+            <span
+              class="px-3 py-1 rounded-full text-xs font-bold bg-brand-accent/20 text-brand-400 border border-brand-accent/30 inline-block mb-3"
+            >
+              محصولات منتخب
+            </span>
+
+            <h2
+              class="text-2xl sm:text-3xl font-black text-white"
+            >
+              قطعات پرتقاضای بازار
+            </h2>
+
+            <p class="text-xs sm:text-sm text-slate-400 mt-2">
+              نمونه‌ای از محصولات قابل عرضه در فروشگاه
+            </p>
+
+          </div>
+
+
+          <!-- FILTERS -->
+
+          <div
+            class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none"
+          >
+
+            <button
+              class="product-filter active-filter px-4 py-2 rounded-xl bg-brand-accent text-white text-xs font-bold whitespace-nowrap"
+              data-filter="all"
+            >
+              همه
+            </button>
+
+            <button
+              class="product-filter px-4 py-2 rounded-xl bg-dark-850 hover:bg-dark-800 border border-dark-border text-slate-300 text-xs font-medium whitespace-nowrap"
+              data-filter="iran"
+            >
+              پژو و سمند
+            </button>
+
+            <button
+              class="product-filter px-4 py-2 rounded-xl bg-dark-850 hover:bg-dark-800 border border-dark-border text-slate-300 text-xs font-medium whitespace-nowrap"
+              data-filter="saipa"
+            >
+              سایپا
+            </button>
+
+            <button
+              class="product-filter px-4 py-2 rounded-xl bg-dark-850 hover:bg-dark-800 border border-dark-border text-slate-300 text-xs font-medium whitespace-nowrap"
+              data-filter="china"
+            >
+              چینی و مونتاژی
+            </button>
+
+            <button
+              class="product-filter px-4 py-2 rounded-xl bg-dark-850 hover:bg-dark-800 border border-dark-border text-slate-300 text-xs font-medium whitespace-nowrap"
+              data-filter="import"
+            >
+              کره‌ای و ژاپنی
+            </button>
+
+          </div>
+
+        </div>
+
+
+        <!-- PRODUCT GRID -->
+
+        <div
+          id="productGrid"
+          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+        >
+
+
+          <!-- PRODUCT 1 -->
+
+          <article
+            class="product-card rounded-2xl bg-dark-850 border border-dark-border hover:border-brand-accent/60 transition-all duration-300 p-4 flex flex-col justify-between group"
+            data-category="iran"
+          >
+
+            <div>
+
+              <div
+                class="relative rounded-xl bg-dark-900 p-6 flex items-center justify-center overflow-hidden mb-4 aspect-square"
+              >
+
+                <span
+                  class="absolute top-2.5 right-2.5 px-2 py-1 rounded-md text-[10px] font-bold bg-red-600 text-white"
+                >
+                  تخفیف
+                </span>
+
+                <span
+                  class="absolute top-2.5 left-2.5 px-2 py-1 rounded-md text-[10px] font-mono font-bold bg-dark-800 text-slate-300 border border-dark-border"
+                >
+                  Textar
+                </span>
+
+                <i
+                  class="fa-solid fa-compact-disc text-6xl text-slate-600 group-hover:scale-110 group-hover:text-brand-accent transition-all duration-300"
+                ></i>
+
+              </div>
+
+
+              <div
+                class="text-[11px] text-brand-400 font-semibold mb-1"
+              >
+                سازگار با پژو ۲۰۶، ۲۰۷ و رانا
+              </div>
+
+
+              <h3
+                class="font-bold text-white text-sm leading-snug group-hover:text-brand-accent transition-colors"
+              >
+                لنت ترمز جلو تکستار اصلی
+              </h3>
+
+
+              <div
+                class="flex items-center gap-1.5 mt-2 text-xs text-slate-400"
+              >
+
+                <i class="fa-solid fa-shield-check text-emerald-400"></i>
+
+                <span>
+                  امکان بررسی مشخصات و اصالت
+                </span>
+
+              </div>
+
+            </div>
+
+
+            <div
+              class="pt-4 mt-4 border-t border-dark-border/60"
+            >
+
+              <div
+                class="bg-dark-900/90 rounded-lg p-2 mb-3 border border-dark-border text-[11px] flex justify-between items-center"
+              >
+
+                <span class="text-amber-400 font-medium">
+                  قیمت همکاری:
+                </span>
+
+                <span
+                  class="font-bold text-slate-200 font-mono"
+                >
+                  ۱,۲۸۰,۰۰۰
+                </span>
+
+              </div>
+
+
+              <div class="flex items-end justify-between">
+
+                <div>
+
+                  <span
+                    class="text-xs text-slate-500 line-through block font-mono"
+                  >
+                    ۱,۶۵۰,۰۰۰
+                  </span>
+
+                  <div
+                    class="text-lg font-black text-white font-mono"
+                  >
+                    ۱,۴۹۰,۰۰۰
+
+                    <span
+                      class="text-xs font-sans text-slate-400"
+                    >
+                      تومان
+                    </span>
+
+                  </div>
+
+                </div>
+
+
+                <button
+                  type="button"
+                  class="add-to-cart w-10 h-10 rounded-xl bg-brand-accent hover:bg-brand-hover text-white flex items-center justify-center shadow-glow-orange transition-transform active:scale-90"
+                  data-product="لنت ترمز جلو تکستار"
+                >
+                  <i class="fa-solid fa-cart-plus"></i>
+                </button>
+
+              </div>
+
+            </div>
+
+          </article>
+
+
+          <!-- PRODUCT 2 -->
+
+          <article
+            class="product-card rounded-2xl bg-dark-850 border border-dark-border hover:border-brand-accent/60 transition-all duration-300 p-4 flex flex-col justify-between group"
+            data-category="iran"
+          >
+
+            <div>
+
+              <div
+                class="relative rounded-xl bg-dark-900 p-6 flex items-center justify-center overflow-hidden mb-4 aspect-square"
+              >
+
+                <span
+                  class="absolute top-2.5 right-2.5 px-2 py-1 rounded-md text-[10px] font-bold bg-emerald-600 text-white"
+                >
+                  موجود
+                </span>
+
+                <span
+                  class="absolute top-2.5 left-2.5 px-2 py-1 rounded-md text-[10px] font-mono font-bold bg-dark-800 text-slate-300 border border-dark-border"
+                >
+                  Gates
+                </span>
+
+                <i
+                  class="fa-solid fa-circle-notch text-6xl text-slate-600 group-hover:scale-110 group-hover:text-cyan-400 transition-all duration-300"
+                ></i>
+
+              </div>
+
+
+              <div
+                class="text-[11px] text-cyan-400 font-semibold mb-1"
+              >
+                سازگار با سمند، دنا و سورن EF7
+              </div>
+
+
+              <h3
+                class="font-bold text-white text-sm leading-snug group-hover:text-brand-accent transition-colors"
+              >
+                کیت کامل تسمه تایم گیتس پاورگریپ
+              </h3>
+
+
+              <div
+                class="flex items-center gap-1.5 mt-2 text-xs text-slate-400"
+              >
+
+                <i class="fa-solid fa-shield-check text-emerald-400"></i>
+
+                <span>
+                  مناسب موتورهای مشخص‌شده
+                </span>
+
+              </div>
+
+            </div>
+
+
+            <div
+              class="pt-4 mt-4 border-t border-dark-border/60"
+            >
+
+              <div
+                class="bg-dark-900/90 rounded-lg p-2 mb-3 border border-dark-border text-[11px] flex justify-between items-center"
+              >
+
+                <span class="text-amber-400 font-medium">
+                  قیمت همکاری:
+                </span>
+
+                <span
+                  class="font-bold text-slate-200 font-mono"
+                >
+                  ۲,۳۵۰,۰۰۰
+                </span>
+
+              </div>
+
+
+              <div class="flex items-end justify-between">
+
+                <div>
+
+                  <div
+                    class="text-lg font-black text-white font-mono"
+                  >
+                    ۲,۶۸۰,۰۰۰
+
+                    <span
+                      class="text-xs font-sans text-slate-400"
+                    >
+                      تومان
+                    </span>
+
+                  </div>
+
+                </div>
+
+
+                <button
+                  type="button"
+                  class="add-to-cart w-10 h-10 rounded-xl bg-brand-accent hover:bg-brand-hover text-white flex items-center justify-center shadow-glow-orange transition-transform active:scale-90"
+                  data-product="کیت تسمه تایم گیتس"
+                >
+                  <i class="fa-solid fa-cart-plus"></i>
+                </button>
+
+              </div>
+
+            </div>
+
+          </article>
+
+
+          <!-- PRODUCT 3 -->
+
+          <article
+            class="product-card rounded-2xl bg-dark-850 border border-dark-border hover:border-brand-accent/60 transition-all duration-300 p-4 flex flex-col justify-between group"
+            data-category="saipa"
+          >
+
+            <div>
+
+              <div
+                class="relative rounded-xl bg-dark-900 p-6 flex items-center justify-center overflow-hidden mb-4 aspect-square"
+              >
+
+                <span
+                  class="absolute top-2.5 right-2.5 px-2 py-1 rounded-md text-[10px] font-bold bg-brand-accent text-white"
+                >
+                  پک ۴ عددی
+                </span>
+
+                <span
+                  class="absolute top-2.5 left-2.5 px-2 py-1 rounded-md text-[10px] font-mono font-bold bg-dark-800 text-slate-300 border border-dark-border"
+                >
+                  NGK
+                </span>
+
+                <i
+                  class="fa-solid fa-bolt text-6xl text-slate-600 group-hover:scale-110 group-hover:text-amber-400 transition-all duration-300"
+                ></i>
+
+              </div>
+
+
+              <div
+                class="text-[11px] text-amber-400 font-semibold mb-1"
+              >
+                مناسب خودروهای منتخب
+              </div>
+
+
+              <h3
+                class="font-bold text-white text-sm leading-snug group-hover:text-brand-accent transition-colors"
+              >
+                شمع موتور سوزنی ایریدیوم NGK
+              </h3>
+
+
+              <div
+                class="flex items-center gap-1.5 mt-2 text-xs text-slate-400"
+              >
+
+                <i class="fa-solid fa-shield-check text-emerald-400"></i>
+
+                <span>
+                  مشخصات فنی قابل بررسی
+                </span>
+
+              </div>
+
+            </div>
+
+
+            <div
+              class="pt-4 mt-4 border-t border-dark-border/60"
+            >
+
+              <div
+                class="bg-dark-900/90 rounded-lg p-2 mb-3 border border-dark-border text-[11px] flex justify-between items-center"
+              >
+
+                <span class="text-amber-400 font-medium">
+                  قیمت همکاری:
+                </span>
+
+                <span
+                  class="font-bold text-slate-200 font-mono"
+                >
+                  ۱,۶۰۰,۰۰۰
+                </span>
+
+              </div>
+
+
+              <div class="flex items-end justify-between">
+
+                <div>
+
+                  <div
+                    class="text-lg font-black text-white font-mono"
+                  >
+                    ۱,۸۵۰,۰۰۰
+
+                    <span
+                      class="text-xs font-sans text-slate-400"
+                    >
+                      تومان
+                    </span>
+
+                  </div>
+
+                </div>
+
+
+                <button
+                  type="button"
+                  class="add-to-cart w-10 h-10 rounded-xl bg-brand-accent hover:bg-brand-hover text-white flex items-center justify-center shadow-glow-orange transition-transform active:scale-90"
+                  data-product="شمع ایریدیوم NGK"
+                >
+                  <i class="fa-solid fa-cart-plus"></i>
+                </button>
+
+              </div>
+
+            </div>
+
+          </article>
+
+
+          <!-- PRODUCT 4 -->
+
+          <article
+            class="product-card rounded-2xl bg-dark-850 border border-dark-border hover:border-brand-accent/60 transition-all duration-300 p-4 flex flex-col justify-between group"
+            data-category="import"
+          >
+
+            <div>
+
+              <div
+                class="relative rounded-xl bg-dark-900 p-6 flex items-center justify-center overflow-hidden mb-4 aspect-square"
+              >
+
+                <span
+                  class="absolute top-2.5 right-2.5 px-2 py-1 rounded-md text-[10px] font-bold bg-purple-600 text-white"
+                >
+                  وارداتی
+                </span>
+
+                <span
+                  class="absolute top-2.5 left-2.5 px-2 py-1 rounded-md text-[10px] font-mono font-bold bg-dark-800 text-slate-300 border border-dark-border"
+                >
+                  KYB
+                </span>
+
+                <i
+                  class="fa-solid fa-arrows-up-down text-6xl text-slate-600 group-hover:scale-110 group-hover:text-purple-400 transition-all duration-300"
+                ></i>
+
+              </div>
+
+
+              <div
+                class="text-[11px] text-purple-400 font-semibold mb-1"
+              >
+                سازگار با کیا و هیوندای منتخب
+              </div>
+
+
+              <h3
+                class="font-bold text-white text-sm leading-snug group-hover:text-brand-accent transition-colors"
+              >
+                کمک‌فنر گازی KYB ژاپن
+              </h3>
+
+
+              <div
+                class="flex items-center gap-1.5 mt-2 text-xs text-slate-400"
+              >
+
+                <i class="fa-solid fa-shield-check text-emerald-400"></i>
+
+                <span>
+                  بررسی سازگاری قبل از خرید
+                </span>
+
+              </div>
+
+            </div>
+
+
+            <div
+              class="pt-4 mt-4 border-t border-dark-border/60"
+            >
+
+              <div
+                class="bg-dark-900/90 rounded-lg p-2 mb-3 border border-dark-border text-[11px] flex justify-between items-center"
+              >
+
+                <span class="text-amber-400 font-medium">
+                  قیمت همکاری:
+                </span>
+
+                <span
+                  class="font-bold text-slate-200 font-mono"
+                >
+                  ۷,۹۰۰,۰۰۰
+                </span>
+
+              </div>
+
+
+              <div class="flex items-end justify-between">
+
+                <div>
+
+                  <div
+                    class="text-lg font-black text-white font-mono"
+                  >
+                    ۸,۷۰۰,۰۰۰
+
+                    <span
+                      class="text-xs font-sans text-slate-400"
+                    >
+                      تومان
+                    </span>
+
+                  </div>
+
+                </div>
+
+
+                <button
+                  type="button"
+                  class="add-to-cart w-10 h-10 rounded-xl bg-brand-accent hover:bg-brand-hover text-white flex items-center justify-center shadow-glow-orange transition-transform active:scale-90"
+                  data-product="کمک فنر KYB"
+                >
+                  <i class="fa-solid fa-cart-plus"></i>
+                </button>
+
+              </div>
+
+            </div>
+
+          </article>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =======================================================
+         B2B
+    ======================================================== -->
+
+    <section
+      id="wholesale"
+      class="py-20 relative overflow-hidden bg-gradient-to-b from-dark-950 via-dark-900 to-dark-950"
+    >
+
+      <div
+        class="absolute inset-0 bg-[radial-gradient(#ff5e14_1px,transparent_1px)] [background-size:32px_32px] opacity-10 pointer-events-none"
+      ></div>
+
+
+      <div
+        class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10"
+      >
+
+        <div
+          class="rounded-3xl bg-gradient-to-r from-dark-850 via-dark-800 to-dark-850 border border-brand-accent/30 p-8 sm:p-12 shadow-2xl"
+        >
+
+          <div class="grid lg:grid-cols-12 gap-10 items-center">
+
+
+            <!-- B2B CONTENT -->
+
+            <div class="lg:col-span-7 space-y-6">
+
+              <div
+                class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold"
+              >
+
+                <i class="fa-solid fa-handshake"></i>
+
+                ویژه فروشگاه‌ها و تعمیرگاه‌ها
+
+              </div>
+
+
+              <h2
+                class="text-3xl sm:text-4xl font-black text-white leading-tight"
+              >
+
+                خرید عمده قطعات خودرو با
+
+                <span class="text-brand-accent">
+                  شرایط همکاری
+                </span>
+
+              </h2>
+
+
+              <p
+                class="text-slate-300 text-sm sm:text-base leading-relaxed"
+              >
+                برای فروشگاه لوازم یدکی، تعمیرگاه یا کسب‌وکار مرتبط با خودرو، شرایط همکاری و قیمت‌های عمده را دریافت کنید.
+              </p>
+
+
+              <div
+                class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2"
+              >
+
+                <div class="flex items-start gap-3">
+
+                  <div
+                    class="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0"
+                  >
+                    <i class="fa-solid fa-check"></i>
+                  </div>
+
+                  <span
+                    class="text-xs text-slate-300 leading-5"
+                  >
+                    دریافت لیست قیمت همکاری
+                  </span>
+
+                </div>
+
+
+                <div class="flex items-start gap-3">
+
+                  <div
+                    class="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0"
+                  >
+                    <i class="fa-solid fa-check"></i>
+                  </div>
+
+                  <span
+                    class="text-xs text-slate-300 leading-5"
+                  >
+                    سفارش کارتنی و حجمی
+                  </span>
+
+                </div>
+
+
+                <div class="flex items-start gap-3">
+
+                  <div
+                    class="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0"
+                  >
+                    <i class="fa-solid fa-check"></i>
+                  </div>
+
+                  <span
+                    class="text-xs text-slate-300 leading-5"
+                  >
+                    پشتیبانی اختصاصی فروش
+                  </span>
+
+                </div>
+
+
+                <div class="flex items-start gap-3">
+
+                  <div
+                    class="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0"
+                  >
+                    <i class="fa-solid fa-check"></i>
+                  </div>
+
+                  <span
+                    class="text-xs text-slate-300 leading-5"
+                  >
+                    صدور پیش‌فاکتور
+                  </span>
+
+                </div>
+
+              </div>
+
+            </div>
+
+
+            <!-- B2B FORM -->
+
+            <div
+              class="lg:col-span-5 bg-dark-900/90 rounded-2xl p-6 border border-dark-border"
+            >
+
+              <h3
+                class="text-base font-bold text-white flex items-center gap-2"
+              >
+
+                <i class="fa-solid fa-file-pen text-brand-accent"></i>
+
+                درخواست همکاری
+
+              </h3>
+
+
+              <p
+                class="text-xs text-slate-400 mt-2"
+              >
+                اطلاعات خود را وارد کنید تا کارشناسان فروش با شما تماس بگیرند.
+              </p>
+
+
+              <form
+                id="b2bForm"
+                class="space-y-3 mt-5"
+              >
+
+                <input
+                  type="text"
+                  name="name"
+                  placeholder="نام و نام خانوادگی / نام فروشگاه"
+                  class="w-full bg-dark-850 border border-dark-border rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:border-brand-accent focus:outline-none"
+                  required
+                >
+
+
+                <div
+                  class="grid grid-cols-1 sm:grid-cols-2 gap-3"
+                >
+
+                  <input
+                    type="tel"
+                    name="phone"
+                    placeholder="شماره تماس"
+                    class="w-full bg-dark-850 border border-dark-border rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:border-brand-accent focus:outline-none"
+                    required
+                    dir="ltr"
+                  >
+
+                  <input
+                    type="text"
+                    name="city"
+                    placeholder="شهر"
+                    class="w-full bg-dark-850 border border-dark-border rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:border-brand-accent focus:outline-none"
+                    required
+                  >
+
+                </div>
+
+
+                <select
+                  name="business"
+                  class="w-full bg-dark-850 border border-dark-border rounded-xl px-4 py-2.5 text-xs text-slate-300 focus:border-brand-accent focus:outline-none"
+                >
+
+                  <option value="">
+                    نوع فعالیت
+                  </option>
+
+                  <option>
+                    فروشگاه لوازم یدکی
+                  </option>
+
+                  <option>
+                    تعمیرگاه / مکانیکی
+                  </option>
+
+                  <option>
+                    ناوگان و سازمان
+                  </option>
+
+                  <option>
+                    سایر
+                  </option>
+
+                </select>
+
+
+                <button
+                  type="submit"
+                  class="w-full py-3 rounded-xl bg-gradient-to-r from-brand-accent to-orange-600 hover:from-brand-hover hover:to-orange-500 text-white text-xs font-bold shadow-glow-orange transition-all"
+                >
+                  ارسال درخواست همکاری
+                </button>
+
+              </form>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =======================================================
+         AUTHENTICITY
+    ======================================================== -->
+
+    <section
+      id="authenticity"
+      class="py-16 bg-dark-900 border-t border-dark-border"
+    >
+
+      <div
+        class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
+      >
+
+        <div
+          class="bg-gradient-to-r from-dark-850 to-dark-800 rounded-3xl p-8 border border-dark-border flex flex-col lg:flex-row items-center justify-between gap-8"
+        >
+
+          <div
+            class="space-y-3 text-center lg:text-right"
+          >
+
+            <div
+              class="inline-flex items-center gap-2 text-xs font-bold text-emerald-400 bg-emerald-950/60 border border-emerald-800/50 px-3 py-1 rounded-full"
+            >
+
+              <i class="fa-solid fa-shield-halved"></i>
+
+              استعلام اصالت
+
+            </div>
+
+
+            <h3
+              class="text-2xl sm:text-3xl font-black text-white"
+            >
+              بررسی کد اصالت کالا
+            </h3>
+
+
+            <p
+              class="text-xs sm:text-sm text-slate-400 max-w-xl"
+            >
+              کد رهگیری یا شماره سریال درج‌شده روی محصول را وارد کنید تا در سامانه فروش بررسی شود.
+            </p>
+
+          </div>
+
+
+          <form
+            id="authForm"
+            class="w-full lg:max-w-md"
+          >
+
+            <div class="flex gap-2">
+
+              <input
+                id="authCode"
+                type="text"
+                placeholder="کد رهگیری یا سریال..."
+                class="flex-1 bg-dark-950 border border-dark-border rounded-xl px-4 py-3 text-xs text-slate-200 focus:border-emerald-500 focus:outline-none font-mono"
+                dir="ltr"
+                required
+              >
+
+              <button
+                type="submit"
+                class="px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all shrink-0"
+              >
+                استعلام
+              </button>
+
+            </div>
+
+
+            <span
+              class="text-[11px] text-slate-500 mt-2 block text-center lg:text-right"
+            >
+              مثال: TRB-8839-2025X
+            </span>
+
+          </form>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =======================================================
+         TESTIMONIALS
+    ======================================================== -->
+
+    <section
+      class="py-20 relative"
+    >
+
+      <div
+        class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
+      >
+
+        <div
+          class="text-center max-w-2xl mx-auto mb-14 space-y-3"
+        >
+
+          <div
+            class="text-xs font-bold text-brand-accent uppercase tracking-wider"
+          >
+            تجربه خرید
+          </div>
+
+          <h2
+            class="text-2xl sm:text-4xl font-black text-white"
+          >
+            مشتریان درباره تجربه خرید چه می‌گویند؟
+          </h2>
+
+          <p
+            class="text-xs sm:text-sm text-slate-400"
+          >
+            بخشی از بازخوردهای ثبت‌شده توسط مشتریان و خریداران فروشگاه
+          </p>
+
+        </div>
+
+
+        <div
+          class="grid grid-cols-1 md:grid-cols-3 gap-6"
+        >
+
+
+          <!-- REVIEW 1 -->
+
+          <div
+            class="rounded-2xl p-6 bg-dark-850 border border-dark-border relative space-y-4"
+          >
+
+            <div
+              class="flex items-center gap-1 text-amber-400 text-xs"
+            >
+
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+
+            </div>
+
+
+            <p
+              class="text-xs text-slate-300 leading-relaxed"
+            >
+              «فرآیند پیدا کردن قطعه برای خودرو خیلی راحت بود و مشخصات فنی محصول هم واضح درج شده بود.»
+            </p>
+
+
+            <div
+              class="flex items-center gap-3 pt-3 border-t border-dark-border/50"
+            >
+
+              <div
+                class="w-10 h-10 rounded-full bg-dark-750 flex items-center justify-center font-bold text-brand-accent text-sm"
+              >
+                اح
+              </div>
+
+              <div>
+
+                <h4 class="font-bold text-xs text-white">
+                  احسان
+                </h4>
+
+                <span class="text-[11px] text-slate-400">
+                  خریدار قطعه
+                </span>
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <!-- REVIEW 2 -->
+
+          <div
+            class="rounded-2xl p-6 bg-dark-850 border border-brand-accent/30 relative space-y-4 shadow-lg shadow-brand-accent/5"
+          >
+
+            <div
+              class="flex items-center gap-1 text-amber-400 text-xs"
+            >
+
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+
+            </div>
+
+
+            <p
+              class="text-xs text-slate-300 leading-relaxed"
+            >
+              «برای خرید عمده امکان دریافت شرایط همکاری خیلی کاربردی است و باعث می‌شود قیمت‌ها را راحت‌تر مقایسه کنیم.»
+            </p>
+
+
+            <div
+              class="flex items-center gap-3 pt-3 border-t border-dark-border/50"
+            >
+
+              <div
+                class="w-10 h-10 rounded-full bg-brand-accent/20 flex items-center justify-center font-bold text-brand-accent text-sm"
+              >
+                رض
+              </div>
+
+              <div>
+
+                <h4 class="font-bold text-xs text-white">
+                  رضا
+                </h4>
+
+                <span class="text-[11px] text-slate-400">
+                  فروشگاه لوازم یدکی
+                </span>
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <!-- REVIEW 3 -->
+
+          <div
+            class="rounded-2xl p-6 bg-dark-850 border border-dark-border relative space-y-4"
+          >
+
+            <div
+              class="flex items-center gap-1 text-amber-400 text-xs"
+            >
+
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star-half-stroke"></i>
+
+            </div>
+
+
+            <p
+              class="text-xs text-slate-300 leading-relaxed"
+            >
+              «جستجو بر اساس مدل خودرو ایده خوبی است، مخصوصاً وقتی کد فنی قطعه را نمی‌دانیم.»
+            </p>
+
+
+            <div
+              class="flex items-center gap-3 pt-3 border-t border-dark-border/50"
+            >
+
+              <div
+                class="w-10 h-10 rounded-full bg-dark-750 flex items-center justify-center font-bold text-cyan-400 text-sm"
+              >
+                ام
+              </div>
+
+              <div>
+
+                <h4 class="font-bold text-xs text-white">
+                  امید
+                </h4>
+
+                <span class="text-[11px] text-slate-400">
+                  خریدار تکی
+                </span>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =======================================================
+         NEWSLETTER
+    ======================================================== -->
+
+    <section
+      class="py-12 bg-gradient-to-r from-brand-900/30 via-dark-900 to-brand-900/30 border-y border-dark-border"
+    >
+
+      <div
+        class="max-w-5xl mx-auto px-4 text-center space-y-6"
+      >
+
+        <div
+          class="w-12 h-12 rounded-2xl bg-brand-accent text-white flex items-center justify-center mx-auto text-xl shadow-glow-orange"
+        >
+          <i class="fa-solid fa-envelope-open-text"></i>
+        </div>
+
+
+        <h3
+          class="text-2xl sm:text-3xl font-black text-white"
+        >
+          عضویت در باشگاه مشتریان توربوپارت
+        </h3>
+
+
+        <p
+          class="text-xs sm:text-sm text-slate-300 max-w-xl mx-auto"
+        >
+          شماره موبایل خود را ثبت کنید تا پیشنهادهای ویژه و اطلاع‌رسانی‌های فروشگاه را دریافت کنید.
+        </p>
+
+
+        <form
+          id="newsletterForm"
+          class="flex flex-col sm:flex-row gap-3 max-w-md mx-auto"
+        >
+
+          <input
+            type="tel"
+            id="newsletterPhone"
+            placeholder="شماره موبایل"
+            class="flex-1 bg-dark-850 border border-dark-border rounded-xl px-4 py-3 text-xs text-slate-200 focus:border-brand-accent focus:outline-none"
+            dir="ltr"
+            required
+          >
+
+
+          <button
+            type="submit"
+            class="px-6 py-3 rounded-xl bg-brand-accent hover:bg-brand-hover text-white text-xs font-bold shadow-glow-orange transition-all whitespace-nowrap"
+          >
+            عضویت
+          </button>
+
+        </form>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <!-- =========================================================
+       FOOTER
+  ========================================================== -->
+
+  <footer
+    class="bg-dark-950 text-slate-400 text-xs border-t border-dark-border pt-16 pb-32 sm:pb-12"
+  >
+
+    <div
+      class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
+    >
+
+      <div
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-dark-border/60"
+      >
+
+
+        <!-- ABOUT -->
+
+        <div
+          class="lg:col-span-2 space-y-4"
+        >
+
+          <div class="flex items-center gap-3">
+
+            <div
+              class="w-9 h-9 rounded-lg bg-brand-accent flex items-center justify-center text-white font-bold"
+            >
+              <i class="fa-solid fa-bolt-lightning"></i>
+            </div>
+
+            <span
+              class="text-xl font-extrabold text-white"
+            >
+              توربو<span class="text-brand-accent">پارت</span>
+            </span>
+
+          </div>
+
+
+          <p
+            class="text-slate-400 leading-relaxed text-xs"
+          >
+            فروشگاه تخصصی قطعات خودرو با تمرکز بر جستجوی ساده‌تر، انتخاب دقیق‌تر و ارائه شرایط خرید تکی و همکاری.
+          </p>
+
+
+          <div
+            class="flex items-center gap-3 text-slate-300 pt-2"
+          >
+
+            <a
+              href="#"
+              aria-label="Instagram"
+              class="w-8 h-8 rounded-lg bg-dark-850 hover:bg-brand-accent hover:text-white flex items-center justify-center transition-colors"
+            >
+              <i class="fa-brands fa-instagram text-sm"></i>
+            </a>
+
+            <a
+              href="#"
+              aria-label="Telegram"
+              class="w-8 h-8 rounded-lg bg-dark-850 hover:bg-brand-accent hover:text-white flex items-center justify-center transition-colors"
+            >
+              <i class="fa-brands fa-telegram text-sm"></i>
+            </a>
+
+            <a
+              href="#"
+              aria-label="WhatsApp"
+              class="w-8 h-8 rounded-lg bg-dark-850 hover:bg-brand-accent hover:text-white flex items-center justify-center transition-colors"
+            >
+              <i class="fa-brands fa-whatsapp text-sm"></i>
+            </a>
+
+            <a
+              href="#"
+              aria-label="LinkedIn"
+              class="w-8 h-8 rounded-lg bg-dark-850 hover:bg-brand-accent hover:text-white flex items-center justify-center transition-colors"
+            >
+              <i class="fa-brands fa-linkedin text-sm"></i>
+            </a>
+
+          </div>
+
+        </div>
+
+
+        <!-- QUICK LINKS -->
+
+        <div class="space-y-3">
+
+          <h4 class="font-bold text-white text-sm">
+            دسترسی سریع
+          </h4>
+
+          <ul class="space-y-2.5">
+
+            <li>
+              <a
+                href="#vehicle-finder"
+                class="hover:text-brand-accent transition-colors"
+              >
+                جستجو بر اساس خودرو
+              </a>
+            </li>
+
+            <li>
+              <a
+                href="#wholesale"
+                class="hover:text-brand-accent transition-colors"
+              >
+                خرید عمده
+              </a>
+            </li>
+
+            <li>
+              <a
+                href="#authenticity"
+                class="hover:text-brand-accent transition-colors"
+              >
+                استعلام اصالت
+              </a>
+            </li>
+
+            <li>
+              <a
+                href="#products"
+                class="hover:text-brand-accent transition-colors"
+              >
+                محصولات
+              </a>
+            </li>
+
+            <li>
+              <a
+                href="#"
+                class="hover:text-brand-accent transition-colors"
+              >
+                قوانین و شرایط
+              </a>
+            </li>
+
+          </ul>
+
+        </div>
+
+
+        <!-- CATEGORIES -->
+
+        <div class="space-y-3">
+
+          <h4 class="font-bold text-white text-sm">
+            گروه محصولات
+          </h4>
+
+          <ul class="space-y-2.5">
+
+            <li>
+              <a href="#products" class="hover:text-brand-accent transition-colors">
+                لنت و دیسک ترمز
+              </a>
+            </li>
+
+            <li>
+              <a href="#products" class="hover:text-brand-accent transition-colors">
+                کیت تایم
+              </a>
+            </li>
+
+            <li>
+              <a href="#products" class="hover:text-brand-accent transition-colors">
+                جلوبندی
+              </a>
+            </li>
+
+            <li>
+              <a href="#products" class="hover:text-brand-accent transition-colors">
+                شمع و سنسور
+              </a>
+            </li>
+
+            <li>
+              <a href="#products" class="hover:text-brand-accent transition-colors">
+                روغن و فیلتر
+              </a>
+            </li>
+
+          </ul>
+
+        </div>
+
+
+        <!-- CONTACT -->
+
+        <div class="space-y-3">
+
+          <h4 class="font-bold text-white text-sm">
+            تماس با ما
+          </h4>
+
+          <p class="text-xs text-slate-400 leading-6">
+            دفتر مرکزی و انبار تهران
+          </p>
+
+          <div
+            class="text-xs text-slate-300 font-mono"
+            dir="ltr"
+          >
+            📞 021-88990000
+          </div>
+
+
+          <div
+            class="flex items-center gap-2 pt-2"
+          >
+
+            <div
+              class="w-16 h-16 rounded-xl bg-dark-850 border border-dark-border flex flex-col items-center justify-center p-2 text-center text-[10px] text-slate-300"
+            >
+
+              <i
+                class="fa-solid fa-shield-halved text-brand-accent text-lg mb-1"
+              ></i>
+
+              <span>
+                اعتماد
+              </span>
+
+            </div>
+
+
+            <div
+              class="w-16 h-16 rounded-xl bg-dark-850 border border-dark-border flex flex-col items-center justify-center p-2 text-center text-[10px] text-slate-300"
+            >
+
+              <i
+                class="fa-solid fa-credit-card text-cyan-400 text-lg mb-1"
+              ></i>
+
+              <span>
+                پرداخت امن
+              </span>
+
+            </div>
+
+
+            <div
+              class="w-16 h-16 rounded-xl bg-dark-850 border border-dark-border flex flex-col items-center justify-center p-2 text-center text-[10px] text-slate-300"
+            >
+
+              <i
+                class="fa-solid fa-truck text-amber-400 text-lg mb-1"
+              ></i>
+
+              <span>
+                ارسال
+              </span>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- COPYRIGHT -->
+
+      <div
+        class="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-slate-500 text-[11px]"
+      >
+
+        <p>
+          © ۲۰۲۶ تمامی حقوق مادی و معنوی این وب‌سایت متعلق به توربوپارت می‌باشد.
+        </p>
+
+        <p
+          class="flex items-center gap-1 text-slate-400"
+        >
+
+          <span>
+            طراحی شده برای تجربه بهتر خرید قطعات خودرو
+          </span>
+
+          <i class="fa-solid fa-heart text-brand-accent"></i>
+
+        </p>
+
+      </div>
+
+    </div>
+
+  </footer>
+
+
+  <!-- =========================================================
+       MOBILE BOTTOM NAV
+  ========================================================== -->
+
+  <div
+    class="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-dark-900/95 backdrop-blur-lg border-t border-dark-border px-3 py-2 flex items-center justify-around text-[10px]"
+  >
+
+    <a
+      href="#"
+      class="flex flex-col items-center gap-1 text-brand-accent font-bold"
+    >
+
+      <i class="fa-solid fa-house text-base"></i>
+
+      <span>
+        خانه
+      </span>
+
+    </a>
+
+
+    <a
+      href="#vehicle-finder"
+      class="flex flex-col items-center gap-1 text-slate-400"
+    >
+
+      <i class="fa-solid fa-car text-base"></i>
+
+      <span>
+        خودرو
+      </span>
+
+    </a>
+
+
+    <a
+      href="#wholesale"
+      class="flex flex-col items-center gap-1 text-amber-400 font-bold"
+    >
+
+      <i class="fa-solid fa-boxes-stacked text-base"></i>
+
+      <span>
+        عمده
+      </span>
+
+    </a>
+
+
+    <a
+      href="#products"
+      class="flex flex-col items-center gap-1 text-slate-400"
+    >
+
+      <i class="fa-solid fa-tags text-base"></i>
+
+      <span>
+        محصولات
+      </span>
+
+    </a>
+
+
+    <a
+      href="tel:02188990000"
+      class="flex flex-col items-center gap-1 text-emerald-400 font-bold"
+    >
+
+      <i class="fa-solid fa-phone text-base"></i>
+
+      <span>
+        تماس
+      </span>
+
+    </a>
+
+  </div>
+
+
+  <!-- =========================================================
+       TOAST
+  ========================================================== -->
+
+  <div
+    id="toast"
+    class="fixed bottom-24 sm:bottom-8 right-4 left-4 sm:left-auto sm:w-96 z-[60] translate-y-10 opacity-0 pointer-events-none transition-all duration-300"
+  >
+
+    <div
+      class="bg-dark-800 border border-dark-border rounded-2xl shadow-2xl p-4 flex items-start gap-3"
+    >
+
+      <div
+        id="toastIcon"
+        class="w-9 h-9 rounded-xl bg-brand-accent/15 text-brand-accent flex items-center justify-center shrink-0"
+      >
+        <i class="fa-solid fa-check"></i>
+      </div>
+
+      <div>
+
+        <div
+          id="toastTitle"
+          class="font-bold text-sm text-white"
+        >
+          انجام شد
+        </div>
+
+        <p
+          id="toastMessage"
+          class="text-xs text-slate-400 mt-1"
+        ></p>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =========================================================
+       JAVASCRIPT
+  ========================================================== -->
+
+  <script>
+
+    /* =========================================================
+       HELPERS
+    ========================================================== */
+
+    const $ = (selector, parent = document) =>
+      parent.querySelector(selector);
+
+    const $$ = (selector, parent = document) =>
+      [...parent.querySelectorAll(selector)];
+
+
+    /* =========================================================
+       TOAST
+    ========================================================== */
+
+    let toastTimer = null;
+
+    function showToast(
+      message,
+      title = 'انجام شد',
+      type = 'success'
+    ) {
+
+      const toast = $('#toast');
+      const toastTitle = $('#toastTitle');
+      const toastMessage = $('#toastMessage');
+      const toastIcon = $('#toastIcon');
+
+      if (!toast) return;
+
+      toastTitle.textContent = title;
+      toastMessage.textContent = message;
+
+      if (type === 'success') {
+
+        toastIcon.className =
+          'w-9 h-9 rounded-xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center shrink-0';
+
+        toastIcon.innerHTML =
+          '<i class="fa-solid fa-check"></i>';
+
+      } else {
+
+        toastIcon.className =
+          'w-9 h-9 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center shrink-0';
+
+        toastIcon.innerHTML =
+          '<i class="fa-solid fa-circle-exclamation"></i>';
+
+      }
+
+      toast.classList.remove(
+        'translate-y-10',
+        'opacity-0',
+        'pointer-events-none'
+      );
+
+      clearTimeout(toastTimer);
+
+      toastTimer = setTimeout(() => {
+
+        toast.classList.add(
+          'translate-y-10',
+          'opacity-0',
+          'pointer-events-none'
+        );
+
+      }, 3500);
+
+    }
+
+
+    /* =========================================================
+       THEME
+    ========================================================== */
+
+    const themeToggle = $('#themeToggle');
+    const themeIcon = $('#themeIcon');
+
+    const savedTheme =
+      localStorage.getItem('turbopart-theme');
+
+    const prefersLight =
+      window.matchMedia &&
+      window.matchMedia(
+        '(prefers-color-scheme: light)'
+      ).matches;
+
+
+    if (
+      savedTheme === 'light' ||
+      (!savedTheme && prefersLight)
+    ) {
+
+      document.body.classList.add('light');
+
+    }
+
+
+    function syncThemeIcon() {
+
+      if (!themeIcon) return;
+
+      themeIcon.className =
+        document.body.classList.contains('light')
+          ? 'fa-solid fa-moon'
+          : 'fa-solid fa-sun';
+
+    }
+
+
+    syncThemeIcon();
+
+
+    themeToggle?.addEventListener(
+      'click',
+      () => {
+
+        document.body.classList.toggle('light');
+
+        const isLight =
+          document.body.classList.contains('light');
+
+        localStorage.setItem(
+          'turbopart-theme',
+          isLight ? 'light' : 'dark'
+        );
+
+        syncThemeIcon();
+
+      }
+    );
+
+
+    /* =========================================================
+       MOBILE DRAWER
+    ========================================================== */
+
+    const mobileMenuBtn = $('#mobileMenuBtn');
+    const closeDrawerBtn = $('#closeDrawerBtn');
+    const mobileDrawer = $('#mobileDrawer');
+
+
+    function openDrawer() {
+
+      mobileDrawer?.classList.remove('hidden');
+
+      document.body.classList.add('drawer-open');
+
+    }
+
+
+    function closeDrawer() {
+
+      mobileDrawer?.classList.add('hidden');
+
+      document.body.classList.remove('drawer-open');
+
+    }
+
+
+    mobileMenuBtn?.addEventListener(
+      'click',
+      openDrawer
+    );
+
+
+    closeDrawerBtn?.addEventListener(
+      'click',
+      closeDrawer
+    );
+
+
+    mobileDrawer?.addEventListener(
+      'click',
+      (event) => {
+
+        if (event.target === mobileDrawer) {
+          closeDrawer();
+        }
+
+      }
+    );
+
+
+    $$('.mobile-menu-link').forEach(link => {
+
+      link.addEventListener(
+        'click',
+        closeDrawer
+      );
+
+    });
+
+
+    /* =========================================================
+       VEHICLE DATA
+    ========================================================== */
+
+    const vehicleData = {
+
+      ikco: {
+
+        label: 'ایران خودرو',
+
+        models: {
+
+          '206': {
+            label: 'پژو ۲۰۶',
+            years: ['۱۳۹۹ - ۱۴۰۳', '۱۳۹۵ - ۱۳۹۸', 'قبل از ۱۳۹۵']
+          },
+
+          '207': {
+            label: 'پژو ۲۰۷',
+            years: ['۱۴۰۰ - ۱۴۰۳', '۱۳۹۶ - ۱۳۹۹']
+          },
+
+          'dana': {
+            label: 'دنا / دنا پلاس',
+            years: ['۱۴۰۰ - ۱۴۰۳', '۱۳۹۵ - ۱۳۹۹']
+          },
+
+          'tora': {
+            label: 'تارا',
+            years: ['۱۴۰۰ - ۱۴۰۳']
+          },
+
+          'samand': {
+            label: 'سمند / سورن',
+            years: ['۱۳۹۵ - ۱۴۰۳', 'قبل از ۱۳۹۵']
+          }
+
+        }
+
+      },
+
+
+      saipa: {
+
+        label: 'سایپا',
+
+        models: {
+
+          'pride': {
+            label: 'پراید',
+            years: ['۱۳۹۰ - ۱۳۹۹', 'قبل از ۱۳۹۰']
+          },
+
+          'tiba': {
+            label: 'تیبا',
+            years: ['۱۳۹۵ - ۱۴۰۱']
+          },
+
+          'quik': {
+            label: 'کوییک',
+            years: ['۱۳۹۷ - ۱۴۰۳']
+          },
+
+          'shahin': {
+            label: 'شاهین',
+            years: ['۱۴۰۰ - ۱۴۰۳']
+          }
+
+        }
+
+      },
+
+
+      mvm: {
+
+        label: 'مدیران خودرو',
+
+        models: {
+
+          'tiggo7': {
+            label: 'تیگو ۷',
+            years: ['۱۳۹۷ - ۱۴۰۳']
+          },
+
+          'tiggo8': {
+            label: 'تیگو ۸',
+            years: ['۱۴۰۰ - ۱۴۰۳']
+          },
+
+          'x22': {
+            label: 'ام‌وی‌ام X22',
+            years: ['۱۳۹۶ - ۱۴۰۲']
+          }
+
+        }
+
+      },
+
+
+      bahman: {
+
+        label: 'بهمن موتور',
+
+        models: {
+
+          'fidelity': {
+            label: 'فیدلیتی',
+            years: ['۱۴۰۰ - ۱۴۰۳']
+          },
+
+          'dignity': {
+            label: 'دیگنیتی',
+            years: ['۱۴۰۰ - ۱۴۰۳']
+          }
+
+        }
+
+      },
+
+
+      kmc: {
+
+        label: 'کرمان موتور',
+
+        models: {
+
+          's5': {
+            label: 'جک S5',
+            years: ['۱۳۹۵ - ۱۴۰۲']
+          },
+
+          's3': {
+            label: 'جک S3',
+            years: ['۱۳۹۶ - ۱۴۰۲']
+          }
+
+        }
+
+      },
+
+
+      hyundai: {
+
+        label: 'هیوندای',
+
+        models: {
+
+          'tucson': {
+            label: 'توسان',
+            years: ['۲۰۱۶ - ۲۰۲۳', '۲۰۱۰ - ۲۰۱۵']
+          },
+
+          'santafe': {
+            label: 'سانتافه',
+            years: ['۲۰۱۶ - ۲۰۲۳', '۲۰۱۰ - ۲۰۱۵']
+          }
+
+        }
+
+      },
+
+
+      kia: {
+
+        label: 'کیا',
+
+        models: {
+
+          'sportage': {
+            label: 'اسپورتیج',
+            years: ['۲۰۱۶ - ۲۰۲۳', '۲۰۱۰ - ۲۰۱۵']
+          },
+
+          'cerato': {
+            label: 'سراتو',
+            years: ['۲۰۱۵ - ۲۰۲۰']
+          }
+
+        }
+
+      },
+
+
+      toyota: {
+
+        label: 'تویوتا',
+
+        models: {
+
+          'corolla': {
+            label: 'کرولا',
+            years: ['۲۰۱۵ - ۲۰۲۳', '۲۰۰۸ - ۲۰۱۴']
+          },
+
+          'camry': {
+            label: 'کمری',
+            years: ['۲۰۱۵ - ۲۰۲۳', '۲۰۰۷ - ۲۰۱۴']
+          }
+
+        }
+
+      }
+
+    };
+
+
+    const brandSelect = $('#vehicleBrand');
+    const modelSelect = $('#vehicleModel');
+    const yearSelect = $('#vehicleYear');
+
+
+    function resetSelect(
+      select,
+      placeholder
+    ) {
+
+      select.innerHTML =
+        `<option value="">${placeholder}</option>`;
+
+      select.value = '';
+
+      select.disabled = true;
+
+    }
+
+
+    function fillSelect(
+      select,
+      items,
+      placeholder
+    ) {
+
+      select.innerHTML =
+        `<option value="">${placeholder}</option>`;
+
+      items.forEach(item => {
+
+        const option =
+          document.createElement('option');
+
+        if (
+          typeof item === 'object'
+        ) {
+
+          option.value = item.value;
+          option.textContent = item.label;
+
+        } else {
+
+          option.value = item;
+          option.textContent = item;
+
+        }
+
+        select.appendChild(option);
+
+      });
+
+      select.disabled = false;
+
+    }
+
+
+    brandSelect?.addEventListener(
+      'change',
+      () => {
+
+        const brand =
+          vehicleData[brandSelect.value];
+
+        resetSelect(
+          modelSelect,
+          'انتخاب مدل'
+        );
+
+        resetSelect(
+          yearSelect,
+          'ابتدا مدل را انتخاب کنید'
+        );
+
+        if (!brand) return;
+
+        const models =
+          Object.entries(
+            brand.models
+          ).map(
+            ([value, data]) => ({
+              value,
+              label: data.label
+            })
+          );
+
+        fillSelect(
+          modelSelect,
+          models,
+          'انتخاب مدل'
+        );
+
+      }
+    );
+
+
+    modelSelect?.addEventListener(
+      'change',
+      () => {
+
+        const brand =
+          vehicleData[brandSelect.value];
+
+        const model =
+          brand?.models?.[modelSelect.value];
+
+        resetSelect(
+          yearSelect,
+          'انتخاب سال ساخت'
+        );
+
+        if (!model) return;
+
+        fillSelect(
+          yearSelect,
+          model.years,
+          'انتخاب سال ساخت'
+        );
+
+      }
+    );
+
+
+    /* =========================================================
+       VEHICLE FINDER SUBMIT
+    ========================================================== */
+
+    $('#vehicleFinderForm')?.addEventListener(
+      'submit',
+      event => {
+
+        event.preventDefault();
+
+        const brand =
+          vehicleData[brandSelect.value];
+
+        const model =
+          brand?.models?.[modelSelect.value];
+
+        const year =
+          yearSelect.value;
+
+        const part =
+          $('#vehiclePart')?.value;
+
+        if (
+          !brand ||
+          !model ||
+          !year ||
+          !part
+        ) {
+
+          showToast(
+            'لطفاً تمام گزینه‌های انتخاب خودرو را تکمیل کنید.',
+            'انتخاب ناقص',
+            'warning'
+          );
+
+          return;
+
+        }
+
+
+        showToast(
+          `در نسخه فروشگاهی، محصولات سازگار با ${model.label} در این مرحله نمایش داده می‌شوند.`,
+          'جستجو انجام شد'
+        );
+
+      }
+    );
+
+
+    /* =========================================================
+       SEARCH
+    ========================================================== */
+
+    $('#searchForm')?.addEventListener(
+      'submit',
+      event => {
+
+        event.preventDefault();
+
+        const value =
+          $('#searchInput')?.value.trim();
+
+        if (!value) {
+
+          showToast(
+            'نام قطعه، برند یا کد فنی را وارد کنید.',
+            'جستجو',
+            'warning'
+          );
+
+          return;
+
+        }
+
+        document
+          .querySelector('#products')
+          ?.scrollIntoView({
+            behavior: 'smooth'
+          });
+
+        showToast(
+          `جستجوی «${value}» در نسخه نهایی باید به API محصولات متصل شود.`,
+          'جستجو'
+        );
+
+      }
+    );
+
+
+    /* =========================================================
+       CART
+    ========================================================== */
+
+    let cartCount =
+      Number(
+        localStorage.getItem(
+          'turbopart-cart-count'
+        ) || 0
+      );
+
+
+    function toPersianNumber(number) {
+
+      return String(number)
+        .replace(
+          /\d/g,
+          digit =>
+            '۰۱۲۳۴۵۶۷۸۹'[digit]
+        );
+
+    }
+
+
+    function updateCartCount() {
+
+      const element =
+        $('#cartCount');
+
+      if (!element) return;
+
+      element.textContent =
+        toPersianNumber(cartCount);
+
+    }
+
+
+    updateCartCount();
+
+
+    $$('.add-to-cart').forEach(button => {
+
+      button.addEventListener(
+        'click',
+        () => {
+
+          const product =
+            button.dataset.product ||
+            'محصول';
+
+          cartCount++;
+
+          localStorage.setItem(
+            'turbopart-cart-count',
+            cartCount
+          );
+
+          updateCartCount();
+
+          showToast(
+            `${product} به سبد خرید اضافه شد.`,
+            'افزودن به سبد'
+          );
+
+        }
+      );
+
+    });
+
+
+    $('#cartButton')?.addEventListener(
+      'click',
+      () => {
+
+        if (cartCount === 0) {
+
+          showToast(
+            'سبد خرید شما هنوز خالی است.',
+            'سبد خرید',
+            'warning'
+          );
+
+          return;
+
+        }
+
+        showToast(
+          `${toPersianNumber(cartCount)} محصول در سبد خرید دارید.`,
+          'سبد خرید'
+        );
+
+      }
+    );
+
+
+    /* =========================================================
+       PRODUCT FILTER
+    ========================================================== */
+
+    const productFilters =
+      $$('.product-filter');
+
+    const products =
+      $$('.product-card');
+
+
+    productFilters.forEach(button => {
+
+      button.addEventListener(
+        'click',
+        () => {
+
+          const filter =
+            button.dataset.filter;
+
+
+          productFilters.forEach(item => {
+
+            item.classList.remove(
+              'bg-brand-accent',
+              'text-white',
+              'shadow-glow-orange'
+            );
+
+            item.classList.add(
+              'bg-dark-850',
+              'text-slate-300'
+            );
+
+          });
+
+
+          button.classList.remove(
+            'bg-dark-850',
+            'text-slate-300'
+          );
+
+          button.classList.add(
+            'bg-brand-accent',
+            'text-white'
+          );
+
+
+          products.forEach(product => {
+
+            const category =
+              product.dataset.category;
+
+            const visible =
+              filter === 'all' ||
+              category === filter;
+
+            product.classList.toggle(
+              'hidden',
+              !visible
+            );
+
+          });
+
+        }
+      );
+
+    });
+
+
+    /* =========================================================
+       AUTHENTICITY
+    ========================================================== */
+
+    $('#authForm')?.addEventListener(
+      'submit',
+      event => {
+
+        event.preventDefault();
+
+        const code =
+          $('#authCode')?.value.trim();
+
+        if (!code) {
+
+          showToast(
+            'کد رهگیری را وارد کنید.',
+            'استعلام اصالت',
+            'warning'
+          );
+
+          return;
+
+        }
+
+        showToast(
+          `کد «${code}» برای بررسی به سامانه اصالت ارسال می‌شود.`,
+          'درخواست استعلام'
+        );
+
+      }
+    );
+
+
+    /* =========================================================
+       B2B FORM
+    ========================================================== */
+
+    $('#b2bForm')?.addEventListener(
+      'submit',
+      event => {
+
+        event.preventDefault();
+
+        showToast(
+          'در نسخه نهایی این اطلاعات به API فروشگاه ارسال خواهد شد.',
+          'درخواست همکاری ثبت شد'
+        );
+
+        event.target.reset();
+
+      }
+    );
+
+
+    /* =========================================================
+       NEWSLETTER
+    ========================================================== */
+
+    $('#newsletterForm')?.addEventListener(
+      'submit',
+      event => {
+
+        event.preventDefault();
+
+        const phone =
+          $('#newsletterPhone')?.value.trim();
+
+        if (
+          !/^09\d{9}$/.test(phone)
+        ) {
+
+          showToast(
+            'شماره موبایل واردشده معتبر نیست.',
+            'شماره موبایل',
+            'warning'
+          );
+
+          return;
+
+        }
+
+        showToast(
+          'شماره موبایل شما با موفقیت ثبت شد.',
+          'عضویت موفق'
+        );
+
+        event.target.reset();
+
+      }
+    );
+
+
+    /* =========================================================
+       LOGIN
+    ========================================================== */
+
+    $('#loginButton')?.addEventListener(
+      'click',
+      () => {
+
+        showToast(
+          'در نسخه Laravel این دکمه به صفحه ورود و ثبت‌نام متصل می‌شود.',
+          'ورود / ثبت‌نام'
+        );
+
+      }
+    );
+
+
+    /* =========================================================
+       ESC KEY
+    ========================================================== */
+
+    document.addEventListener(
+      'keydown',
+      event => {
+
+        if (
+          event.key === 'Escape' &&
+          !mobileDrawer?.classList.contains('hidden')
+        ) {
+
+          closeDrawer();
+
+        }
+
+      }
+    );
+
+  </script>
+
+</body>
+</html>
