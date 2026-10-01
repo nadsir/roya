@@ -1,7 +1,7 @@
 // Run: node --experimental-vm-modules tests/frontend/phase2-hero-slider.test.mjs
 // Scoped checks for the homepage hero slider: autoplay start, next, previous and timer cleanup.
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
+import { readFile, access } from 'node:fs/promises';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { SourceTextModule, SyntheticModule, createContext } from 'node:vm';
@@ -41,7 +41,7 @@ async function loadModule(id, ssr = false) {
             const { descriptor } = parse(source, { filename: id });
             source = compileScript(descriptor, { id: 'hero-slider-ssr', inlineTemplate: true }).content;
         } else {
-            source = source.replace('</script>', '\ndefineExpose({ active, playing, paused, engaged, hovered, focused, reducedMotion, previous, next, select, startTouch, endTouch });\n</script>');
+            source = source.replace('</script>', '\ndefineExpose({ active, playing, paused, engaged, hovered, focused, reducedMotion, previous, next, select, startTouch, endTouch, imageErrorFor: (image, index) => imageError({ target: image }, index) });\n</script>');
             const { descriptor } = parse(source, { filename: id });
             descriptor.template = null;
             source = compileScript(descriptor, { id: 'hero-slider-test' }).content;
@@ -75,6 +75,7 @@ async function mountHero() {
     return { proxy: exposed.value, props, unmount: () => app.unmount(), warnings };
 }
 async function flush() { await Vue.nextTick(); await Promise.resolve(); await Vue.nextTick(); }
+async function exists(file) { try { await access(file); return true; } catch { return false; } }
 function autoplayTimers() { return [...timers.values()].filter((timer) => timer.ms === 6500); }
 async function tick(times = 1) {
     for (let n = 0; n < times; n++) {
@@ -197,5 +198,35 @@ assert.ok(markup.includes('aria-label="اسلاید بعدی"'));
 assert.ok(markup.includes('aria-label="انتخاب اسلاید"'));
 assert.ok(markup.includes('href="/store?sort=newest"'));
 assert.ok(markup.includes('aria-roledescription="اسلایدر"'));
+
+// The three slides must never share one image again.
+const { heroSlideImages } = await namespace('resources/js/hero-slides.js');
+assert.equal(heroSlideImages.length, 3);
+assert.equal(new Set(heroSlideImages.map((image) => image.src)).size, 3);
+for (const image of heroSlideImages) {
+    assert.ok(image.src.startsWith('/images/'), image.src);
+    assert.ok(image.width > 0 && image.height > 0, image.src);
+    assert.ok(image.alt, image.src);
+}
+const sources = [...markup.matchAll(/<img[^>]+src="([^"]+)"/g)].map((match) => match[1]);
+assert.equal(sources.length, 3);
+assert.equal(new Set(sources).size, 3);
+for (const source of sources) assert.ok(await exists(resolve(project, 'public' + source)), source);
+passed.push('three slides render three distinct images from one config and every file exists on disk');
+// A product no longer hijacks the third slide, and a broken product photo never
+// replaces a configured campaign image with a remote placeholder.
+const { default: productHero } = await namespace('resources/js/components/homepage/EditorialHero.vue', true);
+const product = { id: 2, name: 'پیراهن', price: 800, in_stock: true, images: [{ path: 'first.jpg', is_primary: true }] };
+const productMarkup = await renderToString(Vue.createSSRApp({ render: () => Vue.h(productHero, { product, status: 'ready' }) }));
+assert.ok(!productMarkup.includes('/storage/first.jpg'));
+assert.ok(productMarkup.includes(`src="${heroSlideImages[2].src}"`));
+assert.ok(productMarkup.includes('>پیراهن<'));
+assert.equal(new Set([...productMarkup.matchAll(/<img[^>]+src="([^"]+)"/g)].map((match) => match[1])).size, 3);
+const errorHero = await mountHero();
+const broken = { currentSrc: 'http://localhost/storage/first.jpg', src: 'http://localhost/storage/first.jpg' };
+errorHero.props.product = product; await flush();
+errorHero.proxy.imageErrorFor(broken, 2);
+assert.equal(broken.src, heroSlideImages[2].src);
+passed.push('the configured third photo wins, and a failed product photo steps back to it instead of a remote placeholder');
 passed.forEach((name) => console.log('PASS ' + name));
 console.log(`${passed.length} verification groups passed (browser layout remains unverified).`);

@@ -1,16 +1,20 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { formatPrice, productHref, productImages, imageUrl } from '../../product-presentation.js';
-import { editorialArt } from '../../editorial-art.js';
+import { heroSlideImage } from '../../hero-slides.js';
 import { nextImageSrc } from '../../image-fallback.js';
 
 const props = defineProps({ product: { type: Object, default: null }, status: { type: String, default: 'idle' } });
-// Gallery campaign copy; the third slide follows the existing product selection.
-const slides = computed(() => [
-    { title: 'سبک، به روایت شما.', subtitle: 'انتخاب‌هایی برای هر روز؛ جزئیاتی برای خودِ شما.', image: editorialArt.src, cta: 'کشف تازه‌ها', target: '/store?sort=newest' },
-    { title: 'سادگی، با جزئیات بیشتر.', subtitle: 'لباس و اکسسوری را کنار هم ببینید و ترکیب خودتان را پیدا کنید.', image: editorialArt.src, cta: 'دیدن مجموعه‌ها', target: '#hp-categories' },
-    { title: props.product?.name || 'انتخاب بعدی شما.', subtitle: 'از میان انتخاب‌های گالری، چیزی نزدیک به سلیقه خودتان پیدا کنید.', image: imageUrl(productImages(props.product)[0]?.path) || editorialArt.src, cta: props.product ? 'کشف این انتخاب' : 'ورود به گالری', target: props.product ? productHref(props.product) : '/store' },
-]);
+// Gallery campaign copy; each slide owns its own image and the third follows the product selection.
+const slides = computed(() => {
+    const third = heroSlideImage(2);
+    const productImage = third.allowProductImage ? imageUrl(productImages(props.product)[0]?.path) : '';
+    return [
+        { title: 'سبک، به روایت شما.', subtitle: 'انتخاب‌هایی برای هر روز؛ جزئیاتی برای خودِ شما.', art: heroSlideImage(0), image: heroSlideImage(0).src, cta: 'کشف تازه‌ها', target: '/store?sort=newest' },
+        { title: 'سادگی، با جزئیات بیشتر.', subtitle: 'لباس و اکسسوری را کنار هم ببینید و ترکیب خودتان را پیدا کنید.', art: heroSlideImage(1), image: heroSlideImage(1).src, cta: 'دیدن مجموعه‌ها', target: '#hp-categories' },
+        { title: props.product?.name || 'انتخاب بعدی شما.', subtitle: 'از میان انتخاب‌های گالری، چیزی نزدیک به سلیقه خودتان پیدا کنید.', art: third, image: productImage || third.src, alt: productImage ? props.product.name : third.alt, cta: props.product ? 'کشف این انتخاب' : 'ورود به گالری', target: props.product ? productHref(props.product) : '/store' },
+    ];
+});
 const INTERVAL = 6500;
 const RESUME_DELAY = 12000;
 const active = ref(0);
@@ -74,9 +78,20 @@ function endTouch(event) {
     touchStart = null;
     if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.3) select(active.value + (dx > 0 ? 1 : -1));
 }
+// `currentSrc` is absolute, a configured `src` is root-relative, so compare the paths.
+function samePath(value, path) {
+    return String(value || '').replace(/^https?:\/\/[^/]+/i, '') === String(path || '').replace(/^https?:\/\/[^/]+/i, '');
+}
 function imageError(event, index) {
     const image = event.target;
-    const next = nextImageSrc(image.currentSrc || image.src, index === 2 ? props.product?.id : 'gallery-editorial');
+    const slide = slides.value[index];
+    const current = image.currentSrc || image.src || '';
+    // A product photo that is not on disk must not cost the slide its own campaign image.
+    if (slide.art.src && !samePath(current, slide.art.src)) {
+        image.src = slide.art.src;
+        return;
+    }
+    const next = nextImageSrc(current, 'gallery-slide-' + (index + 1));
     if (next) image.src = next;
     else failed.value = { ...failed.value, [index]: true };
 }
@@ -108,9 +123,9 @@ onBeforeUnmount(() => {
             <article v-for="(slide, index) in slides" :key="index" class="hp-slide" :class="['hp-slide--' + (index + 1), { 'is-active': active === index }]"
                 role="group" aria-roledescription="اسلاید" :aria-label="(index + 1) + ' از ' + slides.length" :aria-hidden="active !== index" :inert="active !== index">
                 <div class="hp-slide-visual">
-                    <img v-if="!failed[index]" :key="slide.image" :src="slide.image" :alt="index === 2 && product ? product.name : editorialArt.alt"
-                        :width="editorialArt.width" :height="editorialArt.height" :loading="index === 0 ? 'eager' : 'lazy'"
-                        :fetchpriority="index === 0 ? 'high' : 'auto'" decoding="async" @error="imageError($event, index)" />
+                    <img v-if="!failed[index]" :key="slide.image" :src="slide.image" :srcset="slide.art.srcset" :sizes="slide.art.srcset ? slide.art.sizes : undefined"
+                        :alt="slide.alt || slide.art.alt" :width="slide.art.width" :height="slide.art.height"
+                        :loading="index === 0 ? 'eager' : 'lazy'" :fetchpriority="index === 0 ? 'high' : 'auto'" decoding="async" @error="imageError($event, index)" />
                     <div v-else class="hp-hero-art"><span lang="en" aria-hidden="true">G.</span><small>روایت تصویری گالری</small></div>
                 </div>
                 <div class="hp-slide-copy">
