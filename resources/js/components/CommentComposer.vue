@@ -151,7 +151,7 @@ onBeforeUnmount(() => {
 
                                 <div v-if="isProduct" class="mt-7 border-t border-slate-200 pt-6 dark:border-slate-700">
                                     <p class="text-sm font-bold text-ink dark:text-slate-100">
-                                        این قطعه را چگونه ارزیابی می‌کنید؟
+                                        این محصول را چگونه ارزیابی می‌کنید؟
                                     </p>
                                     <div class="mt-3 flex items-center gap-3">
                                         <StarRatingInput

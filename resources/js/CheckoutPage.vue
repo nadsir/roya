@@ -3,26 +3,43 @@ import { computed, reactive, ref, watch } from 'vue';
 import axios from 'axios';
 import SiteHeader from './SiteHeader.vue';
 import SiteFooter from './SiteFooter.vue';
+import CheckoutField from './components/checkout/CheckoutField.vue';
+import CheckoutAlert from './components/checkout/CheckoutAlert.vue';
+import PendingPaymentPanel from './components/checkout/PendingPaymentPanel.vue';
+import OrderSummaryCard from './components/checkout/OrderSummaryCard.vue';
 import { getCartItems, clearCart, cartTotal } from './cart-state.js';
 import { state as authState, isLoggedIn, loadUser } from './auth-state.js';
+import {
+    CHECKOUT_CONTACT_FIELDS,
+    CHECKOUT_PAYMENT_NOTE,
+    CHECKOUT_PHASES,
+    CHECKOUT_SHIPPING_FIELDS,
+    checkoutTotals,
+    errorSummary,
+    fieldError,
+    lineErrorMessages,
+    submitLabel,
+} from './checkout-presentation.js';
+import '../css/checkout.css';
 
 const items = computed(() => getCartItems());
-const submitting = ref(false);
-const error = ref('');
-const validationErrors = ref({});
+const totals = computed(() => checkoutTotals(items.value, cartTotal.value));
 const form = reactive({
     customer_name: '', customer_phone: '', customer_email: '',
-    shipping_province: '', shipping_city: '', shipping_address: '',
-    shipping_postal_code: '', notes: '',
+    shipping_province: '', shipping_city: '', shipping_postal_code: '',
+    shipping_address: '', notes: '',
 });
-const fields = [
-    { key: 'customer_name', label: 'نام و نام خانوادگی', type: 'text', autocomplete: 'name', max: 255 },
-    { key: 'customer_phone', label: 'تلفن', type: 'tel', autocomplete: 'tel', max: 32 },
-    { key: 'customer_email', label: 'ایمیل', type: 'email', autocomplete: 'email', max: 255 },
-    { key: 'shipping_province', label: 'استان', type: 'text', autocomplete: 'address-level1', max: 100 },
-    { key: 'shipping_city', label: 'شهر', type: 'text', autocomplete: 'address-level2', max: 100 },
-    { key: 'shipping_postal_code', label: 'کد پستی', type: 'text', autocomplete: 'postal-code', max: 20 },
-];
+
+const phase = ref(CHECKOUT_PHASES.IDLE);
+const error = ref('');
+const validationErrors = ref({});
+const createdOrder = ref(null);
+const payError = ref('');
+const retrying = ref(false);
+const busy = computed(() => phase.value === CHECKOUT_PHASES.ORDERING || phase.value === CHECKOUT_PHASES.PAYING);
+const summaryErrors = computed(() => errorSummary(validationErrors.value));
+const lineErrors = computed(() => items.value.map((item, index) => lineErrorMessages(validationErrors.value, index)));
+const locked = computed(() => busy.value || Boolean(createdOrder.value));
 
 function goToLogin() {
     window.location.replace('/login?redirect=/checkout');
@@ -38,20 +55,29 @@ watch([() => authState.loading, () => authState.user?.id], ([loading, userId]) =
     if (!form.customer_email) form.customer_email = authState.user.email || '';
 }, { immediate: true });
 
-function formatPrice(value) {
-    return Number(value || 0).toLocaleString('fa-IR');
+// The existing pay endpoint is the only payment entry point; the gateway is never called from Vue.
+async function startPayment(order) {
+    const { data } = await axios.post(`/api/customer/orders/${order.id}/pay`);
+    if (!data?.payment_url) throw new Error('missing payment url');
+    window.location.href = data.payment_url;
 }
 
-function onImgError(event) {
-    event.target.onerror = null;
-    event.target.src = '/images/placeholder.svg';
+function rememberReceipt(order) {
+    try {
+        sessionStorage.setItem('turbopart-order-receipt', JSON.stringify({
+            id: order.id, user_id: order.user_id, total: order.total,
+        }));
+    } catch {}
 }
 
 async function submitOrder() {
-    if (submitting.value || !isLoggedIn.value || !items.value.length) return;
-    submitting.value = true;
+    if (locked.value || !isLoggedIn.value || !items.value.length) return;
+    phase.value = CHECKOUT_PHASES.ORDERING;
     error.value = '';
+    payError.value = '';
     validationErrors.value = {};
+
+    let order;
     try {
         const { data } = await axios.post('/api/customer/checkout', {
             ...form,
@@ -61,85 +87,168 @@ async function submitOrder() {
                 quantity: item.quantity,
             })),
         });
-        // Retain only a receipt summary for this tab, never the address or phone.
-        try {
-            sessionStorage.setItem('turbopart-order-receipt', JSON.stringify({
-                id: data.order.id, user_id: data.order.user_id, total: data.order.total,
-            }));
-        } catch {}
-        clearCart();
-        window.location.replace('/order-success');
+        order = data.order;
     } catch (failure) {
         if (failure.response?.status === 401) {
             await loadUser();
-            if (!isLoggedIn.value) goToLogin();
+            if (!isLoggedIn.value) {
+                goToLogin();
+                return;
+            }
         }
         validationErrors.value = failure.response?.data?.errors || {};
         error.value = failure.response?.data?.message || 'ثبت سفارش انجام نشد. سبد خرید شما حفظ شده است؛ لطفاً اتصال را بررسی کنید.';
+        phase.value = CHECKOUT_PHASES.IDLE;
+        return;
+    }
+
+    createdOrder.value = { id: order.id, total: order.total };
+    rememberReceipt(order);
+    clearCart();
+    phase.value = CHECKOUT_PHASES.PAYING;
+    try {
+        await startPayment(order);
+    } catch (failure) {
+        payError.value = failure.response?.data?.message || 'اتصال به درگاه پرداخت انجام نشد. مبلغی از حساب شما کسر نشده است.';
+        phase.value = CHECKOUT_PHASES.PAY_FAILED;
+    }
+}
+
+// Retries the existing order, never a second one.
+async function retryPayment() {
+    const order = createdOrder.value;
+    if (!order || retrying.value) return;
+    retrying.value = true;
+    payError.value = '';
+    try {
+        await startPayment(order);
+    } catch (failure) {
+        payError.value = failure.response?.data?.message || 'اتصال به درگاه پرداخت انجام نشد. مبلغی از حساب شما کسر نشده است.';
     } finally {
-        submitting.value = false;
+        retrying.value = false;
     }
 }
 </script>
 
 <template>
-    <div class="min-h-screen bg-cream text-ink font-sans antialiased" dir="rtl">
+    <div class="co-page" dir="rtl">
         <SiteHeader />
-        <main class="max-w-6xl mx-auto px-4 sm:px-6 py-8">
-            <h1 class="text-xl sm:text-2xl font-black mb-6">تکمیل خرید</h1>
-            <p v-if="authState.loading || !isLoggedIn" role="status" class="py-16 text-center text-sm text-slate-500">در حال بررسی حساب کاربری…</p>
-            <div v-else-if="!items.length" class="rounded-xl border border-gray-200 bg-white p-8 text-center">
-                <p class="mb-4 text-sm">سبد خرید شما خالی است.</p>
-                <a href="/store" class="text-sm font-bold text-brand-accent">مشاهده محصولات</a>
+
+        <main class="sf-container co-main">
+            <nav class="co-breadcrumb sf-type-caption" aria-label="مسیر صفحه">
+                <a href="/store">فروشگاه</a>
+                <span aria-hidden="true">/</span>
+                <a href="/cart">سبد خرید</a>
+                <span aria-hidden="true">/</span>
+                <span aria-current="page">تکمیل خرید</span>
+            </nav>
+
+            <header class="co-header">
+                <div>
+                    <p class="co-eyebrow" lang="en" dir="ltr">CHECKOUT</p>
+                    <h1 class="sf-type-h1">تکمیل خرید</h1>
+                </div>
+                <p v-if="items.length" class="co-header-count sf-type-small">
+                    {{ totals.count.toLocaleString('fa-IR') }} کالا در سبد
+                </p>
+            </header>
+
+            <ol class="co-steps" aria-label="مراحل خرید">
+                <li class="co-step co-step--done">
+                    <span class="co-step-index" aria-hidden="true">۱</span>
+                    <span>سبد خرید</span>
+                </li>
+                <li class="co-step co-step--current" aria-current="step">
+                    <span class="co-step-index" aria-hidden="true">۲</span>
+                    <span>اطلاعات ارسال و پرداخت</span>
+                </li>
+                <li class="co-step">
+                    <span class="co-step-index" aria-hidden="true">۳</span>
+                    <span>تأیید پرداخت</span>
+                </li>
+            </ol>
+
+            <p v-if="authState.loading || !isLoggedIn" class="sf-shell-state" role="status">در حال بررسی حساب کاربری…</p>
+
+            <div v-else-if="!items.length" class="co-empty sf-shell-state">
+                <span class="co-empty-mark" aria-hidden="true"><i class="fa-regular fa-bag" /></span>
+                <h2 class="sf-type-h3">سبد خرید شما خالی است</h2>
+                <p class="sf-type-body">برای ثبت سفارش ابتدا کالایی انتخاب کنید.</p>
+                <a class="sf-button" href="/store">مشاهده محصولات</a>
             </div>
-            <form v-else class="grid gap-6 lg:grid-cols-2" @submit.prevent="submitOrder">
-                <fieldset :disabled="submitting" class="rounded-xl border border-gray-200 bg-white p-5 min-w-0">
-                    <legend class="text-sm font-bold px-2">اطلاعات مشتری و آدرس ارسال</legend>
-                    <div v-if="error" role="alert" class="mb-4 rounded-lg bg-red-50 p-3 text-xs text-red-600">
-                        <p>{{ error }}</p>
-                        <ul v-if="Object.keys(validationErrors).length" class="mt-2 space-y-1">
-                            <li v-for="(messages, key) in validationErrors" :key="key">{{ messages.join(' ') }}</li>
-                        </ul>
-                    </div>
-                    <div class="grid gap-4 sm:grid-cols-2">
-                        <div v-for="field in fields" :key="field.key">
-                            <label :for="field.key" class="block text-xs text-slate-600 mb-2">{{ field.label }}</label>
-                            <input :id="field.key" v-model="form[field.key]" :type="field.type" :autocomplete="field.autocomplete" :maxlength="field.max" required :aria-invalid="!!validationErrors[field.key]" class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm focus:border-brand-accent focus:outline-none min-h-[44px]" />
-                        </div>
-                        <div class="sm:col-span-2">
-                            <label for="shipping_address" class="block text-xs text-slate-600 mb-2">آدرس کامل</label>
-                            <textarea id="shipping_address" v-model="form.shipping_address" required maxlength="2000" autocomplete="street-address" rows="3" class="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm min-h-[44px]"></textarea>
-                        </div>
-                        <div class="sm:col-span-2">
-                            <label for="notes" class="block text-xs text-slate-600 mb-2">توضیحات (اختیاری)</label>
-                            <textarea id="notes" v-model="form.notes" maxlength="2000" rows="2" class="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm min-h-[44px]"></textarea>
-                        </div>
-                    </div>
-                </fieldset>
-                <section class="rounded-xl border border-gray-200 bg-white p-5">
-                    <h2 class="text-sm font-bold mb-4">خلاصه سفارش</h2>
-                    <article v-for="item in items" :key="item.key" class="flex gap-3 py-4 border-b border-gray-200">
-                        <img :src="item.image || '/images/placeholder.svg'" :alt="item.name" class="w-16 h-16 object-contain rounded-lg shrink-0" @error="onImgError" />
-                        <div class="min-w-0 flex-1 text-xs space-y-2">
-                            <p class="font-bold">{{ item.name }}</p>
-                            <p v-if="item.sku" class="text-slate-500">SKU: {{ item.sku }}</p>
-                            <p v-for="(values, slug) in item.attributes || {}" :key="slug" class="text-slate-500">{{ slug }}: {{ Array.isArray(values) ? values.map(v => v.label || v).join('، ') : values }}</p>
-                            <p>تعداد: {{ item.quantity }} · قیمت واحد: {{ formatPrice(item.price) }} تومان</p>
-                            <p class="font-bold">جمع: {{ formatPrice(item.price * item.quantity) }} تومان</p>
-                        </div>
-                    </article>
-                    <dl class="text-sm space-y-3 py-5">
-                        <div class="flex justify-between"><dt>جمع اقلام</dt><dd>{{ formatPrice(cartTotal) }} تومان</dd></div>
-                        <div class="flex justify-between"><dt>تخفیف</dt><dd>۰ تومان</dd></div>
-                        <div class="flex justify-between"><dt>هزینه ارسال</dt><dd>۰ تومان</dd></div>
-                        <div class="flex justify-between font-bold"><dt>جمع کل</dt><dd>{{ formatPrice(cartTotal) }} تومان</dd></div>
-                    </dl>
-                    <p class="mb-4 text-xs text-slate-500">قیمت و موجودی هنگام ثبت سفارش بررسی می‌شوند؛ مبلغ نهایی در نتیجه سفارش نمایش داده می‌شود.</p>
-                    <button type="submit" :disabled="submitting || !items.length" class="w-full rounded-lg bg-brand-accent text-dark-900 py-3.5 text-sm font-bold hover:bg-brand-hover disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px]">{{ submitting ? 'در حال ثبت سفارش…' : 'ثبت سفارش' }}</button>
-                    <a href="/cart" class="block mt-3 text-center text-xs text-slate-500">بازگشت به سبد خرید</a>
-                </section>
-            </form>
+
+            <div v-else class="co-layout">
+                <div class="co-column">
+                    <form id="checkout-form" class="co-form" @submit.prevent="submitOrder">
+                        <PendingPaymentPanel v-if="createdOrder" :order-id="createdOrder.id" :total="createdOrder.total"
+                            :error="payError" :retrying="retrying" @retry="retryPayment" />
+
+                        <CheckoutAlert v-else-if="error" :message="error" :errors="summaryErrors" />
+
+                        <template v-if="!createdOrder">
+                            <section class="co-section" aria-labelledby="co-contact-title">
+                                <div class="co-section-head">
+                                    <span class="co-section-index" aria-hidden="true">۰۱</span>
+                                    <h2 id="co-contact-title" class="co-section-title sf-type-h3">اطلاعات گیرنده</h2>
+                                </div>
+                                <div class="co-grid">
+                                    <CheckoutField v-for="field in CHECKOUT_CONTACT_FIELDS" :key="field.key" :field="field"
+                                        v-model="form[field.key]" :error="fieldError(validationErrors, field.key)" />
+                                </div>
+                            </section>
+    
+                            <section class="co-section" aria-labelledby="co-shipping-title">
+                                <div class="co-section-head">
+                                    <span class="co-section-index" aria-hidden="true">۰۲</span>
+                                    <h2 id="co-shipping-title" class="co-section-title sf-type-h3">آدرس ارسال</h2>
+                                </div>
+                                <div class="co-grid">
+                                    <CheckoutField v-for="field in CHECKOUT_SHIPPING_FIELDS" :key="field.key" :field="field"
+                                        v-model="form[field.key]" :error="fieldError(validationErrors, field.key)" />
+                                </div>
+                            </section>
+    
+                            <section class="co-section" aria-labelledby="co-payment-title">
+                                <div class="co-section-head">
+                                    <span class="co-section-index" aria-hidden="true">۰۳</span>
+                                    <h2 id="co-payment-title" class="co-section-title sf-type-h3">روش پرداخت</h2>
+                                </div>
+                                <div class="co-pay">
+                                    <span class="co-pay-mark" aria-hidden="true"><i class="fa-solid fa-credit-card" /></span>
+                                    <div>
+                                        <p class="co-pay-title">پرداخت اینترنتی از طریق درگاه بانکی</p>
+                                        <p class="co-pay-text">{{ CHECKOUT_PAYMENT_NOTE }}</p>
+                                    </div>
+                                </div>
+                            </section>
+    
+                            <div class="co-actions">
+                                <button type="submit" class="sf-button co-submit" :disabled="locked || !items.length">
+                                    {{ submitLabel(phase) }}
+                                </button>
+                                <a class="sf-text-link" href="/cart">بازگشت به سبد خرید</a>
+                            </div>
+                        </template>
+                    </form>
+                </div>
+
+                <OrderSummaryCard class="co-column" :items="items" :count="totals.count" :subtotal="totals.subtotal"
+                    :total="totals.total" :line-errors="lineErrors" />
+            </div>
         </main>
+
+        <div v-if="items.length && !createdOrder" class="co-sticky">
+            <div class="co-sticky-inner">
+                <div class="co-sticky-total">
+                    <span class="sf-type-caption">مبلغ نهایی</span>
+                    <strong class="sf-type-price">{{ totals.total.toLocaleString('fa-IR') }} <small>تومان</small></strong>
+                </div>
+                <button type="submit" form="checkout-form" class="sf-button co-sticky-cta" :disabled="locked">
+                    {{ submitLabel(phase) }}
+                </button>
+            </div>
+        </div>
+
         <SiteFooter />
     </div>
 </template>

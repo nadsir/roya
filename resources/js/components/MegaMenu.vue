@@ -9,6 +9,21 @@ const panel = ref(null);
 const open = ref(false);
 const activeIndex = ref(0);
 const activeCategory = computed(() => catalog.categories[activeIndex.value] || catalog.categories[0]);
+// Two quiet promo cards, built only from Gallery category images.
+const promos = computed(() => {
+    const seen = new Set();
+    const list = [];
+    const push = (category) => {
+        if (!category || seen.has(category.slug)) return;
+        const image = categoryImage(category);
+        if (!image) return;
+        seen.add(category.slug);
+        list.push({ slug: category.slug, name: category.name, image });
+    };
+    push(activeCategory.value);
+    catalog.categories.forEach(push);
+    return list.slice(0, 2);
+});
 let leaveTimer;
 let openedByHover = false;
 
@@ -68,6 +83,7 @@ onBeforeUnmount(() => { clearTimeout(leaveTimer); document.removeEventListener('
                 @click="toggle" @keydown="enter" @mouseenter="hover" @mouseleave="leave">
                 دسته‌بندی‌ها <i class="fa-solid fa-chevron-down" aria-hidden="true" />
             </button>
+            <div v-if="open" class="sf-mega-backdrop" aria-hidden="true" @pointerdown="close()" />
             <Transition name="sf-reveal">
                 <nav v-if="open" id="sf-category-panel" ref="panel" class="sf-mega-panel" aria-label="دسته‌بندی محصولات" @mouseenter="show" @mouseleave="leave">
                     <div v-if="catalog.status === 'loading'" class="sf-menu-loading" role="status" aria-label="در حال دریافت دسته‌بندی‌ها"><span v-for="n in 4" :key="n" class="sf-skeleton" /></div>
@@ -79,14 +95,18 @@ onBeforeUnmount(() => { clearTimeout(leaveTimer); document.removeEventListener('
                                 @mouseenter="activeIndex = index" @focus="activeIndex = index" @click="activeIndex = index" @keydown="railKey($event, index)">{{ category.name }} <span aria-hidden="true">←</span></button>
                         </div>
                         <div class="sf-category-content">
-                            <div class="sf-section-heading"><h2 class="sf-type-h3">{{ activeCategory.name }}</h2><a :href="categoryHref(activeCategory.slug)" class="sf-text-link">مشاهده همه ←</a></div>
+                            <div class="sf-section-heading"><div><p class="sf-eyebrow" lang="en" dir="ltr">COLLECTION</p><h2 class="sf-type-h3">{{ activeCategory.name }}</h2></div><a :href="categoryHref(activeCategory.slug)" class="sf-text-link">مشاهده همه ←</a></div>
                             <CategoryBranch :items="activeCategory.children || []" />
                             <p v-if="!activeCategory.children?.length" class="sf-type-small">تمام محصولات این دسته را ببینید.</p>
                         </div>
-                        <a v-if="categoryImage(activeCategory)" :href="categoryHref(activeCategory.slug)" class="sf-category-preview">
-                            <img :src="categoryImage(activeCategory)" :alt="activeCategory.name" loading="lazy" @error="$event.target.style.visibility = 'hidden'" />
-                            <span>{{ activeCategory.name }} <span aria-hidden="true">↗</span></span>
-                        </a>
+                        <div v-if="promos.length" class="sf-category-preview">
+                            <a v-for="promo in promos" :key="promo.slug" :href="categoryHref(promo.slug)" class="sf-category-promo">
+                                <figure>
+                                    <img :src="promo.image" :alt="promo.name" width="480" height="320" loading="lazy" decoding="async" @error="$event.target.style.visibility = 'hidden'" />
+                                    <figcaption>{{ promo.name }} <span aria-hidden="true">←</span></figcaption>
+                                </figure>
+                            </a>
+                        </div>
                     </div>
                 </nav>
             </Transition>

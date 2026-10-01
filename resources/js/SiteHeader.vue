@@ -6,10 +6,12 @@ import { wishlistCount, loadWishlist, resetWishlist } from './wishlist-state.js'
 import { storefrontDark, toggleStorefrontTheme } from './storefront-theme.js';
 import MegaMenu from './components/MegaMenu.vue';
 import ShellDialog from './components/ShellDialog.vue';
+import CartDrawer from './components/cart/CartDrawer.vue';
 import SearchOverlay from './components/SearchOverlay.vue';
 
 const searchOpen = ref(false);
 const menuOpen = ref(false);
+const cartOpen = ref(false);
 const accountOpen = ref(false);
 const accountRoot = ref(null);
 const accountTrigger = ref(null);
@@ -29,7 +31,11 @@ function closeAccount(restore = false) { accountOpen.value = false; if (restore)
 function outside(event) { if (!accountRoot.value?.contains(event.target)) closeAccount(); }
 function focusOut(event) { if (!accountRoot.value?.contains(event.relatedTarget)) closeAccount(); }
 function keydown(event) { if (event.key === 'Escape' && accountOpen.value) { event.preventDefault(); closeAccount(true); } }
-function onScroll() { const next = window.scrollY > 16; if (next !== scrolled.value) scrolled.value = next; }
+function onScroll() {
+    const y = window.scrollY;
+    const next = scrolled.value ? y > 8 : y > 24;
+    if (next !== scrolled.value) scrolled.value = next;
+}
 async function handleLogout() {
     if (loggingOut.value) return;
     loggingOut.value = true; logoutError.value = '';
@@ -43,9 +49,13 @@ onBeforeUnmount(() => { window.removeEventListener('scroll', onScroll); document
 
 <template>
     <header class="sf-header" :class="{ 'is-scrolled': scrolled }" dir="rtl">
+        <div class="sf-announcement">
+            <p>تازه‌های گالری از راه رسید <small>— انتخاب‌های تازه را پیش از همه ببینید</small></p>
+            <a href="/store?sort=newest">دیدن تازه‌ها <span aria-hidden="true">←</span></a>
+        </div>
         <div class="sf-header-bar">
-            <div class="sf-header-brand"><button class="sf-icon-button sf-mobile-only" type="button" aria-label="باز کردن دسته‌بندی‌ها" @click="menuOpen = true"><i class="fa-solid fa-bars" aria-hidden="true" /></button><a href="/" class="sf-wordmark" aria-label="گالری؛ صفحه اصلی"><span>گالری</span><small lang="en" dir="ltr">GALLERY</small></a></div>
-            <nav class="sf-desktop-nav" aria-label="ناوبری اصلی"><MegaMenu /><a href="/store?sort=newest" class="sf-nav-link">تازه‌ها</a><a href="/store" class="sf-nav-link">فروشگاه</a><a href="/articles" class="sf-nav-link">مجله</a></nav>
+            <div class="sf-header-brand"><button class="sf-icon-button sf-mobile-only" type="button" aria-label="باز کردن دسته‌بندی‌ها" :aria-expanded="menuOpen" aria-haspopup="dialog" @click="menuOpen = true"><i class="fa-solid fa-bars" aria-hidden="true" /></button><a href="/" class="sf-wordmark" aria-label="گالری؛ صفحه اصلی"><span>گالری</span><small lang="en" dir="ltr">GALLERY</small></a></div>
+            <nav class="sf-desktop-nav" aria-label="ناوبری اصلی"><MegaMenu /><a href="/store?sort=newest" class="sf-nav-link">تازه‌ها</a><a href="/store" class="sf-nav-link" :aria-current="path === '/store' || path.startsWith('/c/') ? 'page' : undefined">فروشگاه</a><a href="/articles" class="sf-nav-link" :aria-current="path.startsWith('/articles') ? 'page' : undefined">مجله</a></nav>
             <div class="sf-header-actions">
                 <button type="button" class="sf-icon-button sf-search-trigger" aria-label="باز کردن جستجو" @click="openSearch"><i class="fa-solid fa-magnifying-glass" aria-hidden="true" /><span>جستجو</span></button>
                 <button type="button" class="sf-icon-button sf-theme-trigger" :aria-label="storefrontDark ? 'فعال کردن حالت روشن' : 'فعال کردن حالت تیره'" :aria-pressed="storefrontDark" @click="toggleStorefrontTheme"><i :class="storefrontDark ? 'fa-regular fa-sun' : 'fa-regular fa-moon'" aria-hidden="true" /></button>
@@ -55,7 +65,7 @@ onBeforeUnmount(() => { window.removeEventListener('scroll', onScroll); document
                     <nav v-if="accountOpen" id="sf-account-panel" class="sf-account-panel" aria-label="حساب کاربری"><p class="sf-type-small">{{ authState.user?.name || 'حساب من' }}</p><a href="/account">حساب کاربری</a><a href="/orders">سفارش‌های من</a><a href="/wishlist">علاقه‌مندی‌ها</a><button :disabled="loggingOut" @click="handleLogout">{{ loggingOut ? 'در حال خروج…' : 'خروج از حساب' }}</button><p v-if="logoutError" role="alert">{{ logoutError }}</p></nav>
                 </div>
                 <a v-else href="/login" class="sf-icon-button sf-desktop-action" aria-label="ورود به حساب کاربری"><i class="fa-regular fa-user" aria-hidden="true" /></a>
-                <a href="/cart" class="sf-icon-button sf-cart-link" :aria-label="cartCount ? `سبد خرید، ${faNum(cartCount)} کالا` : 'سبد خرید'"><i class="fa-solid fa-bag-shopping" aria-hidden="true" /><span v-if="cartCount" class="sf-count">{{ faNum(cartCount) }}</span></a>
+                <button type="button" class="sf-icon-button sf-cart-link" aria-haspopup="dialog" :aria-expanded="cartOpen" :aria-label="cartCount ? `باز کردن سبد خرید، ${faNum(cartCount)} کالا` : 'باز کردن سبد خرید'" @click="cartOpen = true"><i class="fa-solid fa-bag-shopping" aria-hidden="true" /><span v-if="cartCount" class="sf-count">{{ faNum(cartCount) }}</span></button>
             </div>
         </div>
         <SearchOverlay :open="searchOpen" @close="searchOpen = false" />
@@ -64,6 +74,7 @@ onBeforeUnmount(() => { window.removeEventListener('scroll', onScroll); document
             <MegaMenu variant="mobile" />
             <div class="sf-mobile-menu-links"><a href="/store?sort=newest">تازه‌ها</a><a href="/articles">مجله</a><a href="/orders">سفارش‌های من</a><button class="sf-text-link" @click="toggleStorefrontTheme">{{ storefrontDark ? 'حالت روشن' : 'حالت تیره' }}</button></div>
         </ShellDialog>
+        <CartDrawer :open="cartOpen" @close="cartOpen = false" />
     </header>
     <nav class="sf-bottom-nav" aria-label="ناوبری موبایل" dir="rtl">
         <a href="/" :aria-current="path === '/' ? 'page' : undefined"><i class="fa-solid fa-house" aria-hidden="true" /><span>خانه</span></a>

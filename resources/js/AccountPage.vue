@@ -1,139 +1,158 @@
 <script setup>
-import { onMounted, ref } from 'vue';
-import SiteHeader from './SiteHeader.vue';
-import SiteFooter from './SiteFooter.vue';
-import { state, isLoggedIn, loadUser, logout, updateProfile } from './auth-state.js';
+import { computed, onMounted, ref, watch } from 'vue';
+import AccountLayout from './components/account/AccountLayout.vue';
+import AccountNotice from './components/account/AccountNotice.vue';
+import AccountState from './components/account/AccountState.vue';
+import ProfileField from './components/account/ProfileField.vue';
+import { state as authState, isLoggedIn, loadUser, logout, updateProfile } from './auth-state.js';
+import { PROFILE_EDITABLE_FIELDS, PROFILE_FIXED_FIELDS, errorSummary, firstError, profileValidation } from './account-presentation.js';
 
-const editName = ref('');
-const editEmail = ref('');
-const saving = ref(false);
-const saveSuccess = ref(false);
+// Only name and email can be updated: that is exactly what the profile endpoint
+// accepts. The mobile number comes from the same response but is never submitted.
+const form = ref({ name: authState.user?.name || '', email: authState.user?.email || '' });
+const fieldErrors = ref({});
 const saveError = ref('');
+const saved = ref(false);
+const saving = ref(false);
+const loggingOut = ref(false);
+const logoutError = ref('');
+
+const ready = computed(() => isLoggedIn.value && authState.user);
+const unchanged = computed(() => form.value.name.trim() === (authState.user?.name || '').trim()
+    && form.value.email.trim() === (authState.user?.email || '').trim());
+
+function fillFromUser() {
+    form.value = { name: authState.user?.name || '', email: authState.user?.email || '' };
+    fieldErrors.value = {};
+}
 
 onMounted(async () => {
-    if (!isLoggedIn.value) {
-        await loadUser();
-    }
+    if (!isLoggedIn.value) await loadUser();
     if (!isLoggedIn.value) {
         window.location.href = '/login';
         return;
     }
-    editName.value = state.user?.name || '';
-    editEmail.value = state.user?.email || '';
+    fillFromUser();
 });
 
-async function onSave() {
-    saveSuccess.value = false;
-    saveError.value = '';
-    saving.value = true;
+watch(() => authState.user?.id, (id) => { if (id) fillFromUser(); });
 
+async function onSave() {
+    if (saving.value || unchanged.value) return;
+    saved.value = false;
+    saveError.value = '';
+    fieldErrors.value = profileValidation(form.value);
+    if (Object.keys(fieldErrors.value).length) {
+        saveError.value = 'لطفاً خطاهای فرم را برطرف کنید.';
+        return;
+    }
+
+    saving.value = true;
     try {
-        await updateProfile(editName.value, editEmail.value);
-        saveSuccess.value = true;
-    } catch (e) {
-        const msg = e.response?.data?.message;
-        const errors = e.response?.data?.errors;
-        if (errors?.email) {
-            saveError.value = errors.email[0];
-        } else if (msg) {
-            saveError.value = msg;
-        } else {
-            saveError.value = 'تغییرات ذخیره نشد.';
-        }
+        await updateProfile(form.value.name.trim(), form.value.email.trim());
+        fieldErrors.value = {};
+        saved.value = true;
+    } catch (failure) {
+        const errors = failure.response?.data?.errors;
+        fieldErrors.value = errors || {};
+        saveError.value = failure.response?.data?.message
+            || errorSummary(errors)[0]
+            || 'ذخیره تغییرات انجام نشد. لطفاً دوباره تلاش کنید.';
     } finally {
         saving.value = false;
     }
 }
 
 async function onLogout() {
-    await logout();
-    window.location.href = '/';
+    if (loggingOut.value) return;
+    loggingOut.value = true;
+    logoutError.value = '';
+    try {
+        await logout();
+        window.location.href = '/';
+    } catch (failure) {
+        logoutError.value = 'خروج از حساب انجام نشد. لطفاً دوباره تلاش کنید.';
+    } finally {
+        loggingOut.value = false;
+    }
 }
 </script>
 
 <template>
-    <div class="min-h-screen bg-cream text-ink font-sans antialiased">
-        <SiteHeader />
+    <AccountLayout
+        active="profile"
+        title="حساب کاربری"
+        description="اطلاعات حساب، سفارش‌ها و علاقه‌مندی‌های شما از همین بخش مدیریت می‌شود."
+    >
+        <AccountState v-if="authState.loading" busy />
 
-        <div class="max-w-lg mx-auto px-4 py-12">
-            <!-- Loading -->
-            <div v-if="state.loading" class="text-center py-16">
-                <i class="fa-solid fa-spinner fa-spin text-2xl text-brand-accent"></i>
-            </div>
+        <template v-else-if="!ready">
+            <AccountState icon="fa-regular fa-user" title="حساب کاربری در دسترس نیست" description="برای مشاهده اطلاعات حساب وارد شوید.">
+                <a class="sf-button" href="/login">ورود به حساب کاربری</a>
+            </AccountState>
+        </template>
 
-            <template v-else-if="isLoggedIn">
-                <div class="rounded-xl border border-gray-200 bg-white p-6 sm:p-8">
-                    <div class="flex items-center gap-3 mb-6 pb-4 border-b border-gray-200">
-                        <div class="w-10 h-10 rounded-full bg-brand-accent/10 flex items-center justify-center">
-                            <i class="fa-solid fa-user text-brand-accent"></i>
-                        </div>
-                        <div>
-                            <h1 class="text-sm font-black text-ink">{{ state.user?.name }}</h1>
-                            <p class="text-[11px] text-slate-500">{{ state.user?.email }}</p>
-                        </div>
-                    </div>
-
-                    <div v-if="saveSuccess" class="mb-4 rounded-lg bg-emerald-50 border border-emerald-200 p-3 text-xs text-emerald-600">
+        <template v-else>
+            <section class="ac-card">
+                <div class="ac-card-head">
+                    <h2>اطلاعات حساب</h2>
+                    <p>نام و ایمیل قابل ویرایش هستند.</p>
+                </div>
+                <div class="ac-card-body">
+                    <AccountNotice v-if="saved && !saveError" tone="success" icon="fa-solid fa-circle-check">
                         تغییرات با موفقیت ذخیره شد.
-                    </div>
+                    </AccountNotice>
 
-                    <div v-if="saveError" class="mb-4 rounded-lg bg-red-50 border border-red-200 p-3 text-xs text-red-600">
+                    <AccountNotice v-if="saveError" tone="error" icon="fa-solid fa-circle-exclamation" :errors="errorSummary(fieldErrors)">
                         {{ saveError }}
-                    </div>
+                    </AccountNotice>
 
-                    <form class="space-y-4" @submit.prevent="onSave">
-                        <div>
-                            <label class="block text-[11px] font-bold text-slate-500 mb-1.5">نام</label>
-                            <input
-                                v-model="editName"
-                                type="text"
-                                required
-                                class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-ink focus:border-brand-accent/60 focus:outline-none transition-colors"
-                            />
-                        </div>
-
-                        <div>
-                            <label class="block text-[11px] font-bold text-slate-500 mb-1.5">ایمیل</label>
-                            <input
-                                v-model="editEmail"
-                                type="email"
-                                required
-                                class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-ink focus:border-brand-accent/60 focus:outline-none transition-colors"
-                            />
-                        </div>
-
-                        <button
-                            type="submit"
+                    <form class="ac-form" novalidate @submit.prevent="onSave">
+                        <ProfileField
+                            v-for="field in PROFILE_EDITABLE_FIELDS"
+                            :key="field.key"
+                            v-model="form[field.key]"
+                            :field="field"
+                            :error="firstError(fieldErrors, field.key)"
                             :disabled="saving"
-                            class="w-full rounded-lg bg-brand-accent text-dark-900 py-2.5 text-sm font-bold hover:bg-brand-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            <i v-if="saving" class="fa-solid fa-spinner fa-spin ml-1"></i>
-                            {{ saving ? 'در حال ذخیره...' : 'ذخیره تغییرات' }}
-                        </button>
-                    </form>
+                        />
 
-                    <div class="mt-6 pt-4 border-t border-gray-200 space-y-2">
-                        <a href="/orders" class="block w-full text-center rounded-lg border border-gray-200 py-2.5 text-xs font-bold text-slate-600 hover:border-gray-400 transition-colors">مشاهده سفارش‌های من</a>
-                        <a
-                            href="/store"
-                            class="block w-full text-center rounded-lg border border-gray-200 py-2.5 text-xs font-bold text-slate-600 hover:border-gray-400 transition-colors"
-                        >
-                            <i class="fa-solid fa-store ml-1 text-[10px]"></i>
-                            بازگشت به فروشگاه
-                        </a>
-                        <button
-                            type="button"
-                            class="w-full text-center rounded-lg py-2.5 text-xs font-bold text-red-500 hover:text-red-600 hover:bg-red-50 transition-colors"
-                            @click="onLogout"
-                        >
-                            <i class="fa-solid fa-right-from-bracket ml-1 text-[10px]"></i>
-                            خروج از حساب
+                        <ProfileField
+                            v-for="field in PROFILE_FIXED_FIELDS"
+                            :key="field.key"
+                            :field="field"
+                            :model-value="authState.user?.[field.key] || ''"
+                            readonly
+                        />
+
+                        <div class="ac-actions">
+                            <button type="submit" class="sf-button" :disabled="saving || unchanged">
+                                {{ saving ? 'در حال ذخیره…' : 'ذخیره تغییرات' }}
+                            </button>
+                            <span v-if="!saving && unchanged" class="sf-type-caption">برای ذخیره، نام یا ایمیل را تغییر دهید.</span>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <section class="ac-card">
+                <div class="ac-card-head">
+                    <h2>نشست و خروج</h2>
+                    <p>با خروج، توکن این دستگاه باطل می‌شود.</p>
+                </div>
+                <div class="ac-card-body">
+                    <AccountNotice v-if="logoutError" tone="error" icon="fa-solid fa-circle-exclamation">
+                        {{ logoutError }}
+                    </AccountNotice>
+                    <div class="ac-actions">
+                        <button type="button" class="ac-action-danger" :disabled="loggingOut" @click="onLogout">
+                            <i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i>
+                            {{ loggingOut ? 'در حال خروج…' : 'خروج از حساب' }}
                         </button>
+                        <a class="sf-text-link" href="/orders">سفارش‌های من</a>
                     </div>
                 </div>
-            </template>
-        </div>
-
-        <SiteFooter />
-    </div>
+            </section>
+        </template>
+    </AccountLayout>
 </template>

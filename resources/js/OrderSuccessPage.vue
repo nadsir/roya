@@ -3,7 +3,11 @@ import { computed, ref } from 'vue';
 import axios from 'axios';
 import SiteHeader from './SiteHeader.vue';
 import SiteFooter from './SiteFooter.vue';
+import CheckoutAlert from './components/checkout/CheckoutAlert.vue';
 import { state as authState } from './auth-state.js';
+import { formatPrice } from './product-presentation.js';
+import { submitLabel, CHECKOUT_PHASES } from './checkout-presentation.js';
+import '../css/checkout.css';
 
 let savedReceipt = null;
 try {
@@ -12,12 +16,13 @@ try {
 const receipt = computed(() => savedReceipt && authState.user
     && String(savedReceipt.user_id) === String(authState.user.id) ? savedReceipt : null);
 
-const paying = ref(false);
+const phase = ref(CHECKOUT_PHASES.IDLE);
 const payError = ref('');
+const paying = computed(() => phase.value === CHECKOUT_PHASES.PAYING);
 
 async function payOrder() {
     if (!receipt.value || paying.value) return;
-    paying.value = true;
+    phase.value = CHECKOUT_PHASES.PAYING;
     payError.value = '';
     try {
         const { data } = await axios.post(`/api/customer/orders/${receipt.value.id}/pay`);
@@ -29,51 +34,67 @@ async function payOrder() {
     } catch (e) {
         payError.value = e.response?.data?.message || 'خطا در اتصال به درگاه پرداخت. لطفاً مجدداً تلاش کنید.';
     } finally {
-        paying.value = false;
+        phase.value = CHECKOUT_PHASES.IDLE;
     }
 }
 </script>
 
 <template>
-    <div class="min-h-screen bg-cream text-ink font-sans antialiased" dir="rtl">
+    <div class="co-page" dir="rtl">
         <SiteHeader />
-        <main class="max-w-xl mx-auto px-4 py-16">
-            <section class="rounded-xl border border-gray-200 bg-white p-8 text-center">
-                <p v-if="authState.loading" role="status">در حال بارگذاری…</p>
-                <template v-else-if="receipt">
-                    <h1 class="text-xl font-black mb-5">سفارش شما با موفقیت ثبت شد.</h1>
-                    <p class="text-sm mb-3">شماره سفارش: <b dir="ltr">#{{ receipt.id }}</b></p>
-                    <p class="text-sm mb-3">مبلغ نهایی: {{ Number(receipt.total).toLocaleString('fa-IR') }} تومان</p>
-                    <p class="text-xs text-slate-500 mb-6">سفارش در انتظار تأیید است.</p>
-                    <div v-if="payError" class="mb-4 text-xs text-red-600 bg-red-50 rounded-lg p-3" role="alert">
-                        {{ payError }}
+
+        <main class="sf-container co-main">
+            <p v-if="authState.loading" class="sf-shell-state" role="status">در حال بارگذاری…</p>
+
+            <section v-else-if="receipt" class="co-receipt">
+                <span class="co-receipt-mark" aria-hidden="true"><i class="fa-solid fa-receipt" /></span>
+                <h1 class="sf-type-h1">سفارش شما ثبت شد</h1>
+                <p class="sf-type-body">برای نهایی شدن سفارش، پرداخت را از طریق درگاه بانکی انجام دهید.</p>
+
+                <dl class="co-receipt-rows">
+                    <div class="co-receipt-row">
+                        <dt class="sf-type-small">شماره سفارش</dt>
+                        <dd class="sf-type-price" dir="ltr">#{{ receipt.id }}</dd>
                     </div>
-                    <button
-                        v-if="receipt"
-                        type="button"
-                        :disabled="paying"
-                        class="w-full sm:w-auto rounded-lg bg-brand-accent px-6 py-3 text-sm font-bold text-dark-900 hover:bg-brand-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                        @click="payOrder"
-                    >
-                        <span v-if="paying" class="flex items-center gap-2">
-                            <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                            در حال اتصال به درگاه…
-                        </span>
-                        <span v-else>پرداخت سفارش</span>
+                    <div class="co-receipt-row">
+                        <dt class="sf-type-small">وضعیت</dt>
+                        <dd class="sf-type-price">در انتظار پرداخت</dd>
+                    </div>
+                    <div class="co-receipt-row co-receipt-total">
+                        <dt class="sf-type-small">مبلغ قابل پرداخت</dt>
+                        <dd class="sf-type-price">{{ formatPrice(receipt.total) }} <small>تومان</small></dd>
+                    </div>
+                </dl>
+
+                <p class="co-receipt-note sf-type-caption">
+                    مبلغ نهایی در مرحله ثبت سفارش توسط سرور محاسبه شده است. سفارش پس از تأیید پرداخت نهایی می‌شود.
+                </p>
+
+                <CheckoutAlert v-if="payError" :message="payError" />
+
+                <div class="co-receipt-actions">
+                    <button type="button" class="sf-button co-submit" :disabled="paying" @click="payOrder">
+                        {{ paying ? submitLabel(CHECKOUT_PHASES.PAYING) : 'پرداخت سفارش' }}
                     </button>
-                </template>
-                <p v-else class="text-sm mb-6">اطلاعات سفارش ثبت‌شده در این مرورگر در دسترس نیست.</p>
-                <div class="flex flex-wrap justify-center gap-3 text-xs font-bold">
-                    <a v-if="receipt" :href="`/orders/${receipt.id}`" class="rounded-lg bg-brand-accent px-4 py-2.5 text-dark-900 hover:bg-brand-hover">مشاهده جزئیات سفارش</a>
-                    <a href="/orders" class="rounded-lg border border-gray-200 px-4 py-2.5 hover:bg-gray-50">مشاهده همه سفارش‌ها</a>
-                    <a href="/account" class="rounded-lg bg-brand-accent px-4 py-2.5 text-dark-900 hover:bg-brand-hover">مشاهده حساب کاربری</a>
-                    <a href="/store" class="rounded-lg border border-gray-200 px-4 py-2.5 hover:bg-gray-50">بازگشت به فروشگاه</a>
                 </div>
+
+                <nav class="co-receipt-links sf-type-caption" aria-label="پیوندهای سفارش">
+                    <a class="sf-text-link" :href="`/orders/${receipt.id}`">مشاهده جزئیات سفارش</a>
+                    <a class="sf-text-link" href="/orders">همه سفارش‌های من</a>
+                    <a class="sf-text-link" href="/account">حساب کاربری</a>
+                    <a class="sf-text-link" href="/store">ادامه خرید</a>
+                </nav>
+            </section>
+
+            <section v-else class="co-empty sf-shell-state">
+                <span class="co-empty-mark" aria-hidden="true"><i class="fa-regular fa-receipt" /></span>
+                <h2 class="sf-type-h3">اطلاعات سفارش در دسترس نیست</h2>
+                <p class="sf-type-body">سفارش ثبت‌شده در این مرورگر یافت نشد. سفارش‌های شما در بخش سفارش‌های من قابل مشاهده است.</p>
+                <a class="sf-button" href="/orders">مشاهده سفارش‌ها</a>
+                <a class="sf-text-link" href="/store">بازگشت به فروشگاه</a>
             </section>
         </main>
+
         <SiteFooter />
     </div>
 </template>

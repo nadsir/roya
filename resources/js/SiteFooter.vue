@@ -8,6 +8,7 @@ const year = new Intl.DateTimeFormat('fa-IR', { year: 'numeric' }).format(new Da
 <template>
     <footer class="sf-footer" dir="rtl">
         <div class="sf-container">
+            <div class="sf-footer-invitation"><div><h2>انتخاب‌های شما، کنار هم.</h2><p>حساب گالری؛ برای نگه‌داشتن علاقه‌مندی‌ها و پیگیری سفارش‌ها.</p></div><a href="/account" class="sf-button">ورود به حساب گالری ←</a></div>
             <div class="sf-footer-grid">
                 <div class="sf-footer-brand">
                     <a href="/" class="sf-wordmark" aria-label="گالری؛ صفحه اصلی"><span>گالری</span><small lang="en" dir="ltr">GALLERY</small></a>

@@ -1,9 +1,10 @@
 <script setup>
-import { computed, onMounted, reactive, ref, watch } from 'vue';
-import axios from 'axios';
+import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
 import SiteHeader from './SiteHeader.vue';
 import SiteFooter from './SiteFooter.vue';
-import { addToCart } from './cart-state.js';
+import ProductCard from './components/ProductCard.vue';
+import { createProductDetailState } from './product-detail-state.js';
+import { formatPrice } from './product-presentation.js';
 import { state as authState, isLoggedIn } from './auth-state.js';
 import {
     state as wishlistState,
@@ -16,185 +17,67 @@ import { createCommentSection, faNum } from './comment-state.js';
 import CommentSummary from './components/CommentSummary.vue';
 import CommentList from './components/CommentList.vue';
 import CommentComposer from './components/CommentComposer.vue';
+import '../css/homepage.css';
+import '../css/product.css';
+
+const props = defineProps({ model: { type: Object, default: null } });
+
+// The page owns its state by default; the prop exists so the same markup can be
+// rendered with an already-loaded product (mirrors DiscoveryFilters' `model` prop).
+const model = props.model || createProductDetailState();
+const ownsModel = !props.model;
+
+const {
+    product, result, notice, quantity, activeIndex, selectedVariants, related, relatedLoading,
+    images, activeImage, activeImageSrc, activeImageFailed, attributeAxes, hasVariants,
+    displayPrice, displayCompareAtPrice, displayDiscount, displaySku, displayInStock, displayStock,
+    needsVariantSelection, displayAttributes, customAttributes, categories, brand,
+    maxQuantity, canIncreaseQuantity, load, dispose, add, showNotice, clearNotice,
+    setQuantity, increaseQuantity, decreaseQuantity, thumbSrc, markImageFailed, imageErrorSrc,
+    selectImage, nextImage, prevImage, isValueSelectable, isSelected, selectedLabel, toggleAxisValue,
+} = model;
 
 const comments = createCommentSection('product');
+const panels = reactive({ description: true, specs: true });
+const hasSpecs = computed(() => displayAttributes.value.length > 0 || customAttributes.value.length > 0);
+const galleryLabel = computed(() => `گالری تصاویر ${product.value?.name || ''}`.trim());
+const touchStartX = ref(null);
+const PLACEHOLDER = '/images/placeholder.svg';
 
-const product = ref(null);
-const loading = ref(true);
-const error = ref('');
-const mainImageIndex = ref(0);
-const quantity = ref(1);
-const showAllVehicles = ref(false);
-const VEHICLE_SHOW_LIMIT = 5;
-
-const selectedVariants = reactive({});
-
-const inWishlist = computed(() =>
-    isLoggedIn.value && product.value ? isInWishlist(product.value.id) : false
-);
+const inWishlist = computed(() => (isLoggedIn.value && product.value ? isInWishlist(product.value.id) : false));
 const wishlistLabel = computed(() => {
-    if (!isLoggedIn.value) return 'برای افزودن به علاقه‌مندی‌ها وارد حساب شوید';
+    if (!isLoggedIn.value) return 'ورود برای ذخیره در علاقه‌مندی‌ها';
     if (wishlistState.loading) return 'در حال به‌روزرسانی علاقه‌مندی‌ها';
     return inWishlist.value ? 'حذف از علاقه‌مندی‌ها' : 'افزودن به علاقه‌مندی‌ها';
 });
 
-// Also handle authentication finishing after the product has loaded.
+// Wishlist state follows the signed-in user, including a login that finishes after the product loads.
 watch([() => product.value?.id, () => authState.user?.id], ([productId, userId]) => {
     if (productId && userId) loadWishlist();
 }, { immediate: true });
 
 watch(() => wishlistState.error, (wishlistError) => {
     if (!wishlistError || !isLoggedIn.value || !product.value) return;
-    window.dispatchEvent(new CustomEvent('toast', {
-        detail: {
-            message: wishlistError.message,
-            title: 'خطای علاقه‌مندی‌ها',
-            type: 'error',
-        },
-    }));
+    showNotice(wishlistError.message || 'خطای علاقه‌مندی‌ها', 'error');
 });
 
 async function toggleWishlist() {
-    if (!isLoggedIn.value || !product.value || wishlistState.loading) return;
-
-    if (isInWishlist(product.value.id)) {
-        await removeFromWishlist(product.value.id);
-    } else {
-        await addToWishlist(product.value.id);
+    if (!product.value) return;
+    if (!isLoggedIn.value) {
+        location.href = `/login?redirect=${encodeURIComponent(location.pathname)}`;
+        return;
     }
-}
-
-function formatPrice(price) {
-    return Number(price || 0).toLocaleString('fa-IR');
-}
-
-function productImage(p) {
-    const image = p.images?.find((item) => item.is_primary) || p.images?.[0];
-    return image?.path ? `/storage/${image.path}` : '';
-}
-
-function onImgError(e) {
-    e.target.onerror = null;
-    e.target.src = '/images/placeholder.svg';
-}
-
-const images = computed(() => product.value?.images || []);
-const sortedImages = computed(() => [...images.value].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0)));
-const mainImage = computed(() => sortedImages.value[mainImageIndex.value] || sortedImages.value[0]);
-const mainImageUrl = computed(() => mainImage.value?.path ? `/storage/${mainImage.value.path}` : '');
-
-function selectImage(index) { mainImageIndex.value = index; }
-function prevImage() { mainImageIndex.value = mainImageIndex.value > 0 ? mainImageIndex.value - 1 : sortedImages.value.length - 1; }
-function nextImage() { mainImageIndex.value = mainImageIndex.value < sortedImages.value.length - 1 ? mainImageIndex.value + 1 : 0; }
-
-const attributeAxes = computed(() => {
-    const variants = product.value?.variants || [];
-    if (!variants.length) return [];
-    const axisMap = new Map();
-    for (const variant of variants) {
-        for (const [slug, values] of Object.entries(variant.attributes || {})) {
-            if (!axisMap.has(slug)) {
-                axisMap.set(slug, { slug, values: [] });
-            }
-            const axis = axisMap.get(slug);
-            for (const val of values) {
-                if (!axis.values.some(v => v.id === val.id)) {
-                    axis.values.push(val);
-                }
-            }
-        }
+    if (wishlistState.loading) return;
+    const saved = isInWishlist(product.value.id);
+    const done = saved ? await removeFromWishlist(product.value.id) : await addToWishlist(product.value.id);
+    if (!done) {
+        showNotice('ذخیره علاقه‌مندی انجام نشد؛ دوباره تلاش کنید.', 'error');
+        return;
     }
-    return Array.from(axisMap.values());
-});
-const hasVariants = computed(() => product.value?.variants?.length > 0);
-
-function buildVariantLookup() {
-    const variants = product.value?.variants || [];
-    const lookup = new Map();
-    for (const variant of variants) {
-        if (!variant.is_active) continue;
-        const keys = [];
-        for (const [slug, values] of Object.entries(variant.attributes || {})) {
-            for (const v of values) keys.push(`${slug}:${v.id}`);
-        }
-        keys.sort();
-        lookup.set(keys.join('|'), variant);
-    }
-    return lookup;
+    showNotice(saved ? 'از علاقه‌مندی‌ها حذف شد.' : 'در علاقه‌مندی‌ها ذخیره شد.', 'success');
 }
 
-const matchedVariant = computed(() => {
-    if (!hasVariants.value) return null;
-    const lookup = buildVariantLookup();
-    const keys = [];
-    for (const [slug, valueId] of Object.entries(selectedVariants)) {
-        if (valueId) keys.push(`${slug}:${valueId}`);
-    }
-    if (keys.length === 0) return null;
-    keys.sort();
-    return lookup.get(keys.join('|')) || null;
-});
-
-function isValueSelectable(axisSlug, valueId) {
-    if (!hasVariants.value) return true;
-    for (const variant of product.value?.variants || []) {
-        if (!variant.is_active) continue;
-        let matches = true;
-        for (const [slug, valueIdOther] of Object.entries(selectedVariants)) {
-            if (slug === axisSlug || !valueIdOther) continue;
-            const variantValues = variant.attributes?.[slug];
-            if (!variantValues?.some((v) => String(v.id) === String(valueIdOther))) { matches = false; break; }
-        }
-        if (!matches) continue;
-        if (variant.attributes?.[axisSlug]?.some((v) => String(v.id) === String(valueId))) return true;
-    }
-    return false;
-}
-
-function onVariantSelect(axisSlug, valueId) {
-    if (selectedVariants[axisSlug] === String(valueId)) delete selectedVariants[axisSlug];
-    else selectedVariants[axisSlug] = String(valueId);
-    mainImageIndex.value = 0;
-}
-
-const displayPrice = computed(() => matchedVariant.value?.price ?? product.value?.price ?? 0);
-const displayCompareAtPrice = computed(() => matchedVariant.value?.compare_at_price ?? product.value?.compare_at_price ?? null);
-const displaySku = computed(() => matchedVariant.value?.sku || product.value?.sku || '');
-const displayInStock = computed(() => matchedVariant.value ? matchedVariant.value.stock > 0 : product.value?.in_stock ?? false);
-const displayStock = computed(() => matchedVariant.value?.stock ?? null);
-
-const needsVariantSelection = computed(() => {
-    if (!hasVariants.value || matchedVariant.value) return false;
-    return attributeAxes.value.length > 0 && Object.values(selectedVariants).filter(Boolean).length < attributeAxes.value.length;
-});
-
-const displayAttributes = computed(() => {
-    const attrs = product.value?.attributes;
-    if (!attrs || typeof attrs !== 'object') return [];
-    const variantSlugs = new Set(attributeAxes.value.map((a) => a.slug));
-    return Object.entries(attrs).filter(([slug]) => !variantSlugs.has(slug)).map(([slug, values]) => ({ slug, values: Array.isArray(values) ? values : [] }));
-});
-
-const vehicleCompat = computed(() => product.value?.vehicle_compatibility || []);
-const visibleVehicles = computed(() => showAllVehicles.value ? vehicleCompat.value : vehicleCompat.value.slice(0, VEHICLE_SHOW_LIMIT));
-const categoryPath = computed(() => product.value?.categories || []);
-
-async function fetchProduct() {
-    const match = location.pathname.match(/\/products\/(\d+)/);
-    if (!match) { error.value = 'محصول مورد نظر پیدا نشد.'; loading.value = false; return; }
-    try {
-        const { data } = await axios.get(`/api/products/${match[1]}`);
-        product.value = data.data || data;
-    } catch (e) {
-        error.value = e.response?.status === 404 ? 'محصول مورد نظر پیدا نشد.' : 'خطا در دریافت اطلاعات محصول.';
-    } finally { loading.value = false; }
-}
-
-function goBack() {
-    if (window.history.length > 1) window.history.back();
-    else window.location.href = '/store';
-}
-
+// Reviews are loaded once the product id is known; guests are sent to login by comment-state.
 watch([() => product.value?.id, () => authState.user?.id], async ([productId]) => {
     if (!productId) return;
     if (!comments.section.ownerId) {
@@ -204,300 +87,379 @@ watch([() => product.value?.id, () => authState.user?.id], async ([productId]) =
     comments.restoreIntent();
 });
 
-function addToCartToCart() {
-    if (!displayInStock.value) return;
-    if (needsVariantSelection.value) return;
-
-    const p = product.value;
-    if (!p) return;
-
-    const v = matchedVariant.value;
-    const key = v ? `variant_${v.id}` : `product_${p.id}`;
-
-    const image =
-        p.images?.find((img) => img.is_primary)?.path ||
-        p.images?.[0]?.path ||
-        null;
-
-    let attributes = null;
-    if (v?.attributes) {
-        attributes = {};
-        for (const [slug, vals] of Object.entries(
-            v.attributes
-        )) {
-            attributes[slug] = vals;
-        }
-    }
-
-    addToCart({
-        key,
-        product_id: p.id,
-        variant_id: v?.id || null,
-        name: p.name,
-        price: displayPrice.value,
-        quantity: quantity.value,
-        image: image ? `/storage/${image}` : null,
-        attributes,
-        sku: displaySku.value || null,
-        stock: v?.stock ?? p.stock ?? 999,
-    });
-
-    window.dispatchEvent(
-        new CustomEvent('toast', {
-            detail: {
-                message: `${p.name} به سبد خرید اضافه شد.`,
-                title: 'افزودن به سبد',
-                type: 'success',
-            },
-        })
-    );
+function onImgError(event, path) {
+    const target = event.target;
+    if (!target) return;
+    const next = imageErrorSrc(path, target.currentSrc || target.src);
+    if (next) target.src = next;
 }
 
-onMounted(fetchProduct);
+function onTouchStart(event) {
+    touchStartX.value = event.changedTouches?.[0]?.clientX ?? null;
+}
+function onTouchEnd(event) {
+    if (touchStartX.value === null) return;
+    const endX = event.changedTouches?.[0]?.clientX ?? touchStartX.value;
+    const delta = endX - touchStartX.value;
+    touchStartX.value = null;
+    if (Math.abs(delta) < 40) return;
+    if (delta < 0) nextImage();
+    else prevImage();
+}
+
+function goBack() {
+    if (window.history.length > 1) window.history.back();
+    else window.location.href = '/store';
+}
+
+onMounted(() => { if (ownsModel) load(); });
+onBeforeUnmount(() => { if (ownsModel) dispose(); });
 </script>
 
 <template>
-    <div class="min-h-screen bg-cream text-ink font-sans antialiased">
+    <div class="pd-page" dir="rtl">
         <SiteHeader />
 
         <!-- Loading -->
-        <div v-if="loading" class="flex items-center justify-center py-32">
-            <div class="text-center">
-                <i class="fa-solid fa-spinner fa-spin text-2xl text-brand-accent mb-3"></i>
-                <p class="text-xs text-slate-500">در حال بارگذاری محصول…</p>
+        <div v-if="result.loading" class="pd-container pd-skeleton" role="status" aria-busy="true">
+            <span class="pd-sr-only">در حال بارگذاری محصول…</span>
+            <div class="pd-skeleton-media"><span class="sf-skeleton" /></div>
+            <div class="pd-skeleton-copy">
+                <span class="sf-skeleton pd-skeleton-line pd-skeleton-line--sm" />
+                <span class="sf-skeleton pd-skeleton-line pd-skeleton-line--lg" />
+                <span class="sf-skeleton pd-skeleton-line pd-skeleton-line--sm" />
+                <span class="sf-skeleton pd-skeleton-line pd-skeleton-line--price" />
+                <span class="sf-skeleton pd-skeleton-line pd-skeleton-line--options" />
+                <span class="sf-skeleton pd-skeleton-line pd-skeleton-line--options" />
+                <span class="sf-skeleton pd-skeleton-line pd-skeleton-line--cta" />
             </div>
         </div>
 
-        <!-- Error -->
-        <div v-else-if="error" class="mx-auto max-w-4xl px-4 py-24 text-center">
-            <i class="fa-solid fa-circle-exclamation text-4xl text-slate-500 mb-4"></i>
-            <p class="mb-5 text-sm text-red-600">{{ error }}</p>
-            <button type="button" class="px-5 py-2 rounded-lg bg-brand-accent text-ink text-xs font-bold hover:bg-brand-hover transition-colors" @click="goBack">
-                بازگشت به فروشگاه
-            </button>
+        <!-- Product not found -->
+        <div v-else-if="result.notFound" class="pd-container pd-state" role="alert">
+            <p class="pd-eyebrow" lang="en" dir="ltr">NOT IN THE EDIT</p>
+            <h1>این محصول دیگر در دسترس نیست.</h1>
+            <p>شاید این انتخاب از مجموعه گالری خارج شده باشد. نگاهی به تازه‌های مجموعه بیندازید.</p>
+            <div class="pd-state-actions">
+                <a href="/store" class="pd-button">مشاهده همه محصولات</a>
+                <button type="button" class="pd-text-button" @click="goBack">بازگشت</button>
+            </div>
+        </div>
+
+        <!-- API error -->
+        <div v-else-if="result.error" class="pd-container pd-state" role="alert">
+            <p class="pd-eyebrow" lang="en" dir="ltr">A MOMENT AWAY</p>
+            <h1>کمی بعد دوباره ببینیم.</h1>
+            <p>{{ result.error }}</p>
+            <div class="pd-state-actions">
+                <button type="button" class="pd-button" @click="load">تلاش مجدد</button>
+                <a href="/store" class="pd-text-button">بازگشت به فروشگاه</a>
+            </div>
         </div>
 
         <!-- Product -->
-        <div v-else-if="product" class="max-w-6xl mx-auto px-4 sm:px-6 py-6">
-            <!-- Breadcrumb -->
-            <nav class="mb-5 flex items-center gap-1.5 text-[11px] text-slate-500">
-                <a href="/store" class="hover:text-brand-accent transition-colors">فروشگاه</a>
-                <template v-for="(cat, idx) in categoryPath" :key="cat.id">
-                    <i class="fa-solid fa-chevron-left text-[8px] text-slate-600"></i>
-                    <span class="text-ink">{{ cat.name }}</span>
-                </template>
-            </nav>
+        <main v-else-if="product" class="pd-main">
+            <div class="pd-container">
+                <nav class="pd-breadcrumb" aria-label="مسیر صفحه">
+                    <a href="/">خانه</a>
+                    <span aria-hidden="true">/</span>
+                    <a href="/store">گالری</a>
+                    <template v-for="cat in categories" :key="cat.id">
+                        <span aria-hidden="true">/</span>
+                        <a :href="`/c/${cat.slug}`">{{ cat.name }}</a>
+                    </template>
+                    <span aria-hidden="true">/</span>
+                    <span aria-current="page">{{ product.name }}</span>
+                </nav>
 
-            <div class="grid gap-8 lg:grid-cols-[1fr_1fr]">
-                <!-- Gallery -->
-                <div>
-                    <div class="relative rounded-xl bg-white border border-gray-200 overflow-hidden">
-                        <img v-if="mainImageUrl" :src="mainImageUrl" :alt="mainImage?.alt_text || product.name" class="aspect-square w-full object-cover" @error="onImgError($event)" />
-                        <div v-else class="aspect-square flex items-center justify-center text-sm text-slate-400">
-                            <i class="fa-solid fa-image text-4xl"></i>
+                <div class="pd-hero">
+                    <!-- Gallery -->
+                    <section class="pd-gallery" :aria-label="galleryLabel">
+                        <div v-if="images.length > 1" class="pd-thumbs no-scrollbar" role="group" aria-label="انتخاب تصویر">
+                            <button
+                                v-for="(image, index) in images"
+                                :key="image.path"
+                                type="button"
+                                class="pd-thumb"
+                                :class="{ 'is-active': index === activeIndex }"
+                                :aria-current="index === activeIndex ? 'true' : undefined"
+                                :aria-label="`نمای ${faNum(index + 1)} از ${faNum(images.length)}`"
+                                @click="selectImage(index)"
+                            >
+                                <img
+                                    v-if="thumbSrc(image)"
+                                    :src="thumbSrc(image)"
+                                    :alt="image.alt_text || ''"
+                                    decoding="async"
+                                    @error="onImgError($event, image.path)"
+                                />
+                                <span v-else class="pd-thumb-fallback" aria-hidden="true" lang="en">G</span>
+                            </button>
                         </div>
-                        <button v-if="sortedImages.length > 1" type="button" class="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/20 backdrop-blur-sm flex items-center justify-center text-ink hover:bg-black/40 transition-colors" @click="prevImage">
-                            <i class="fa-solid fa-chevron-right text-xs"></i>
-                        </button>
-                        <button v-if="sortedImages.length > 1" type="button" class="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/20 backdrop-blur-sm flex items-center justify-center text-ink hover:bg-black/40 transition-colors" @click="nextImage">
-                            <i class="fa-solid fa-chevron-left text-xs"></i>
-                        </button>
-                    </div>
-                    <div v-if="sortedImages.length > 1" class="mt-2.5 flex gap-2 overflow-x-auto no-scrollbar pb-2">
-                        <button v-for="(img, idx) in sortedImages" :key="img.id" type="button" class="h-16 w-16 sm:h-20 sm:w-20 flex-shrink-0 rounded-lg overflow-hidden border-2 transition-colors" :class="idx === mainImageIndex ? 'border-brand-accent' : 'border-gray-200 hover:border-gray-400'" @click="selectImage(idx)">
-                            <img :src="`/storage/${img.path}`" :alt="img.alt_text || product.name" class="h-full w-full object-cover" @error="onImgError($event)" />
-                        </button>
-                    </div>
-                </div>
 
-                <!-- Product Info -->
-                <div class="space-y-4">
-                    <h1 class="text-xl sm:text-2xl font-black text-ink leading-relaxed">{{ product.name }}</h1>
-
-                    <p v-if="displaySku" class="text-[11px] text-slate-500 font-mono">SKU: {{ displaySku }}</p>
-
-                    <!-- Price -->
-                    <div class="flex items-baseline gap-3">
-                        <span class="text-xl font-black text-brand-accent font-mono">{{ formatPrice(displayPrice) }} <span class="text-xs font-sans text-slate-500">تومان</span></span>
-                        <span v-if="displayCompareAtPrice" class="text-xs text-slate-500 line-through font-mono">{{ formatPrice(displayCompareAtPrice) }}</span>
-                    </div>
-
-                    <!-- Stock -->
-                    <div class="flex items-center gap-2">
-                        <span v-if="displayInStock" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-[11px] text-emerald-400 font-medium">
-                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> موجود
-                        </span>
-                        <span v-else class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-red-500/10 border border-red-500/20 text-[11px] text-red-400 font-medium">
-                            <span class="w-1.5 h-1.5 rounded-full bg-red-400"></span> ناموجود
-                        </span>
-                        <span v-if="displayInStock && displayStock !== null" class="text-[10px] text-slate-500">({{ displayStock }} عدد)</span>
-                    </div>
-
-                    <p v-if="needsVariantSelection" class="text-[11px] text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-                        <i class="fa-solid fa-exclamation-triangle ml-1"></i> لطفاً ویژگی‌های محصول را انتخاب کنید.
-                    </p>
-
-                    <p v-if="product.short_description" class="text-xs text-slate-600 leading-relaxed">{{ product.short_description }}</p>
-
-                    <!-- Variant Selector -->
-                    <div v-if="hasVariants && attributeAxes.length" class="space-y-4 pt-2">
-                        <div v-for="axis in attributeAxes" :key="axis.slug">
-                            <p class="mb-2 text-[12px] font-bold text-slate-400 uppercase tracking-wider">{{ axis.slug }}</p>
-                            <div class="flex flex-wrap gap-2">
-                                <button v-for="val in axis.values" :key="val.id" type="button" :disabled="!isValueSelectable(axis.slug, val.id)" class="rounded-lg border px-4 py-2 text-sm transition-colors min-h-[44px] flex items-center gap-1.5" :class="selectedVariants[axis.slug] === String(val.id) ? 'bg-brand-accent text-dark-900 border-brand-accent font-bold' : 'border-gray-200 text-ink hover:border-slate-600 disabled:opacity-30'" @click="onVariantSelect(axis.slug, val.id)">
-                                    <span v-if="val.hex_color" class="ml-1 inline-block w-4 h-4 rounded-full border border-gray-300" :style="{ backgroundColor: val.hex_color }"></span>
-                                    {{ val.label }}
+                        <div class="pd-stage-wrap">
+                            <span class="pd-stage-frame" aria-hidden="true" />
+                            <div
+                                class="pd-stage"
+                                @touchstart.passive="onTouchStart"
+                                @touchend.passive="onTouchEnd"
+                            >
+                                <img
+                                    v-if="activeImageSrc"
+                                    :key="activeImage?.path"
+                                    :src="activeImageSrc"
+                                    :alt="activeImage?.alt_text || product.name"
+                                    class="pd-stage-image"
+                                    decoding="async"
+                                    @error="onImgError($event, activeImage?.path)"
+                                />
+                                <div v-else class="pd-fallback">
+                                    <span aria-hidden="true" lang="en">G</span>
+                                    <small>{{ activeImageFailed ? 'تصویر در دسترس نیست' : 'تصویر محصول به‌زودی' }}</small>
+                                </div>
+                                <button
+                                    v-if="images.length > 1"
+                                    type="button"
+                                    class="pd-nav pd-nav--prev"
+                                    aria-label="تصویر قبلی"
+                                    @click="prevImage"
+                                >
+                                    <i class="fa-solid fa-chevron-right" aria-hidden="true" />
                                 </button>
+                                <button
+                                    v-if="images.length > 1"
+                                    type="button"
+                                    class="pd-nav pd-nav--next"
+                                    aria-label="تصویر بعدی"
+                                    @click="nextImage"
+                                >
+                                    <i class="fa-solid fa-chevron-left" aria-hidden="true" />
+                                </button>
+                                <span v-if="images.length > 1" class="pd-counter" aria-hidden="true">
+                                    {{ faNum(activeIndex + 1) }} / {{ faNum(images.length) }}
+                                </span>
                             </div>
                         </div>
-                    </div>
+                    </section>
 
-                    <button
-                        type="button"
-                        :disabled="!isLoggedIn || wishlistState.loading"
-                        :aria-pressed="inWishlist"
-                        :aria-busy="wishlistState.loading"
-                        :aria-label="wishlistLabel"
-                        :title="wishlistLabel"
-                        class="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        :class="inWishlist ? 'border-brand-accent text-brand-accent bg-white' : 'border-gray-200 text-slate-500 hover:border-gray-400'"
-                        @click="toggleWishlist"
-                    >
-                        <i v-if="wishlistState.loading" class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i>
-                        <span v-else class="text-xl leading-none" aria-hidden="true">{{ inWishlist ? '♥' : '♡' }}</span>
-                        <span>{{ wishlistLabel }}</span>
-                    </button>
+                    <!-- Information -->
+                    <div class="pd-info">
+                        <p v-if="brand || categories.length" class="pd-eyebrow">
+                            <template v-if="brand">{{ brand }}</template>
+                            <template v-if="brand && categories.length"> · </template>
+                            <template v-if="categories.length">{{ categories[categories.length - 1].name }}</template>
+                        </p>
 
-                    <!-- Add to Cart -->
-                    <div class="flex items-center gap-3 pt-3">
-                        <div class="flex items-center rounded-lg border border-gray-200">
-                            <button type="button" class="px-4 py-2.5 text-base text-ink hover:bg-gray-100 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center" @click="quantity = Math.max(1, quantity - 1)">−</button>
-                            <span class="min-w-[3rem] text-center text-base font-mono">{{ quantity }}</span>
-                            <button type="button" class="px-4 py-2.5 text-base text-ink hover:bg-gray-100 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center" @click="quantity++">+</button>
+                        <h1 class="pd-title">{{ product.name }}</h1>
+
+                        <p v-if="displaySku" class="pd-sku">کد کالا: <span lang="en">{{ displaySku }}</span></p>
+
+                        <p v-if="product.short_description" class="pd-lead">{{ product.short_description }}</p>
+
+                        <div class="pd-price-block">
+                            <span class="pd-price">{{ formatPrice(displayPrice) }}<small>تومان</small></span>
+                            <del v-if="displayCompareAtPrice" class="pd-price-old">{{ formatPrice(displayCompareAtPrice) }}</del>
+                            <span v-if="displayDiscount" class="pd-discount">{{ faNum(displayDiscount) }}٪ تخفیف</span>
                         </div>
+
+                        <p class="pd-stock" :class="displayInStock ? 'is-in' : 'is-out'">
+                            <span class="pd-stock-dot" aria-hidden="true" />
+                            <span v-if="displayInStock && displayStock !== null">{{ faNum(displayStock) }} عدد در انبار</span>
+                            <span v-else-if="displayInStock">موجود در گالری</span>
+                            <span v-else>ناموجود</span>
+                        </p>
+
+                        <div v-if="hasVariants && attributeAxes.length" class="pd-variants">
+                            <div v-for="axis in attributeAxes" :key="axis.slug" class="pd-variant-axis">
+                                <div class="pd-variant-head">
+                                    <span class="pd-variant-label">{{ axis.label }}</span>
+                                    <span class="pd-variant-value">{{ selectedLabel(axis) || 'انتخاب کنید' }}</span>
+                                </div>
+                                <div class="pd-variant-options" role="group" :aria-label="`انتخاب ${axis.label}`">
+                                    <button
+                                        v-for="value in axis.values"
+                                        :key="value.id"
+                                        type="button"
+                                        class="pd-option"
+                                        :class="{
+                                            'is-selected': isSelected(axis, value),
+                                            'is-unavailable': !isValueSelectable(axis.slug, value.id),
+                                        }"
+                                        :disabled="!isValueSelectable(axis.slug, value.id)"
+                                        :aria-pressed="isSelected(axis, value)"
+                                        @click="toggleAxisValue(axis.slug, value.id)"
+                                    >
+                                        <span
+                                            v-if="value.hex_color"
+                                            class="pd-swatch"
+                                            :style="{ '--swatch': value.hex_color }"
+                                            role="img"
+                                            :aria-label="value.label"
+                                        />
+                                        <span>{{ value.label }}</span>
+                                        <i v-if="isSelected(axis, value)" class="fa-solid fa-check" aria-hidden="true" />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <p v-if="needsVariantSelection" class="pd-hint" role="status">
+                            <i class="fa-solid fa-circle-info" aria-hidden="true" />
+                            <span>پیش از افزودن به سبد خرید، گزینه‌های مشخص‌شده را انتخاب کنید.</span>
+                        </p>
+
+                        <div class="pd-purchase">
+                            <div class="pd-quantity" role="group" aria-label="تعداد">
+                                <button type="button" aria-label="کاهش تعداد" :disabled="quantity <= 1" @click="decreaseQuantity">−</button>
+                                <output class="pd-quantity-value" aria-live="polite">{{ faNum(quantity) }}</output>
+                                <button type="button" aria-label="افزودن تعداد" :disabled="!canIncreaseQuantity" @click="increaseQuantity">+</button>
+                            </div>
+                            <button
+                                type="button"
+                                class="pd-cta"
+                                :disabled="!displayInStock || needsVariantSelection"
+                                @click="add"
+                            >
+                                <i class="fa-solid fa-bag-shopping" aria-hidden="true" />
+                                افزودن به سبد خرید
+                            </button>
+                        </div>
+
                         <button
                             type="button"
-                            :disabled="!displayInStock || needsVariantSelection"
-                            class="flex-1 rounded-lg bg-brand-accent text-dark-900 py-3.5 text-base font-bold shadow-glow-yellow transition-colors min-h-[48px]"
-                            :class="!displayInStock || needsVariantSelection ? 'opacity-50 cursor-not-allowed' : 'hover:bg-brand-hover'"
-                            @click="addToCartToCart"
+                            class="pd-wishlist"
+                            :class="{ 'is-saved': inWishlist }"
+                            :disabled="wishlistState.loading"
+                            :aria-pressed="inWishlist"
+                            :aria-busy="wishlistState.loading"
+                            :aria-label="wishlistLabel"
+                            @click="toggleWishlist"
                         >
-                            <i class="fa-solid fa-cart-plus ml-1.5 text-sm"></i> افزودن به سبد خرید
+                            <i
+                                :class="wishlistState.loading ? 'fa-solid fa-spinner fa-spin' : inWishlist ? 'fa-solid fa-heart' : 'fa-regular fa-heart'"
+                                aria-hidden="true"
+                            />
+                            <span>{{ wishlistLabel }}</span>
                         </button>
                     </div>
                 </div>
-            </div>
 
-            <!-- Specifications -->
-<div v-if="displayAttributes.length || product.custom_attributes?.length" class="mt-12">
-                    <h2 class="mb-4 text-lg font-black text-ink">مشخصات محصول</h2>
-                    <div class="rounded-xl border border-gray-200 overflow-hidden">
-                    <table class="w-full text-sm">
-                        <tbody>
-                            <tr v-for="attr in displayAttributes" :key="attr.slug" class="border-b border-gray-200/50 last:border-0">
-                                <td class="w-1/3 bg-white px-4 py-2.5 text-[11px] font-bold text-slate-500">{{ attr.slug }}</td>
-                                <td class="px-4 py-2.5 text-xs text-ink">{{ attr.values.map((v) => v.label).join('، ') }}</td>
-                            </tr>
-                            <tr v-for="attr in product.custom_attributes || []" :key="attr.id" class="border-b border-gray-200/50 last:border-0">
-                                <td class="w-1/3 bg-white px-4 py-2.5 text-[11px] font-bold text-slate-400">{{ attr.name }}</td>
-                                <td class="px-4 py-2.5 text-xs text-ink">{{ attr.value }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+                <!-- Details -->
+                <section v-if="product.description || hasSpecs" class="pd-section pd-details" aria-labelledby="pd-details-title">
+                    <header class="pd-section-head">
+                        <span class="pd-section-rule" aria-hidden="true" />
+                        <div>
+                            <p class="pd-eyebrow" lang="en" dir="ltr">THE DETAILS</p>
+                            <h2 id="pd-details-title">درباره این انتخاب</h2>
+                        </div>
+                    </header>
 
-            <!-- Description -->
-            <div v-if="product.description" class="mt-12">
-<h2 class="mb-4 text-lg font-black text-ink">توضیحات</h2>
-                    <div class="rounded-xl border border-gray-200 bg-white p-5 text-xs text-slate-600 leading-relaxed">
-                    {{ product.description }}
-                </div>
-            </div>
+                    <div class="pd-accordion">
+                        <details v-if="product.description" class="pd-panel" :open="panels.description" @toggle="panels.description = $event.target.open">
+                            <summary>توضیحات</summary>
+                            <div class="pd-panel-body"><p class="pd-prose">{{ product.description }}</p></div>
+                        </details>
 
-            <!-- Vehicle Compatibility -->
-            <div v-if="vehicleCompat.length" class="mt-12">
-                <h2 class="mb-4 text-lg font-black text-ink">خودروهای سازگار</h2>
-                <div class="rounded-xl border border-gray-200 bg-white p-4">
-                    <ul class="space-y-2">
-                        <li v-for="(v, idx) in visibleVehicles" :key="idx" class="rounded-lg border border-gray-200/50 px-3 py-2.5">
-                            <div class="flex flex-wrap items-center gap-1.5 text-xs sm:text-sm">
-                                <span class="font-bold text-brand-accent shrink-0">{{ v.brand.name }}</span>
-                                <i class="fa-solid fa-chevron-left text-[8px] text-slate-400 shrink-0"></i>
-                                <span class="text-ink shrink-0">{{ v.model.name }}</span>
-                                <i class="fa-solid fa-chevron-left text-[8px] text-slate-400 shrink-0"></i>
-                                <span class="text-slate-500 shrink-0">{{ v.generation.name }} ({{ v.generation.year_start }}<template v-if="v.generation.year_end">-{{ v.generation.year_end }}</template>)</span>
-                                <i class="fa-solid fa-chevron-left text-[8px] text-slate-400 shrink-0"></i>
-                                <span class="text-slate-600 shrink-0">{{ v.trim.name }}</span>
-                                <i class="fa-solid fa-chevron-left text-[8px] text-slate-400 shrink-0"></i>
-                                <span class="text-slate-500 shrink-0">{{ v.engine.name }}</span>
+                        <details v-if="hasSpecs" class="pd-panel" :open="panels.specs" @toggle="panels.specs = $event.target.open">
+                            <summary>مشخصات</summary>
+                            <div class="pd-panel-body">
+                                <dl class="pd-specs">
+                                    <div v-for="attr in displayAttributes" :key="attr.slug" class="pd-spec-row">
+                                        <dt>{{ attr.label }}</dt>
+                                        <dd>{{ attr.values.map((value) => value.label).join('، ') }}</dd>
+                                    </div>
+                                    <div v-for="attr in customAttributes" :key="attr.id" class="pd-spec-row">
+                                        <dt>{{ attr.name }}</dt>
+                                        <dd>{{ attr.value }}</dd>
+                                    </div>
+                                </dl>
                             </div>
-                        </li>
-                    </ul>
-                    <button v-if="vehicleCompat.length > VEHICLE_SHOW_LIMIT" type="button" class="mt-2 text-[11px] text-brand-accent hover:text-brand-hover font-medium transition-colors" @click="showAllVehicles = !showAllVehicles">
-                        {{ showAllVehicles ? 'نمایش کمتر' : `نمایش همه (${vehicleCompat.length})` }}
-                    </button>
-                </div>
-            </div>
-
-            <!-- Reviews -->
-            <section class="mt-16 sm:mt-20" aria-labelledby="reviews-title">
-                <div class="mb-8 sm:mb-10 flex items-start gap-4 sm:gap-5">
-                    <span class="mt-1.5 h-12 w-1 shrink-0 rounded-full bg-brand-accent sm:h-14" aria-hidden="true"></span>
-                    <div>
-                        <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">EXP‑01 · Reviews</p>
-                        <h2 id="reviews-title" class="mt-2 text-2xl font-black leading-tight text-ink dark:text-slate-50 sm:text-3xl">
-                            تجربه‌های واقعی
-                        </h2>
-                        <p v-if="comments.section.total" class="mt-1.5 text-xs text-slate-500 dark:text-slate-400">
-                            ثبت‌شده توسط {{ faNum(comments.section.total) }} خریدار این قطعه
-                        </p>
+                        </details>
                     </div>
-                </div>
+                </section>
 
-                <div class="grid gap-10 lg:grid-cols-[minmax(0,300px)_minmax(0,1fr)] lg:items-start lg:gap-14">
-                    <aside class="space-y-8 lg:sticky lg:top-8">
-                        <div class="border-t border-slate-200 pt-6 dark:border-slate-700">
+                <!-- Reviews -->
+                <section class="pd-section pd-reviews" aria-labelledby="pd-reviews-title">
+                    <header class="pd-section-head">
+                        <span class="pd-section-rule" aria-hidden="true" />
+                        <div>
+                            <p class="pd-eyebrow" lang="en" dir="ltr">REVIEWS</p>
+                            <h2 id="pd-reviews-title">تجربه‌های واقعی</h2>
+                            <p v-if="comments.section.total" class="pd-section-note">
+                                ثبت‌شده توسط {{ faNum(comments.section.total) }} خریدار گالری
+                            </p>
+                        </div>
+                    </header>
+
+                    <div class="pd-reviews-layout">
+                        <aside class="pd-reviews-aside">
                             <CommentSummary
                                 :average="comments.section.ratingSummary.average"
                                 :count="comments.section.ratingSummary.count"
                                 :distribution="comments.section.ratingSummary.distribution"
                             />
+                            <div class="pd-reviews-cta">
+                                <p class="pd-reviews-cta-title">تجربه‌ات را با این محصول ثبت کن</p>
+                                <p class="pd-section-note">نگاه شما به خریدارانی که همین انتخاب را می‌سنجند کمک می‌کند.</p>
+                                <button type="button" class="pd-button pd-button--block" @click="comments.openComposer()">
+                                    <i class="fa-solid fa-pen-to-square" aria-hidden="true" />
+                                    ثبت تجربه خرید
+                                </button>
+                            </div>
+                        </aside>
+
+                        <CommentList :section="comments.section" kind="product" />
+                    </div>
+                </section>
+
+                <!-- Related -->
+                <section v-if="related.length || relatedLoading" class="pd-section pd-related" aria-labelledby="pd-related-title" :aria-busy="relatedLoading">
+                    <header class="pd-section-head">
+                        <span class="pd-section-rule" aria-hidden="true" />
+                        <div>
+                            <p class="pd-eyebrow" lang="en" dir="ltr">MORE TO EXPLORE</p>
+                            <h2 id="pd-related-title">شاید بپسندید</h2>
                         </div>
+                    </header>
+                    <div v-if="relatedLoading" class="pd-related-grid" role="status" aria-label="در حال دریافت محصولات مشابه">
+                        <div v-for="n in 4" :key="n" class="pd-card-skeleton" aria-hidden="true"><span class="sf-skeleton pd-card-skeleton-media" /><span class="sf-skeleton pd-card-skeleton-line" /></div>
+                    </div>
+                    <div v-else class="pd-related-grid">
+                        <ProductCard v-for="item in related" :key="item.id" :product="item" />
+                    </div>
+                </section>
+            </div>
+        </main>
 
-                        <div class="border-t border-slate-200 pb-2 pt-6 dark:border-slate-700">
-                            <p class="text-sm font-black text-ink dark:text-slate-100">
-                                تجربه‌ات را با این قطعه ثبت کن
-                            </p>
-                            <p class="mt-1.5 text-xs leading-6 text-slate-500 dark:text-slate-400">
-                                نگاه شما به خریدارانی که به دنبال همین قطعه‌اند کمک می‌کند.
-                            </p>
-                            <button
-                                type="button"
-                                class="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-brand-accent px-6 py-3.5 text-sm font-black text-ink transition hover:bg-brand-hover min-h-[46px]"
-                                @click="comments.openComposer()"
-                            >
-                                <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
-                                ثبت تجربه خرید
-                            </button>
-                        </div>
-                    </aside>
-
-                    <CommentList :section="comments.section" kind="product" />
-                </div>
-            </section>
-
-            <CommentComposer v-model="comments.section.composerOpen" kind="product" :section="comments.section" />
+        <!-- Sticky purchase action (mobile) -->
+        <div v-if="product && !result.loading && !result.error && !result.notFound" class="pd-sticky">
+            <span class="pd-sticky-price">{{ formatPrice(displayPrice) }} <small>تومان</small></span>
+            <button
+                type="button"
+                class="pd-sticky-cta"
+                :disabled="!displayInStock || needsVariantSelection"
+                @click="add"
+            >
+                {{ needsVariantSelection ? 'انتخاب گزینه‌ها' : !displayInStock ? 'ناموجود' : 'افزودن به سبد' }}
+            </button>
         </div>
+
+        <!-- Confirmation / validation message -->
+        <transition name="pd-fade">
+            <div
+                v-if="notice.message"
+                class="pd-toast"
+                :class="notice.type === 'error' ? 'pd-toast--error' : 'pd-toast--success'"
+                :role="notice.type === 'error' ? 'alert' : 'status'"
+            >
+                <i :class="notice.type === 'error' ? 'fa-solid fa-circle-exclamation' : 'fa-solid fa-check'" aria-hidden="true" />
+                <span>{{ notice.message }}</span>
+                <button type="button" class="pd-toast-close" aria-label="بستن پیام" @click="clearNotice">×</button>
+            </div>
+        </transition>
+
+        <CommentComposer v-model="comments.section.composerOpen" kind="product" :section="comments.section" />
 
         <SiteFooter />
     </div>
 </template>
-
-<style>
-.no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
-.no-scrollbar::-webkit-scrollbar { display: none; }
-select { background-image: none; }
-input::placeholder { opacity: 0.7; }
-:focus-visible { outline: 2px solid #FFCD00; outline-offset: 2px; }
-</style>

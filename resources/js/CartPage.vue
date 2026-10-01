@@ -2,226 +2,78 @@
 import { computed } from 'vue';
 import SiteHeader from './SiteHeader.vue';
 import SiteFooter from './SiteFooter.vue';
-import {
-    getCartItems,
-    updateQuantity,
-    removeFromCart,
-    clearCart,
-    cartCount,
-    cartTotal,
-} from './cart-state.js';
+import CartItemRow from './components/cart/CartItemRow.vue';
+import { cartCount, cartTotal, clearCart, getCartItems } from './cart-state.js';
+import { formatPrice } from './product-presentation.js';
+import '../css/cart.css';
 
 const items = computed(() => getCartItems());
-
-function formatPrice(price) {
-    return Number(price || 0).toLocaleString('fa-IR');
-}
-
-function inc(item) {
-    updateQuantity(item.key, item.quantity + 1);
-}
-
-function dec(item) {
-    updateQuantity(item.key, item.quantity - 1);
-}
-
-function remove(key) {
-    removeFromCart(key);
-}
 </script>
 
 <template>
-    <div class="min-h-screen bg-cream text-ink font-sans antialiased">
+    <div class="ct-page" dir="rtl">
         <SiteHeader />
 
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 py-6">
-            <h1 class="text-xl sm:text-2xl font-black text-ink mb-6">
-                سبد خرید
-            </h1>
+        <main class="sf-container ct-main">
+            <nav class="ct-breadcrumb sf-type-caption" aria-label="مسیر صفحه">
+                <a href="/store">فروشگاه</a>
+                <span aria-hidden="true">/</span>
+                <span aria-current="page">سبد خرید</span>
+            </nav>
 
-            <!-- Empty -->
-            <div
-                v-if="!items.length"
-                class="text-center py-16 rounded-xl border border-gray-200 bg-white"
-            >
-                <i
-                    class="fa-solid fa-cart-shopping text-3xl text-slate-400 mb-3 block"
-                ></i>
-                <p class="text-sm text-slate-500">
-                    سبد خرید شما خالی است.
+            <header class="ct-header">
+                <div>
+                    <p class="ct-eyebrow" lang="en" dir="ltr">YOUR BAG</p>
+                    <h1 class="sf-type-h1">سبد خرید شما</h1>
+                </div>
+                <p v-if="items.length" class="ct-header-count sf-type-small">
+                    {{ cartCount.toLocaleString('fa-IR') }} کالا در سبد
                 </p>
-                <a
-                    href="/store"
-                    class="mt-4 inline-block px-5 py-2 rounded-lg bg-brand-accent text-ink text-xs font-bold hover:bg-brand-hover transition-colors"
-                >
-                    مشاهده محصولات
-                </a>
+            </header>
+
+            <div v-if="!items.length" class="ct-empty sf-shell-state">
+                <span class="ct-empty-mark" aria-hidden="true"><i class="fa-regular fa-bag" /></span>
+                <h2 class="sf-type-h3">سبد خرید شما خالی است</h2>
+                <p class="sf-type-body">هنوز کالایی انتخاب نکرده‌اید. از میان مجموعه‌های ما انتخاب کنید.</p>
+                <a class="sf-button ct-empty-action" href="/store">مشاهده محصولات</a>
+                <a class="sf-text-link" href="/wishlist">مشاهده علاقه‌مندی‌ها</a>
             </div>
 
-            <!-- Items -->
-            <div v-else class="space-y-3">
-                <div
-                    v-for="item in items"
-                    :key="item.key"
-                    class="flex gap-4 rounded-xl border border-gray-200 bg-white p-4"
-                >
-                    <!-- Image -->
-                    <div
-                        class="w-20 h-20 sm:w-24 sm:h-24 rounded-lg bg-sand flex-shrink-0 overflow-hidden"
-                    >
-                        <img
-                            v-if="item.image"
-                            :src="item.image"
-                            :alt="item.name"
-                            class="w-full h-full object-cover"
-                        />
-                        <div
-                            v-else
-                            class="w-full h-full flex items-center justify-center"
-                        >
-                            <i
-                                class="fa-solid fa-box text-xl text-slate-400"
-                            ></i>
-                        </div>
-                    </div>
+            <div v-else class="ct-layout">
+                <section class="ct-panel" aria-labelledby="ct-items-title">
+                    <h2 id="ct-items-title" class="sf-type-h3 ct-panel-title">کالاهای سبد خرید</h2>
+                    <ul class="ct-items">
+                        <CartItemRow v-for="item in items" :key="item.key" :item="item" />
+                    </ul>
+                    <a class="sf-text-link ct-continue" href="/store"><span aria-hidden="true">←</span> ادامه خرید</a>
+                </section>
 
-                    <!-- Details -->
-                    <div class="flex-1 min-w-0">
-                        <div
-                            class="flex items-start justify-between gap-2"
-                        >
-                            <div class="min-w-0">
-                                <h3
-                                    class="text-sm font-bold text-ink line-clamp-2 leading-relaxed"
-                                >
-                                    {{ item.name }}
-                                </h3>
-                                <p
-                                    v-if="item.sku"
-                                    class="text-[10px] text-slate-500 font-mono mt-0.5"
-                                >
-                                    SKU: {{ item.sku }}
-                                </p>
-                            </div>
-                            <button
-                                type="button"
-                                class="shrink-0 p-1 text-slate-400 hover:text-red-500 transition-colors"
-                                @click="remove(item.key)"
-                            >
-                                <i class="fa-solid fa-trash-can text-xs"></i>
-                            </button>
+                <aside class="ct-summary" aria-labelledby="ct-summary-title">
+                    <h2 id="ct-summary-title" class="sf-type-h3 ct-panel-title">خلاصه سبد خرید</h2>
+                    <dl class="ct-summary-rows">
+                        <div class="ct-summary-row">
+                            <dt class="sf-type-small">تعداد کل کالاها</dt>
+                            <dd class="sf-type-price">{{ cartCount.toLocaleString('fa-IR') }}</dd>
                         </div>
-
-                        <!-- Variant attributes -->
-                        <div
-                            v-if="item.attributes"
-                            class="mt-1 flex flex-wrap gap-1"
-                        >
-                            <span
-                                v-for="(vals, slug) in item.attributes"
-                                :key="slug"
-                                class="inline-block text-[9px] text-slate-500 bg-gray-100 rounded px-1.5 py-0.5"
-                            >
-                                {{ slug }}:
-                                {{
-                                    Array.isArray(vals)
-                                        ? vals.map((v) => v.label || v).join(', ')
-                                        : vals
-                                }}
-                            </span>
+                        <div class="ct-summary-row ct-summary-row--total">
+                            <dt class="sf-type-small">جمع کل</dt>
+                            <dd class="sf-type-price">{{ formatPrice(cartTotal) }} <small>تومان</small></dd>
                         </div>
+                    </dl>
+                    <p class="sf-type-caption ct-summary-note">هزینه ارسال و مبلغ نهایی در مرحله بعد محاسبه می‌شود.</p>
+                    <a class="sf-button ct-checkout" href="/checkout">تکمیل خرید</a>
+                    <button type="button" class="ct-clear" @click="clearCart">خالی کردن سبد خرید</button>
+                </aside>
+            </div>
+        </main>
 
-                        <div
-                            class="mt-2 flex items-center justify-between"
-                        >
-<!-- Quantity -->
-                            <div
-                                class="flex items-center rounded-lg border border-gray-200"
-                            >
-                                <button
-                                    type="button"
-                                    :disabled="item.quantity <= 1"
-                                    class="px-3 py-2 text-sm text-ink hover:bg-gray-100 transition-colors disabled:opacity-30 min-h-[44px] min-w-[44px] flex items-center justify-center"
-                                    @click="dec(item)"
-                                >
-                                    −
-                                </button>
-                                <span
-                                    class="min-w-[3rem] text-center text-sm font-mono"
-                                >{{ item.quantity }}</span
-                                >
-                                <button
-                                    type="button"
-                                    :disabled="item.quantity >= item.stock"
-                                    class="px-3 py-2 text-sm text-ink hover:bg-gray-100 transition-colors disabled:opacity-30 min-h-[44px] min-w-[44px] flex items-center justify-center"
-                                    @click="inc(item)"
-                                >
-                                    +
-                                </button>
-                            </div>
-
-                            <!-- Subtotal -->
-                            <span
-                                class="text-sm font-black text-brand-accent font-mono"
-                            >
-                                {{ formatPrice(item.price * item.quantity) }}
-                                <span
-                                    class="text-[10px] font-sans text-slate-400"
-                                    >تومان</span
-                                >
-                            </span>
-                        </div>
-                    </div>
+        <div v-if="items.length" class="ct-sticky">
+            <div class="ct-sticky-inner">
+                <div class="ct-sticky-total">
+                    <span class="sf-type-caption">جمع سبد خرید</span>
+                    <strong class="sf-type-price">{{ formatPrice(cartTotal) }} <small>تومان</small></strong>
                 </div>
-
-                <!-- Summary -->
-                <div
-                    class="rounded-xl border border-gray-200 bg-white p-5 mt-4"
-                >
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="text-xs text-slate-500"
-                            >تعداد کل اقلام</span
-                        >
-                        <span class="text-sm font-bold text-ink">{{
-                            cartCount
-                        }}</span>
-                    </div>
-                    <div
-                        class="flex items-center justify-between mb-4 pb-4 border-b border-gray-200"
-                    >
-                        <span class="text-xs text-slate-500">جمع کل</span>
-                        <span
-                            class="text-lg font-black text-brand-accent font-mono"
-                        >
-                            {{ formatPrice(cartTotal) }}
-                            <span
-                                class="text-xs font-sans text-slate-500"
-                                >تومان</span
-                            >
-                        </span>
-                    </div>
-                    <div class="flex gap-3">
-                        <a
-                            href="/store"
-                            class="flex-1 text-center rounded-lg border border-gray-200 py-3 text-xs font-bold text-slate-600 hover:border-gray-400 transition-colors min-h-[44px] flex items-center justify-center"
-                        >
-                            ادامه خرید
-                        </a>
-                        <a
-                            href="/checkout"
-                            class="flex-1 text-center rounded-lg bg-brand-accent text-dark-900 py-3 text-xs font-bold hover:bg-brand-hover min-h-[44px] flex items-center justify-center"
-                        >
-                            تکمیل خرید
-                        </a>
-                    </div>
-                    <button
-                        type="button"
-                        class="mt-3 w-full text-center text-[11px] text-red-500 hover:text-red-600 font-medium transition-colors"
-                        @click="clearCart"
-                    >
-                        خالی کردن سبد
-                    </button>
-                </div>
+                <a class="sf-button ct-sticky-cta" href="/checkout">تکمیل خرید</a>
             </div>
         </div>
 

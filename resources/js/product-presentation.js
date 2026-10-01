@@ -23,6 +23,23 @@ export function productColors(product) {
 }
 export function hasProductVariants(product) { return Boolean(product.has_variants || product.variants?.length); }
 
+const AXIS_LABELS = {
+    size: 'سایز',
+    color: 'رنگ',
+    colour: 'رنگ',
+    material: 'جنس',
+    style: 'استایل',
+    fit: 'فرم',
+    length: 'قد',
+    brand: 'برند',
+};
+
+// Shared by the product detail page and the cart so a variant axis reads the same everywhere.
+export function axisLabel(slug) {
+    const key = String(slug || '').toLowerCase();
+    return AXIS_LABELS[key] || String(slug || '');
+}
+
 export function cartItemFromProduct(product) {
     if (hasProductVariants(product) || product.in_stock !== true) return null;
     return {
