@@ -285,15 +285,37 @@ export function createProductDetailState(browser) {
     const displayInStock = computed(() => (matchedVariant.value ? matchedVariant.value.stock > 0 : product.value?.in_stock ?? false));
     const displayStock = computed(() => matchedVariant.value?.stock ?? null);
 
+    // A variant product is purchasable only once a real variant is resolved. Choosing
+    // every axis is not enough when that combination does not exist: without this the
+    // button would enable and `add` would file the item at the plain product price.
     const needsVariantSelection = computed(() => {
-        if (!hasVariants.value || matchedVariant.value) return false;
-        return attributeAxes.value.length > 0
-            && Object.values(selectedVariants).filter(Boolean).length < attributeAxes.value.length;
+        if (!hasVariants.value || !attributeAxes.value.length) return false;
+        return !matchedVariant.value;
+    });
+
+    // Both purchase buttons read this one label, so the call to action always states
+    // why it cannot run instead of staying a dead `disabled` button that says nothing.
+    const addLabel = computed(() => {
+        if (needsVariantSelection.value) return 'انتخاب گزینه‌ها';
+        if (!displayInStock.value) return 'ناموجود';
+        return 'افزودن به سبد خرید';
     });
 
     const missingAxes = computed(() => attributeAxes.value
         .filter((axis) => !selectedVariants[axis.slug])
         .map((axis) => axis.label));
+
+    // One sentence for both the inline hint and the `add` guard, so the page always
+    // says which option is missing instead of leaving a dead button unexplained.
+    const addHint = computed(() => {
+        if (needsVariantSelection.value) {
+            return missingAxes.value.length
+                ? `پیش از افزودن به سبد خرید، ${missingAxes.value.join(' و ')} را انتخاب کنید.`
+                : 'ترکیب انتخاب‌شده موجود نیست؛ گزینه‌های دیگری را انتخاب کنید.';
+        }
+        if (!displayInStock.value) return 'این محصول در حال حاضر ناموجود است.';
+        return '';
+    });
 
     const displayAttributes = computed(() => {
         const attributes = product.value?.attributes;
@@ -339,12 +361,8 @@ export function createProductDetailState(browser) {
     function add() {
         const current = product.value;
         if (!current || result.loading) return false;
-        if (needsVariantSelection.value) {
-            showNotice(`پیش از افزودن به سبد خرید، ${missingAxes.value.join(' و ')} را انتخاب کنید.`, 'error');
-            return false;
-        }
-        if (!displayInStock.value) {
-            showNotice('این محصول در حال حاضر ناموجود است.', 'error');
+        if (addHint.value) {
+            showNotice(addHint.value, 'error');
             return false;
         }
 
@@ -394,6 +412,8 @@ export function createProductDetailState(browser) {
         displayStock,
         needsVariantSelection,
         missingAxes,
+        addLabel,
+        addHint,
         displayAttributes,
         customAttributes,
         categories,

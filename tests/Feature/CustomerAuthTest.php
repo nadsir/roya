@@ -11,6 +11,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Laravel\Sanctum\PersonalAccessToken;
 use Tests\TestCase;
 
@@ -264,19 +265,124 @@ class CustomerAuthTest extends TestCase
     public function test_http_provider_uses_configured_relay_without_real_network(): void
     {
         config([
-            'sms.endpoint' => 'https://sms.example.test/send',
+            'sms.endpoint' => 'https://api.sms.ir/v1/send/verify',
             'sms.token' => 'test-only-token',
-            'sms.template_id' => '123456',
+            'sms.template_id' => '325946',
         ]);
         Http::preventStrayRequests();
-        Http::fake(['sms.example.test/*' => Http::response(['accepted' => true], 200)]);
+        Http::fake(['api.sms.ir/*' => Http::response(['status' => 1, 'message' => 'ok'], 200)]);
         (new HttpSmsService())->sendOtp('09121234567', '123456');
-        Http::assertSent(fn ($request) => $request->url() === 'https://sms.example.test/send'
+        Http::assertSent(fn ($request) => $request->url() === 'https://api.sms.ir/v1/send/verify'
             && $request->hasHeader('X-API-KEY', 'test-only-token')
-            && $request['Mobile'] === '09121234567'
-            && $request['TemplateId'] === 123456
-            && isset($request['Parameters'][0]['Name']) && $request['Parameters'][0]['Name'] === 'CODE'
-            && isset($request['Parameters'][0]['Value']) && $request['Parameters'][0]['Value'] === '123456');
+            && $request['mobile'] === '09121234567'
+            && $request['templateId'] === 325946
+            && isset($request['parameters'][0]['name']) && $request['parameters'][0]['name'] === 'CODE'
+            && isset($request['parameters'][0]['value']) && $request['parameters'][0]['value'] === '123456');
+    }
+
+    public function test_http_provider_defaults_to_the_official_smsir_verify_endpoint_and_template(): void
+    {
+        // The shipped defaults must point at the official verify endpoint and template.
+        $defaults = require base_path('config/sms.php');
+
+        $this->assertSame('https://api.sms.ir/v1/send/verify', $defaults['endpoint']);
+        $this->assertSame('325946', $defaults['template_id']);
+        $this->assertSame('CODE', $defaults['parameter_name']);
+
+        config([
+            'sms.token' => 'test-only-token',
+            'sms.endpoint' => $defaults['endpoint'],
+            'sms.template_id' => $defaults['template_id'],
+            'sms.parameter_name' => $defaults['parameter_name'],
+        ]);
+        Http::preventStrayRequests();
+        Http::fake(['api.sms.ir/*' => Http::response(['status' => 1, 'message' => 'ok'], 200)]);
+
+        (new HttpSmsService())->sendOtp('09121234567', '123456');
+
+        Http::assertSent(fn ($request) => $request->url() === 'https://api.sms.ir/v1/send/verify'
+            && $request['templateId'] === 325946
+            && $request['parameters'][0]['name'] === 'CODE');
+    }
+
+    public function test_http_parameter_name_follows_configuration(): void
+    {
+        config([
+            'sms.endpoint' => 'https://api.sms.ir/v1/send/verify',
+            'sms.token' => 'test-only-token',
+            'sms.template_id' => '325946',
+            'sms.parameter_name' => 'OTP',
+        ]);
+        Http::preventStrayRequests();
+        Http::fake(['api.sms.ir/*' => Http::response(['status' => 1, 'message' => 'ok'], 200)]);
+
+        (new HttpSmsService())->sendOtp('09121234567', '123456');
+
+        Http::assertSent(fn ($request) => $request['parameters'][0]['name'] === 'OTP');
+    }
+
+    public function test_http_provider_rejects_a_logical_failure_returned_with_http_200(): void
+    {
+        config([
+            'sms.endpoint' => 'https://api.sms.ir/v1/send/verify',
+            'sms.token' => 'test-only-token',
+            'sms.template_id' => '325946',
+        ]);
+        Http::preventStrayRequests();
+        Http::fake(['api.sms.ir/*' => Http::response([
+            'status' => 0,
+            'message' => 'Template is not verified',
+        ], 200)]);
+
+        $this->expectException(\RuntimeException::class);
+        (new HttpSmsService())->sendOtp('09121234567', '123456');
+    }
+
+    public function test_http_provider_rejects_an_unauthorized_response(): void
+    {
+        config([
+            'sms.endpoint' => 'https://api.sms.ir/v1/send/verify',
+            'sms.token' => 'wrong-key',
+            'sms.template_id' => '325946',
+        ]);
+        Http::preventStrayRequests();
+        Http::fake(['api.sms.ir/*' => Http::response(['message' => 'unauthorized'], 401)]);
+
+        $this->expectException(\RuntimeException::class);
+        (new HttpSmsService())->sendOtp('09121234567', '123456');
+    }
+
+    public function test_http_provider_failure_log_never_contains_the_key_or_the_code(): void
+    {
+        config([
+            'sms.endpoint' => 'https://api.sms.ir/v1/send/verify',
+            'sms.token' => 'super-secret-key',
+            'sms.template_id' => '325946',
+        ]);
+        Http::preventStrayRequests();
+        Http::fake(['api.sms.ir/*' => Http::response(['status' => 0, 'message' => 'no credit'], 200)]);
+        Log::spy();
+
+        $threw = false;
+        try {
+            (new HttpSmsService())->sendOtp('09121234567', '123456');
+        } catch (\RuntimeException) {
+            $threw = true;
+        }
+        $this->assertTrue($threw, 'A logical failure must throw so no code is left redeemable.');
+
+        Log::shouldHaveReceived('warning')
+            ->once()
+            ->withArgs(function (string $message, array $context = []) {
+                $this->assertSame('SMS.ir OTP send failed.', $message);
+                $this->assertSame('0912***567', $context['mobile']);
+                $this->assertSame('325946', $context['template_id']);
+                $serialized = (string) json_encode($context, JSON_UNESCAPED_UNICODE);
+                $this->assertStringNotContainsString('super-secret-key', $serialized);
+                $this->assertStringNotContainsString('123456', $serialized);
+
+                return true;
+            });
     }
 
     public function test_log_provider_cannot_expose_codes_in_production(): void

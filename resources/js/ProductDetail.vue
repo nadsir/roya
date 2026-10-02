@@ -32,7 +32,7 @@ const {
     images, activeImage, activeImageSrc, activeImageFailed, attributeAxes, hasVariants,
     displayPrice, displayCompareAtPrice, displayDiscount, displaySku, displayInStock, displayStock,
     needsVariantSelection, displayAttributes, customAttributes, categories, brand,
-    maxQuantity, canIncreaseQuantity, load, dispose, add, showNotice, clearNotice,
+    maxQuantity, canIncreaseQuantity, load, dispose, add, addLabel, addHint, showNotice, clearNotice,
     setQuantity, increaseQuantity, decreaseQuantity, thumbSrc, markImageFailed, imageErrorSrc,
     selectImage, nextImage, prevImage, isValueSelectable, isSelected, selectedLabel, toggleAxisValue,
 } = model;
@@ -303,9 +303,9 @@ onBeforeUnmount(() => { if (ownsModel) dispose(); });
                             </div>
                         </div>
 
-                        <p v-if="needsVariantSelection" class="pd-hint" role="status">
+                        <p v-if="addHint" class="pd-hint" role="status">
                             <i class="fa-solid fa-circle-info" aria-hidden="true" />
-                            <span>پیش از افزودن به سبد خرید، گزینه‌های مشخص‌شده را انتخاب کنید.</span>
+                            <span>{{ addHint }}</span>
                         </p>
 
                         <div class="pd-purchase">
@@ -321,7 +321,7 @@ onBeforeUnmount(() => { if (ownsModel) dispose(); });
                                 @click="add"
                             >
                                 <i class="fa-solid fa-bag-shopping" aria-hidden="true" />
-                                افزودن به سبد خرید
+                                {{ addLabel }}
                             </button>
                         </div>
 
@@ -440,7 +440,7 @@ onBeforeUnmount(() => { if (ownsModel) dispose(); });
                 :disabled="!displayInStock || needsVariantSelection"
                 @click="add"
             >
-                {{ needsVariantSelection ? 'انتخاب گزینه‌ها' : !displayInStock ? 'ناموجود' : 'افزودن به سبد' }}
+                {{ addLabel }}
             </button>
         </div>
 
