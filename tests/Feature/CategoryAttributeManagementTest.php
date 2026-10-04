@@ -156,6 +156,58 @@ class CategoryAttributeManagementTest extends TestCase
             ->assertJsonValidationErrors('attributes');
     }
 
+    public function test_overrides_can_be_saved_and_removed_to_restore_live_parent_settings(): void
+    {
+        Sanctum::actingAs($this->admin(), ['admin']);
+        $parent = Category::create(['name' => 'Parent', 'slug' => 'parent']);
+        $child = Category::create(['name' => 'Child', 'slug' => 'child', 'parent_id' => $parent->id]);
+        $grandchild = Category::create(['name' => 'Leaf', 'slug' => 'leaf', 'parent_id' => $child->id]);
+        $attribute = $this->attribute('Brand', 'brand', 'select');
+        $config = [
+            'attribute_id' => $attribute->id, 'is_enabled' => true,
+            'is_required' => true, 'is_filterable' => true,
+            'is_variant_axis' => false, 'sort_order' => 0,
+        ];
+        $endpoint = fn ($category) => "/api/admin/categories/{$category->id}/attributes";
+        $resolver = app(\App\Services\EffectiveCategoryAttributesResolver::class);
+
+        $this->putJson($endpoint($parent), ['attributes' => [$config]])->assertOk();
+        foreach ([true, false] as $enabled) {
+            $override = array_replace($config, ['is_enabled' => $enabled]);
+            $this->putJson($endpoint($child), ['attributes' => [$override]])->assertOk();
+            $this->getJson($endpoint($child))->assertOk()
+                ->assertJsonPath('data.0.state', $enabled ? 'enabled' : 'disabled')
+                ->assertJsonPath('data.0.config.is_enabled', $enabled);
+            $this->assertDatabaseHas('category_attributes', [
+                'category_id' => $child->id, 'attribute_id' => $attribute->id,
+                'is_enabled' => $enabled,
+            ]);
+            $this->assertSame($enabled, $resolver->for($grandchild)->isNotEmpty());
+        }
+
+        // Parent changes must not undo the child's explicit disabled override.
+        $config['is_required'] = false;
+        $this->putJson($endpoint($parent), ['attributes' => [$config]])->assertOk();
+        $this->assertTrue($resolver->for($child)->isEmpty());
+
+        $this->putJson($endpoint($child), ['attributes' => []])->assertOk();
+        $this->assertDatabaseMissing('category_attributes', ['category_id' => $child->id]);
+        $this->getJson($endpoint($child))->assertOk()
+            ->assertJsonPath('data.0.state', 'inherit')
+            ->assertJsonPath('data.0.config.is_required', false);
+
+        $config['is_required'] = true;
+        $this->putJson($endpoint($parent), ['attributes' => [$config]])->assertOk();
+        $this->getJson($endpoint($grandchild))->assertOk()
+            ->assertJsonPath('data.0.state', 'inherit')
+            ->assertJsonPath('data.0.config.is_required', true);
+
+        $this->putJson($endpoint($parent), ['attributes' => []])->assertOk();
+        $this->getJson($endpoint($parent))->assertOk()->assertJsonCount(0, 'data');
+        $this->assertTrue($resolver->for($grandchild)->isEmpty());
+        $this->putJson($endpoint($parent), [])->assertUnprocessable();
+    }
+
     private function admin(): User
     {
         return User::factory()->create([

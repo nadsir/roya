@@ -126,7 +126,7 @@ class AdminCategoryController extends Controller
         }
 
         $data = $request->validate([
-            'attributes' => ['required', 'array'],
+            'attributes' => ['present', 'array'],
             'attributes.*.attribute_id' => [
                 'required',
                 'integer',

@@ -865,7 +865,7 @@ function isCategoryAttributeInherited(attributeId) {
 
 function getAttributeState(attributeId) {
     const config = categoryAttributeConfiguration(attributeId);
-    return config ? config.state : 'inherit';
+    return config ? config.state : (configuredCategory.value?.parent_id ? 'inherit' : 'disabled');
 }
 
 function categoryAttributeConfiguration(attributeId) {
@@ -939,8 +939,10 @@ async function selectCategoryForAttributes(categoryId) {
             is_variant_axis: item.config?.is_variant_axis ?? false,
             sort_order: item.config?.sort_order ?? 0,
         }));
+        return true;
     } catch (error) {
         errorMessage.value = 'تنظیمات ویژگی‌های دسته دریافت نشد.';
+        return false;
     } finally {
         categoryAttributeLoading.value = false;
     }
@@ -967,26 +969,20 @@ async function saveCategoryAttributes() {
                 sort_order: item.sort_order,
             }));
 
-        const configurations = await saveCategoryAttributeConfig(
+        await saveCategoryAttributeConfig(
             configuredCategoryId.value,
             toSave
         );
 
-        categoryAttributeConfig.value = configurations.map(attribute => ({
-            attribute_id: attribute.id,
-            state: attribute.pivot?.is_enabled ? 'enabled' : 'disabled',
-            is_enabled: Boolean(attribute.pivot?.is_enabled),
-            is_required: Boolean(attribute.pivot?.is_required),
-            is_filterable: Boolean(attribute.pivot?.is_filterable),
-            is_variant_axis: Boolean(attribute.pivot?.is_variant_axis),
-            sort_order: attribute.pivot?.sort_order ?? 0,
-        }));
+        if (!await selectCategoryForAttributes(configuredCategoryId.value)) {
+            throw new Error(errorMessage.value);
+        }
 
         await loadMeta();
 
         successMessage.value = 'تنظیمات ویژگی‌های دسته ذخیره شد.';
     } catch (error) {
-        errorMessage.value = error.response?.data?.message || 'ذخیره تنظیمات انجام نشد.';
+        errorMessage.value = error.response?.data?.message || error.message || 'ذخیره تنظیمات انجام نشد.';
     } finally {
         categoryAttributeSaving.value = false;
     }
@@ -2661,6 +2657,7 @@ const CategoryTreeNode = {
                             <span>دسته‌بندی</span>
                             <select
                                 :value="configuredCategoryId || ''"
+                                :disabled="categoryAttributeSaving"
                                 @change="selectCategoryForAttributes($event.target.value)"
                             >
                                 <option value="">یک دسته را انتخاب کنید</option>
@@ -3759,7 +3756,7 @@ v-else-if="section === 'orders'"
                     closeProductModal()
                 "
             >
-                <div class="modal">
+                <div class="modal product-modal">
                     <!-- MODAL HEADER -->
 
                     <div class="modal-header">
@@ -5937,6 +5934,12 @@ v-else-if="section === 'orders'"
     border-radius: 22px;
     box-shadow:
         0 30px 80px rgba(0, 0, 0, .2);
+}
+
+.modal.product-modal {
+    width: min(1100px, 100%);
+    max-width: 1100px;
+    min-width: 0;
 }
 
 .modal-header {
