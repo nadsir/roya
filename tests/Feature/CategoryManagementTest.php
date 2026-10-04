@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\Attribute;
+use App\Models\AttributeValue;
+use App\Models\Article;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\User;
@@ -114,16 +116,76 @@ class CategoryManagementTest extends TestCase
 
         $empty = $this->category('Cooling', 'cooling');
 
-        foreach ([$withChild, $withProduct, $withAttribute] as $category) {
+        foreach ([$withChild, $withProduct] as $category) {
             $this->deleteJson("/api/admin/categories/{$category->id}")
                 ->assertUnprocessable()
                 ->assertJsonValidationErrors('category');
+            $this->assertDatabaseHas('categories', ['id' => $category->id]);
         }
+        $this->assertDatabaseHas('products', ['id' => $product->id]);
+        $this->assertDatabaseHas('product_categories', ['product_id' => $product->id, 'category_id' => $withProduct->id]);
+        $this->assertDatabaseHas('categories', ['parent_id' => $withChild->id]);
+
+        $this->deleteJson("/api/admin/categories/{$withAttribute->id}")->assertNoContent();
+        $this->assertDatabaseMissing('category_attributes', ['category_id' => $withAttribute->id]);
+        $this->assertDatabaseHas('attributes', ['id' => $attribute->id]);
 
         $this->deleteJson("/api/admin/categories/{$empty->id}")
             ->assertNoContent();
 
         $this->assertDatabaseMissing('categories', ['id' => $empty->id]);
+    }
+
+    public function test_deleting_a_leaf_preserves_parent_siblings_and_shared_attributes(): void
+    {
+        $this->authenticate();
+        $parent = $this->category('Parent', 'parent');
+        $leaf = $this->category('Leaf', 'leaf', $parent->id);
+        $sibling = $this->category('Sibling', 'sibling', $parent->id);
+        $attribute = Attribute::create(['name' => 'Color', 'slug' => 'color', 'type' => 'select']);
+        $value = AttributeValue::create(['attribute_id' => $attribute->id, 'label' => 'Red', 'value' => 'red']);
+        $leaf->attributes()->attach($attribute);
+        $sibling->attributes()->attach($attribute);
+
+        $this->deleteJson("/api/admin/categories/{$leaf->id}")->assertNoContent();
+        $this->assertDatabaseMissing('categories', ['id' => $leaf->id]);
+        $this->assertDatabaseMissing('category_attributes', ['category_id' => $leaf->id]);
+        $this->assertDatabaseHas('categories', ['id' => $parent->id]);
+        $this->assertDatabaseHas('categories', ['id' => $sibling->id, 'parent_id' => $parent->id]);
+        $this->assertDatabaseHas('category_attributes', ['category_id' => $sibling->id, 'attribute_id' => $attribute->id]);
+        $this->assertDatabaseHas('attributes', ['id' => $attribute->id]);
+        $this->assertDatabaseHas('attribute_values', ['id' => $value->id]);
+    }
+
+    public function test_articles_block_deletion_and_preserve_attribute_settings(): void
+    {
+        $this->authenticate();
+        $category = $this->category('Articles', 'articles');
+        $article = Article::create(['title' => 'Guide', 'slug' => 'guide', 'content' => 'Content', 'status' => 'draft']);
+        $article->categories()->attach($category);
+        $attribute = Attribute::create(['name' => 'Brand', 'slug' => 'brand', 'type' => 'select']);
+        $category->attributes()->attach($attribute);
+
+        $this->deleteJson("/api/admin/categories/{$category->id}")
+            ->assertUnprocessable()->assertJsonValidationErrors('category');
+        $this->assertDatabaseHas('categories', ['id' => $category->id]);
+        $this->assertDatabaseHas('article_category', ['article_id' => $article->id, 'category_id' => $category->id]);
+        $this->assertDatabaseHas('category_attributes', ['category_id' => $category->id]);
+        $this->assertDatabaseHas('articles', ['id' => $article->id]);
+    }
+
+    public function test_delete_requires_admin_and_returns_not_found_for_missing_category(): void
+    {
+        $category = $this->category('Protected', 'protected');
+        $this->deleteJson("/api/admin/categories/{$category->id}")->assertUnauthorized();
+        Sanctum::actingAs(User::factory()->create(['role' => 'customer', 'is_active' => true]));
+        $this->deleteJson("/api/admin/categories/{$category->id}")->assertForbidden();
+        $this->assertDatabaseHas('categories', ['id' => $category->id]);
+
+        $this->authenticate();
+        $this->getJson("/api/admin/categories/{$category->id}")->assertOk();
+        $this->assertDatabaseHas('categories', ['id' => $category->id]);
+        $this->deleteJson('/api/admin/categories/999999')->assertNotFound();
     }
 
     private function authenticate(): void

@@ -13,6 +13,7 @@ import {
     products,
     categories,
     adminCategories,
+    loadAdminCategories,
     attributes,
     categoryAttributes,
     loading,
@@ -194,6 +195,7 @@ const categoryAttributeLoading = ref(false);
 const categoryAttributeSaving = ref(false);
 const categoryEditingId = ref(null);
 const categorySaving = ref(false);
+const categoryDeletingId = ref(null);
 const categoryForm = ref(createEmptyCategoryForm());
 
 // Category Manager state
@@ -825,16 +827,34 @@ async function submitCategory() {
 }
 
 async function deleteCategory(category) {
-    if (!confirm(`دسته‌بندی «${category.name}» حذف شود؟`)) {
+    if (!category || categoryDeletingId.value !== null || categorySaving.value) {
+        return;
+    }
+    if (!confirm(`آیا از حذف دسته‌بندی «${category.name}» مطمئن هستید؟\n\nاین عملیات قابل بازگشت نیست. تنظیمات ویژگی‌های این دسته حذف می‌شوند.\nوجود زیر‌دسته، محصول یا مقالهٔ متصل مانع حذف خواهد شد.`)) {
         return;
     }
 
+    categoryDeletingId.value = category.id;
     errorMessage.value = '';
     successMessage.value = '';
 
     try {
         await removeCategory(category.id);
-        await load();
+
+        // Remove stale entries immediately, even if the subsequent refresh fails.
+        const prune = nodes => nodes.filter(node => node.id !== category.id).map(node => ({
+            ...node,
+            children: prune(node.children || []),
+        }));
+        adminCategories.value = prune(adminCategories.value);
+        categories.value = categories.value.filter(item => item.id !== category.id);
+        categorySearchResults.value = categorySearchResults.value.filter(item => item.id !== category.id);
+        expandedCategoryIds.value.delete(category.id);
+        delete categoryAttributes.value[category.id];
+        if (configuredCategoryId.value === category.id) {
+            configuredCategoryId.value = null;
+            categoryAttributeConfig.value = [];
+        }
 
         if (categoryEditingId.value === category.id) {
             closeCategoryEditor();
@@ -843,13 +863,21 @@ async function deleteCategory(category) {
             clearCategorySelection();
         }
 
-        showAdminNotification('success', 'موفقیت', 'دسته‌بندی حذف شد.');
+        try {
+            await Promise.all([loadAdminCategories(), loadMeta()]);
+            showAdminNotification('success', 'موفقیت', 'دسته‌بندی حذف شد.');
+        } catch (error) {
+            errorMessage.value = 'دسته‌بندی حذف شد، اما دریافت فهرست تازه انجام نشد. فهرست را دوباره بارگذاری کنید.';
+            showAdminNotification('error', 'خطا در بازخوانی', errorMessage.value);
+        }
     } catch (error) {
         const errors = error.response?.data?.errors;
         errorMessage.value = errors
             ? Object.values(errors).flat().join(' ')
-            : 'حذف دسته‌بندی انجام نشد.';
+            : error.response?.data?.message || 'حذف دسته‌بندی انجام نشد.';
         showAdminNotification('error', 'خطا', errorMessage.value);
+    } finally {
+        categoryDeletingId.value = null;
     }
 }
 
@@ -1790,7 +1818,7 @@ onMounted(async () => {
 });
 
 const CategoryTreeNode = {
-    props: ['category', 'selectedId', 'expandedIds'],
+    props: ['category', 'selectedId', 'expandedIds', 'deletingId'],
     emits: ['toggle-expand', 'select', 'edit', 'add-child', 'delete'],
     setup(props, { emit }) {
         const hasChildren = computed(() => props.category.children && props.category.children.length > 0);
@@ -1835,7 +1863,7 @@ const CategoryTreeNode = {
                 <div class="node-actions">
                     <button type="button" class="icon-button" @click.stop="$emit('add-child', category)" title="افزودن زیر‌دسته">+</button>
                     <button type="button" class="icon-button text-button" @click.stop="$emit('edit', category)" title="ویرایش">✎</button>
-                    <button type="button" class="icon-button danger" @click.stop="$emit('delete', category)" title="حذف">🗑</button>
+                    <button type="button" class="icon-button danger" :disabled="deletingId != null" @click.stop="$emit('delete', category)" title="حذف دسته‌بندی" aria-label="حذف دسته‌بندی">{{ deletingId === category.id ? '…' : '🗑' }}</button>
                 </div>
             </div>
             <div v-show="isExpanded && hasChildren" class="node-children">
@@ -1845,6 +1873,7 @@ const CategoryTreeNode = {
                     :category="child"
                     :selected-id="selectedId"
                     :expanded-ids="expandedIds"
+                    :deleting-id="deletingId"
                     @toggle-expand="$emit('toggle-expand', $event)"
                     @select="$emit('select', $event)"
                     @edit="$emit('edit', $event)"
@@ -2484,6 +2513,7 @@ const CategoryTreeNode = {
                                         :category="category"
                                         :selected-id="selectedCategoryId"
                                         :expanded-ids="expandedCategoryIds"
+                                        :deleting-id="categoryDeletingId"
                                         @toggle-expand="toggleCategoryExpand"
                                         @select="selectCategory"
                                         @edit="openEditCategory"
@@ -2548,8 +2578,8 @@ const CategoryTreeNode = {
                                         <button type="button" class="text-button" @click="openCreateChildCategory(selectedCategory)">
                                             + افزودن زیر‌دسته
                                         </button>
-                                        <button type="button" class="text-button danger" @click="deleteCategory(selectedCategory)">
-                                            حذف
+                                        <button type="button" class="text-button danger" :disabled="categoryDeletingId !== null || categorySaving" @click="deleteCategory(selectedCategory)">
+                                            {{ categoryDeletingId === selectedCategory.id ? 'در حال حذف…' : 'حذف دسته‌بندی' }}
                                         </button>
                                     </div>
                                 </div>
@@ -2625,9 +2655,18 @@ const CategoryTreeNode = {
                                         <button
                                             type="submit"
                                             class="primary"
-                                            :disabled="categorySaving"
+                                            :disabled="categorySaving || categoryDeletingId !== null"
                                         >
                                             {{ categorySaving ? 'در حال ذخیره…' : (categoryEditingId ? 'به‌روزرسانی' : 'ایجاد دسته‌بندی') }}
+                                        </button>
+                                        <button
+                                            v-if="categoryEditingId && selectedCategory"
+                                            type="button"
+                                            class="text-button danger"
+                                            :disabled="categoryDeletingId !== null || categorySaving"
+                                            @click="deleteCategory(selectedCategory)"
+                                        >
+                                            {{ categoryDeletingId === selectedCategory.id ? 'در حال حذف…' : 'حذف دسته‌بندی' }}
                                         </button>
                                     </div>
                                 </form>

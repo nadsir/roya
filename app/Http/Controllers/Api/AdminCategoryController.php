@@ -93,26 +93,27 @@ class AdminCategoryController extends Controller
 
     public function destroy(Category $category)
     {
-        $dependencies = [
-            'children' => $category->children()->exists(),
-            'products' => $category->products()->exists(),
-            'attribute configurations' => $category->attributes()->exists(),
-        ];
+        DB::transaction(function () use ($category) {
+            $category = Category::query()->lockForUpdate()->findOrFail($category->id);
+            $errors = [];
 
-        $blockingDependencies = array_keys(
-            array_filter($dependencies)
-        );
+            if ($category->children()->exists()) {
+                $errors[] = 'این دسته‌بندی دارای زیر‌دسته است و ابتدا باید زیر‌دسته‌ها حذف یا جابه‌جا شوند.';
+            }
+            if ($category->products()->exists()) {
+                $errors[] = 'این دسته‌بندی دارای محصول است و ابتدا باید محصولات از این دسته‌بندی خارج شوند.';
+            }
+            if ($category->articles()->exists()) {
+                $errors[] = 'این دسته‌بندی دارای مقاله است و ابتدا باید مقاله‌ها از این دسته‌بندی خارج شوند.';
+            }
 
-        if ($blockingDependencies !== []) {
-            throw ValidationException::withMessages([
-                'category' => [
-                    'This category cannot be deleted while it has '
-                        . implode(', ', $blockingDependencies) . '.',
-                ],
-            ]);
-        }
+            if ($errors !== []) {
+                throw ValidationException::withMessages(['category' => $errors]);
+            }
 
-        $category->delete();
+            $category->attributes()->detach();
+            $category->delete();
+        });
 
         return response()->noContent();
     }
