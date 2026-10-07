@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\ProductImage;
+use App\Services\RoyaProductSocialPublisher;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -19,6 +20,7 @@ class AdminProductImageController extends Controller
         Product $product
     ) {
         $data = $request->validate([
+            'publish_token' => ['sometimes', 'string', 'size:64'],
             'image' => [
                 'required',
                 'image',
@@ -55,6 +57,10 @@ class AdminProductImageController extends Controller
                 ($product->images()->max('sort_order') ?? 0)
                 + 1,
         ]);
+
+        if (isset($data['publish_token'])) {
+            app(RoyaProductSocialPublisher::class)->complete($product, $data['publish_token']);
+        }
 
         return response()->json(
             $image,

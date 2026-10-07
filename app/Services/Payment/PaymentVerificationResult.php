@@ -20,4 +20,14 @@ class PaymentVerificationResult
     {
         return new self(success: false, message: $message);
     }
+
+    public function toArray(): array
+    {
+        return [
+            'success' => $this->success,
+            'reference' => $this->reference,
+            'authority' => $this->authority,
+            'message' => $this->message,
+        ];
+    }
 }

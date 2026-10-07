@@ -339,11 +339,15 @@ export function removeVariant(index) {
 |--------------------------------------------------------------------------
 */
 
-export async function save() {
+export async function save(publishImageCount = null) {
     saving.value = true;
 
     try {
         const { images, ...payload } = form.value;
+
+        if (publishImageCount !== null) {
+            payload.publish_image_count = publishImageCount;
+        }
 
         const response = await axios.post(
             '/api/admin/products',
@@ -539,7 +543,8 @@ export async function updateProduct() {
 export async function uploadProductImage(
     productId,
     file,
-    altText = ''
+    altText = '',
+    publishToken = null
 ) {
     if (!productId || !file) {
         return;
@@ -548,6 +553,9 @@ export async function uploadProductImage(
     const formData = new FormData();
 
     formData.append('image', file);
+    if (publishToken) {
+        formData.append('publish_token', publishToken);
+    }
 
     if (altText) {
         formData.append(

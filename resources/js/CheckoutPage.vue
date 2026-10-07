@@ -7,7 +7,7 @@ import CheckoutField from './components/checkout/CheckoutField.vue';
 import CheckoutAlert from './components/checkout/CheckoutAlert.vue';
 import PendingPaymentPanel from './components/checkout/PendingPaymentPanel.vue';
 import OrderSummaryCard from './components/checkout/OrderSummaryCard.vue';
-import { getCartItems, clearCart, cartTotal } from './cart-state.js';
+import { getCartItems, cartTotal } from './cart-state.js';
 import { state as authState, isLoggedIn, loadUser } from './auth-state.js';
 import {
     CHECKOUT_CONTACT_FIELDS,
@@ -104,7 +104,6 @@ async function submitOrder() {
 
     createdOrder.value = { id: order.id, total: order.total };
     rememberReceipt(order);
-    clearCart();
     phase.value = CHECKOUT_PHASES.PAYING;
     try {
         await startPayment(order);

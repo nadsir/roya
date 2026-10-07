@@ -1148,6 +1148,7 @@ const selectedImageFiles = ref([]);
 const imagePreviews = ref([]);
 const imageAltText = ref('');
 const imageUploading = ref(false);
+const productSubmitting = ref(false);
 const draggingImageId = ref(null);
 
 function startImageDrag(imageId) {
@@ -1354,7 +1355,7 @@ function openProductModal() {
 }
 
 function closeProductModal() {
-    if (saving.value) {
+    if (saving.value || productSubmitting.value) {
         return;
     }
 
@@ -1362,6 +1363,7 @@ function closeProductModal() {
 }
 
 async function submitProduct() {
+    if (productSubmitting.value) return;
     errorMessage.value = '';
     successMessage.value = '';
 
@@ -1378,6 +1380,9 @@ async function submitProduct() {
         return;
     }
 
+    productSubmitting.value = true;
+    const files = [...selectedImageFiles.value];
+    const isNewProduct = !editingProductId.value;
     try {
         let product;
 
@@ -1386,7 +1391,7 @@ async function submitProduct() {
             product = await updateProduct();
         } else {
             console.log('[PRODUCT SAVE] calling save (create)');
-            product = await save();
+            product = await save(files.length);
         }
 
         const productId =
@@ -1395,17 +1400,18 @@ async function submitProduct() {
 
         if (
             productId &&
-            selectedImageFiles.value.length
+            files.length
         ) {
             imageUploading.value = true;
 
             for (
-                const file of selectedImageFiles.value
+                const [index, file] of files.entries()
             ) {
                 await uploadProductImage(
                     productId,
                     file,
-                    imageAltText.value
+                    imageAltText.value,
+                    isNewProduct && index === files.length - 1 ? product?.publish_token : null
                 );
             }
 
@@ -1431,6 +1437,8 @@ async function submitProduct() {
         const message = error.message || error.response?.data?.message || 'ذخیره محصول انجام نشد.';
         showAdminNotification('error', 'خطا', message);
         errorMessage.value = message;
+    } finally {
+        productSubmitting.value = false;
     }
 }
 
@@ -4801,7 +4809,7 @@ v-else-if="section === 'orders'"
                             <button
                                 type="button"
                                 class="cancel"
-                                :disabled="saving"
+                                :disabled="saving || productSubmitting"
                                 @click="
                                     closeProductModal()
                                 "
@@ -4812,15 +4820,15 @@ v-else-if="section === 'orders'"
 <button
     type="submit"
     class="primary save-button"
-    :disabled="saving"
+    :disabled="saving || productSubmitting"
 >
     <span
-        v-if="saving"
+        v-if="saving || productSubmitting"
         class="button-spinner"
     ></span>
 
     {{
-        saving
+        saving || productSubmitting
             ? 'در حال ذخیره...'
             : (
                 editingProductId

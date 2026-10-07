@@ -33,12 +33,29 @@ class AghayePardakhtGateway implements PaymentGatewayInterface
 
     public function initiate(int $amount, string $orderId, string $callbackUrl): PaymentResult
     {
-        $response = $this->withCaOptions()->post($this->createUrl, [
+        $payload = [
             'pin' => $this->pin,
             'amount' => $amount,
             'callback' => $callbackUrl,
             'callback_method' => 'GET',
             'invoice_id' => $orderId,
+        ];
+
+        \Illuminate\Support\Facades\Log::info('Aqayepardakht create request', [
+            'endpoint' => $this->createUrl,
+            'amount' => $amount,
+            'amount_type' => gettype($amount),
+            'callback' => $callbackUrl,
+            'invoice_id' => $orderId,
+            'pin_present' => !empty($this->pin),
+            'payload_json' => json_encode($payload),
+        ]);
+
+        $response = $this->withCaOptions()->post($this->createUrl, $payload);
+
+        \Illuminate\Support\Facades\Log::info('Aqayepardakht create response', [
+            'status' => $response->status(),
+            'body' => $response->body(),
         ]);
 
         if ($response->failed()) {

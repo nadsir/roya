@@ -2,6 +2,10 @@
 
 return [
 
+    'n8n' => [
+        'product_published_webhook_url' => env('N8N_PRODUCT_PUBLISHED_WEBHOOK_URL'),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Third Party Services

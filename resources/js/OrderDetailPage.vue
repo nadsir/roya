@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import axios from 'axios';
 import AccountLayout from './components/account/AccountLayout.vue';
 import AccountNotice from './components/account/AccountNotice.vue';
@@ -11,6 +11,7 @@ import PaymentResultBanner from './components/checkout/PaymentResultBanner.vue';
 import { paymentReturnState, canRetryPayment } from './checkout-presentation.js';
 import { useCustomerOrders, statusLabel, formatDate, formatPrice, cancelOrder } from './customer-orders.js';
 import { orderCanCancel, orderIsPaid } from './account-presentation.js';
+import { clearCart } from './cart-state.js';
 
 // The composable keeps the existing auth gate, 401 recovery and ownership scoping.
 // The gateway callback redirects here with ?payment=; the stored order fields decide
@@ -20,6 +21,12 @@ const { data, loading, error, load } = useCustomerOrders(`/api/customer/orders/$
 const order = computed(() => data.value?.order);
 const paymentResult = computed(() => paymentReturnState(window.location.search, order.value));
 const showBanner = computed(() => paymentResult.value.tone !== 'none');
+
+watch(paymentResult, (result) => {
+    if (result.tone === 'success') {
+        clearCart();
+    }
+}, { immediate: true });
 const retryingPay = ref(false);
 const payError = ref('');
 const cancelling = ref(false);

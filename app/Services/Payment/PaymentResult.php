@@ -20,4 +20,14 @@ class PaymentResult
     {
         return new self(success: false, message: $message);
     }
+
+    public function toArray(): array
+    {
+        return [
+            'success' => $this->success,
+            'authority' => $this->authority,
+            'paymentUrl' => $this->paymentUrl,
+            'message' => $this->message,
+        ];
+    }
 }

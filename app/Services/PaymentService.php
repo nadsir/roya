@@ -39,7 +39,7 @@ class PaymentService
         try {
             $result = $this->gateway->initiate(
                 amount: $amount,
-                orderId: (string) $order->id,
+                orderId: $order->id . '-' . $attempt->id,
                 callbackUrl: $callbackUrl,
             );
         } catch (\Throwable $e) {

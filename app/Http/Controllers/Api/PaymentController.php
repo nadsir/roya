@@ -90,25 +90,36 @@ class PaymentController extends Controller
             return redirect('/orders/' . $order . '?payment=failed&reason=no_authority');
         }
 
-        $orderModel = Order::find($order);
+        try {
+            $orderModel = Order::find($order);
 
-        if (!$orderModel) {
-            return redirect('/orders/' . $order . '?payment=failed&reason=order_not_found');
+            if (!$orderModel) {
+                return redirect('/orders/' . $order . '?payment=failed&reason=order_not_found');
+            }
+
+            $result = $this->paymentService->verify($orderModel, $authority);
+
+            if ($result->success) {
+                return redirect('/orders/' . $order . '?payment=success');
+            }
+
+            Log.warning('Payment verification failed via callback', [
+                'order_id' => $order,
+                'transid' => $authority,
+                'message' => $result->message,
+            ]);
+
+            return redirect('/orders/' . $order . '?payment=failed&reason=verification_failed');
+
+        } catch (\Exception $e) {
+            Log::error('Payment callback exception', [
+                'order_id' => $order,
+                'transid' => $authority,
+                'error' => $e->getMessage(),
+            ]);
+
+            return redirect('/orders/' . $order . '?payment=failed&reason=callback_exception');
         }
-
-        $result = $this->paymentService->verify($orderModel, $authority);
-
-        if ($result->success) {
-            return redirect('/orders/' . $order . '?payment=success');
-        }
-
-        Log.warning('Payment verification failed via callback', [
-            'order_id' => $order,
-            'transid' => $authority,
-            'message' => $result->message,
-        ]);
-
-        return redirect('/orders/' . $order . '?payment=failed&reason=verification_failed');
     }
 
     /**

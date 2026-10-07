@@ -11,6 +11,7 @@ use App\Models\ProductCustomAttributeValue;
 use App\Models\ProductVariant;
 use App\Services\EffectiveCategoryAttributesResolver;
 use App\Services\CategoryTreeService;
+use App\Services\RoyaProductSocialPublisher;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -75,6 +76,9 @@ class AdminProductController extends Controller
 
     public function store(Request $request)
     {
+        $publication = $request->validate([
+            'publish_image_count' => ['sometimes', 'integer', 'min:0'],
+        ]);
         $data = $this->validateProduct($request);
         $this->validateProductAttributeValues(
             $data['attribute_value_ids'] ?? [],
@@ -93,7 +97,7 @@ class AdminProductController extends Controller
             null
         );
 
-        return DB::transaction(function () use ($data) {
+        $response = DB::transaction(function () use ($data) {
             $categoryIds = $data['category_ids'] ?? [];
             $attributeValueIds = $data['attribute_value_ids'] ?? [];
             $customAttributeValues = $data['custom_attribute_values'] ?? [];
@@ -138,6 +142,17 @@ class AdminProductController extends Controller
                 201
             );
         });
+
+        if (array_key_exists('publish_image_count', $publication)) {
+            $body = $response->getData(true);
+            $body['publish_token'] = app(RoyaProductSocialPublisher::class)->prepare(
+                Product::findOrFail($body['id']),
+                (int) $publication['publish_image_count']
+            );
+            $response->setData($body);
+        }
+
+        return $response;
     }
 
     public function show(Product $product)

@@ -402,7 +402,7 @@ assert.equal(payCalls().length, 1, 'the existing pay endpoint is used once');
 assert.equal(payCalls()[0].url, '/api/customer/orders/42/pay');
 assert.equal(location.href, payUrl, 'the browser is sent to the gateway url the backend returned');
 assert.equal(happy.page.createdOrder.id, 42);
-assert.equal(cart.getCartItems().length, 0, 'the cart is emptied only after the order exists');
+assert.equal(cart.getCartItems().length, 2, 'the cart is not cleared after order creation');
 assert.equal(JSON.parse(session.get('turbopart-order-receipt')).id, 42, 'the existing receipt contract is kept');
 const payload = checkoutCalls()[0].body;
 assert.deepEqual(Object.keys(payload).sort(), ['customer_email', 'customer_name', 'customer_phone', 'items', 'notes', 'shipping_address', 'shipping_city', 'shipping_postal_code', 'shipping_province'].sort());
@@ -438,6 +438,7 @@ lockedFlow.dispose();
 /* a failed gateway call keeps the order and retries that same order */
 cart.clearCart();
 cart.addToCart(coatItem);
+cart.addToCart(scarfItem);
 await flush();
 calls.length = 0;
 let failed = await mountPage();
@@ -449,7 +450,7 @@ await failed.page.submitOrder();
 assert.equal(failed.page.phase, 'pay-failed');
 assert.equal(failed.page.createdOrder.id, 99, 'the created order is kept for the retry');
 assert.equal(failed.page.payError, 'اتصال به درگاه پرداخت انجام نشد.');
-assert.equal(cart.getCartItems().length, 0);
+assert.equal(cart.getCartItems().length, 2, 'the cart remains after a failed payment');
 failed.dispose();
 
 const { default: pendingComponent } = await namespace('resources/js/components/checkout/PendingPaymentPanel.vue');
