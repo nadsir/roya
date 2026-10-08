@@ -3,6 +3,7 @@ import { onMounted } from 'vue';
 import { catalog, categoryHref, loadCatalog } from './catalog-state.js';
 onMounted(() => loadCatalog());
 const year = new Intl.DateTimeFormat('fa-IR', { year: 'numeric' }).format(new Date());
+const LOGO_SRC = '/images/logo/logo.webp';
 </script>
 
 <template>
@@ -11,7 +12,7 @@ const year = new Intl.DateTimeFormat('fa-IR', { year: 'numeric' }).format(new Da
             <div class="sf-footer-invitation"><div><h2>انتخاب‌های شما، کنار هم.</h2><p>حساب گالری؛ برای نگه‌داشتن علاقه‌مندی‌ها و پیگیری سفارش‌ها.</p></div><a href="/account" class="sf-button">ورود به حساب گالری ←</a></div>
             <div class="sf-footer-grid">
                 <div class="sf-footer-brand">
-                    <a href="/" class="sf-wordmark" aria-label="گالری؛ صفحه اصلی"><span>گالری</span><small lang="en" dir="ltr">GALLERY</small></a>
+                    <a href="/" class="sf-wordmark" aria-label="گالری؛ صفحه اصلی"><img :src="LOGO_SRC" alt="ROYA" width="42" height="42" /></a>
                     <p class="sf-type-body">سبک شما، روایت شما.</p>
                     <p class="sf-type-small">انتخابی از پوشاک، کیف، کفش و اکسسوری زنانه؛ برای جزئیاتی که تفاوت می‌سازند.</p>
                 </div>

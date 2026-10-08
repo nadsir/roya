@@ -3,6 +3,7 @@
 import { computed, reactive, ref } from 'vue';
 import axios from 'axios';
 import { addToCart } from './cart-state.js';
+import { showCartAdded } from './cart-notification-state.js';
 import { imageUrl, productImages, axisLabel } from './product-presentation.js';
 import { PLACEHOLDER_SRC, nextImageSrc } from './image-fallback.js';
 
@@ -382,6 +383,7 @@ export function createProductDetailState(browser) {
             sku: displaySku.value || null,
             stock: variant ? variant.stock : current.stock,
         });
+        showCartAdded({ name: current.name, image: image?.path ? imageUrl(image.path) : null });
 
         showNotice(`${current.name} به سبد خرید اضافه شد.`, 'success');
         return true;

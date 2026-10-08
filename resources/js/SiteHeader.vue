@@ -1,15 +1,18 @@
 <script setup>
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { cartCount } from './cart-state.js';
+import { hideCartNotification } from './cart-notification-state.js';
 import { state as authState, isLoggedIn, logout } from './auth-state.js';
 import { wishlistCount, loadWishlist, resetWishlist } from './wishlist-state.js';
 import { storefrontDark, toggleStorefrontTheme } from './storefront-theme.js';
 import MegaMenu from './components/MegaMenu.vue';
 import ShellDialog from './components/ShellDialog.vue';
 import CartDrawer from './components/cart/CartDrawer.vue';
+import CartNotification from './components/CartNotification.vue';
 import SearchOverlay from './components/SearchOverlay.vue';
 
 const searchOpen = ref(false);
+const LOGO_SRC = '/images/logo/logo.webp';
 const menuOpen = ref(false);
 const cartOpen = ref(false);
 const accountOpen = ref(false);
@@ -36,6 +39,10 @@ function onScroll() {
     const next = scrolled.value ? y > 8 : y > 24;
     if (next !== scrolled.value) scrolled.value = next;
 }
+function viewCart() {
+    cartOpen = true;
+    hideCartNotification();
+}
 async function handleLogout() {
     if (loggingOut.value) return;
     loggingOut.value = true; logoutError.value = '';
@@ -49,12 +56,8 @@ onBeforeUnmount(() => { window.removeEventListener('scroll', onScroll); document
 
 <template>
     <header class="sf-header" :class="{ 'is-scrolled': scrolled }" dir="rtl">
-        <div class="sf-announcement">
-            <p>تازه‌های گالری از راه رسید <small>— انتخاب‌های تازه را پیش از همه ببینید</small></p>
-            <a href="/store?sort=newest">دیدن تازه‌ها <span aria-hidden="true">←</span></a>
-        </div>
         <div class="sf-header-bar">
-            <div class="sf-header-brand"><button class="sf-icon-button sf-mobile-only" type="button" aria-label="باز کردن دسته‌بندی‌ها" :aria-expanded="menuOpen" aria-haspopup="dialog" @click="menuOpen = true"><i class="fa-solid fa-bars" aria-hidden="true" /></button><a href="/" class="sf-wordmark" aria-label="گالری؛ صفحه اصلی"><span>گالری</span><small lang="en" dir="ltr">GALLERY</small></a></div>
+            <div class="sf-header-brand"><button class="sf-icon-button sf-mobile-only" type="button" aria-label="باز کردن دسته‌بندی‌ها" :aria-expanded="menuOpen" aria-haspopup="dialog" @click="menuOpen = true"><i class="fa-solid fa-bars" aria-hidden="true" /></button><a href="/" class="sf-wordmark" aria-label="گالری؛ صفحه اصلی"><img :src="LOGO_SRC" alt="ROYA" width="68" height="68" /></a></div>
             <nav class="sf-desktop-nav" aria-label="ناوبری اصلی"><MegaMenu /><a href="/store?sort=newest" class="sf-nav-link">تازه‌ها</a><a href="/store" class="sf-nav-link" :aria-current="path === '/store' || path.startsWith('/c/') ? 'page' : undefined">فروشگاه</a><a href="/articles" class="sf-nav-link" :aria-current="path.startsWith('/articles') ? 'page' : undefined">مجله</a></nav>
             <div class="sf-header-actions">
                 <button type="button" class="sf-icon-button sf-search-trigger" aria-label="باز کردن جستجو" @click="openSearch"><i class="fa-solid fa-magnifying-glass" aria-hidden="true" /><span>جستجو</span></button>
@@ -76,6 +79,7 @@ onBeforeUnmount(() => { window.removeEventListener('scroll', onScroll); document
         </ShellDialog>
         <CartDrawer :open="cartOpen" @close="cartOpen = false" />
     </header>
+    <CartNotification @view-cart="viewCart" />
     <nav class="sf-bottom-nav" aria-label="ناوبری موبایل" dir="rtl">
         <a href="/" :aria-current="path === '/' ? 'page' : undefined"><i class="fa-solid fa-house" aria-hidden="true" /><span>خانه</span></a>
         <button :aria-expanded="menuOpen" @click="menuOpen = true"><i class="fa-solid fa-layer-group" aria-hidden="true" /><span>دسته‌ها</span></button>

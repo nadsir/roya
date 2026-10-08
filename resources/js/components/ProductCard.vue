@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { addToCart } from '../cart-state.js';
+import { showCartAdded } from '../cart-notification-state.js';
 import { isLoggedIn } from '../auth-state.js';
 import { state as wishlistState, isInWishlist, addToWishlist, removeFromWishlist } from '../wishlist-state.js';
 import { cartItemFromProduct, discountPercent, formatPrice, hasProductVariants, imageUrl, productColors, productHref, productImages } from '../product-presentation.js';
@@ -46,6 +47,7 @@ function quickAdd() {
     const item = cartItemFromProduct(props.product);
     if (!item) return;
     addToCart(item);
+    showCartAdded(item);
     notify('به سبد خرید اضافه شد.');
 }
 async function toggleWishlist() {
