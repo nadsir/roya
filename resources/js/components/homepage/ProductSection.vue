@@ -1,21 +1,29 @@
 <script setup>
-import { computed, onBeforeUnmount, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import ProductCard from '../ProductCard.vue';
+import { FEATURED_MOBILE_QUERY, createAutoplayController, shouldUseCarousel } from '../../homepage-carousel.js';
 
-const props = defineProps({ id: String, title: String, eyebrow: String, products: { type: Array, default: () => [] }, status: String, error: String, rail: Boolean });
+const props = defineProps({ id: String, title: String, eyebrow: String, products: { type: Array, default: () => [] }, status: String, error: String, rail: Boolean, featured: Boolean });
 defineEmits(['retry']);
 
-// Four cards fill a desktop row; anything beyond that becomes a slider so no
-// selection is ever hidden when the admin picks more than a full row.
-const VISIBLE_CARDS = 4;
-const isCarousel = computed(() => props.products.length > VISIBLE_CARDS);
+// A full desktop row holds four cards. The featured selection also slides on
+// mobile, where a single card is not enough to browse a curated edit, and
+// advances on its own until the visitor takes over.
 const scrollArea = ref(null);
 const activeIndex = ref(0);
 const atStart = ref(true);
 const atEnd = ref(true);
+const mobile = ref(false);
+const reducedMotion = ref(true);
+const hidden = ref(false);
 const numeral = (value) => String(value).replace(/\d/g, (digit) => '۰۱۲۳۴۵۶۷۸۹'[digit]);
+const isCarousel = computed(() => shouldUseCarousel({ featured: props.featured, mobile: mobile.value, total: props.products.length }));
+const autoplayEnabled = computed(() => props.featured && mobile.value && !reducedMotion.value && !hidden.value && isCarousel.value);
+const autoplay = createAutoplayController({ onAdvance: () => advance() });
 let observer;
 let frame = 0;
+let mobileQuery;
+let motionQuery;
 
 function measure() {
     const element = scrollArea.value;
@@ -47,12 +55,18 @@ function goTo(index) {
     element.scrollBy({ left: delta, behavior: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
 }
 function navigate(direction) { goTo(activeIndex.value + direction); }
+function advance() {
+    if (!isCarousel.value || props.products.length < 2) return;
+    goTo((activeIndex.value + 1) % props.products.length);
+}
+function pause() { autoplay.pauseForInteraction(); }
 function onKeydown(event) {
     // Leave activation and modified browser shortcuts to the native links.
     if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
     const destinations = { ArrowLeft: activeIndex.value + 1, ArrowRight: activeIndex.value - 1, Home: 0, End: props.products.length - 1 };
     if (!(event.key in destinations)) return;
     event.preventDefault();
+    pause();
     goTo(destinations[event.key]);
 }
 watch(scrollArea, (element) => {
@@ -68,9 +82,27 @@ watch(() => props.products.length, () => {
     atEnd.value = true;
     onScroll();
 }, { flush: 'post' });
+watch(autoplayEnabled, (value) => autoplay.setEnabled(value), { immediate: true });
+function onMobileChange(event) { mobile.value = event.matches; }
+function onMotionChange(event) { reducedMotion.value = event.matches; }
+function onVisibility() { hidden.value = document.hidden; }
+onMounted(() => {
+    mobileQuery = window.matchMedia(FEATURED_MOBILE_QUERY);
+    mobile.value = mobileQuery.matches;
+    mobileQuery.addEventListener('change', onMobileChange);
+    motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    reducedMotion.value = motionQuery.matches;
+    motionQuery.addEventListener('change', onMotionChange);
+    document.addEventListener('visibilitychange', onVisibility);
+    onVisibility();
+});
 onBeforeUnmount(() => {
+    autoplay.dispose();
     observer?.disconnect();
     if (frame) cancelAnimationFrame(frame);
+    mobileQuery?.removeEventListener('change', onMobileChange);
+    motionQuery?.removeEventListener('change', onMotionChange);
+    document.removeEventListener('visibilitychange', onVisibility);
 });
 </script>
 <template>
@@ -80,8 +112,8 @@ onBeforeUnmount(() => {
         <div v-else-if="status === 'error'" class="hp-dynamic-state" role="alert"><p>{{ error }}</p><button class="hp-underlined-link" @click="$emit('retry')">تلاش مجدد ←</button></div>
         <div v-else-if="!products.length" class="hp-dynamic-state"><p>انتخاب‌های تازه به‌زودی به این مجموعه اضافه می‌شوند.</p><a href="/store" class="hp-underlined-link">دیدن فروشگاه ←</a></div>
         <template v-else>
-            <div :id="`${id}-rail`" ref="scrollArea" :class="isCarousel ? 'hp-product-rail' : 'hp-product-grid'" :tabindex="isCarousel ? 0 : undefined" :role="isCarousel ? 'group' : undefined" :aria-label="isCarousel ? title : undefined" @scroll.passive="onScroll" @keydown="onKeydown"><ProductCard v-for="product in products" :key="product.id" :product="product" /></div>
-            <footer v-if="isCarousel" class="hp-product-controls">
+            <div :id="`${id}-rail`" ref="scrollArea" :class="isCarousel ? 'hp-product-rail' : 'hp-product-grid'" :tabindex="isCarousel ? 0 : undefined" :role="isCarousel ? 'group' : undefined" :aria-label="isCarousel ? title : undefined" @scroll.passive="onScroll" @keydown="onKeydown" @pointerdown.passive="pause" @wheel.passive="pause" @focusin="pause"><ProductCard v-for="product in products" :key="product.id" :product="product" /></div>
+            <footer v-if="isCarousel" class="hp-product-controls" @pointerdown.passive="pause">
                 <span class="hp-product-hint" aria-hidden="true"><span class="desktop-hint">برای دیدن بقیه بکشید</span><span class="mobile-hint">ورق بزنید</span> ←</span>
                 <div class="hp-product-arrows" role="group" :aria-label="`کنترل مرور ${title}`">
                     <button type="button" :aria-label="`محصول قبلی در ${title}`" :aria-controls="`${id}-rail`" :disabled="atStart" @click="navigate(-1)"><span aria-hidden="true">→</span></button>

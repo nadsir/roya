@@ -128,6 +128,13 @@ const gridHtml = await renderToString(Vue.createSSRApp({ render: () => Vue.h(sec
 assert.ok(gridHtml.includes('hp-product-grid'));
 assert.ok(!gridHtml.includes('hp-product-controls'));
 assert.ok(!gridHtml.includes('hp-product-rail'));
+// Server-side there is no viewport, so a two-piece featured rail still renders a
+// grid; the mobile slider is switched on after hydration by the featured prop.
+const featuredHtml = await renderToString(Vue.createSSRApp({ render: () => Vue.h(section, { id: 'hp-featured', title: 'انتخاب‌های ویژه', products: many, status: 'ready', featured: true }) }));
+assert.ok(featuredHtml.includes('hp-product-rail'));
+const featuredSmall = await renderToString(Vue.createSSRApp({ render: () => Vue.h(section, { id: 'hp-featured', title: 'انتخاب‌های ویژه', products: many.slice(0, 2), status: 'ready', featured: true }) }));
+assert.ok(featuredSmall.includes('hp-product-grid'));
+assert.ok(!featuredSmall.includes('hp-product-rail'));
 const css = postcss.parse(await readFile(resolve(root, 'resources/css/homepage.css'), 'utf8'));
 css.walkRules((rule) => { if (rule.parent.type === 'atrule' && rule.parent.name.endsWith('keyframes')) return; for (const selector of postcss.list.comma(rule.selector)) assert.ok(selector.startsWith('.storefront-theme '), selector); });
 assert.ok(css.toString().includes('prefers-reduced-motion'));
