@@ -80,6 +80,7 @@ class AdminProductController extends Controller
             'publish_image_count' => ['sometimes', 'integer', 'min:0'],
         ]);
         $data = $this->validateProduct($request);
+        $data = $this->applyGalleryNewTimestamp($data, null);
         $this->validateProductAttributeValues(
             $data['attribute_value_ids'] ?? [],
             $data['category_ids'] ?? []
@@ -179,6 +180,7 @@ class AdminProductController extends Controller
             $request,
             $product
         );
+        $data = $this->applyGalleryNewTimestamp($data, $product);
         $this->validateProductAttributeValues(
             $data['attribute_value_ids'] ?? [],
             $data['category_ids'] ?? []
@@ -326,6 +328,10 @@ class AdminProductController extends Controller
                 'boolean',
             ],
 
+            'is_gallery_new' => [
+                'boolean',
+            ],
+
             'category_ids' => [
                 'nullable',
                 'array',
@@ -405,6 +411,30 @@ class AdminProductController extends Controller
                 'exists:attribute_values,id',
             ],
         ]);
+    }
+
+    /**
+     * Keeps the "new arrivals" flag and its display timestamp in sync.
+     *
+     * Selecting a product stamps the moment it entered the section so the
+     * homepage order stays stable; re-saving an already selected product keeps
+     * the original stamp; deselecting clears it.
+     */
+    protected function applyGalleryNewTimestamp(
+        array $data,
+        ?Product $product
+    ): array {
+        if (! array_key_exists('is_gallery_new', $data)) {
+            return $data;
+        }
+
+        if ($data['is_gallery_new']) {
+            $data['gallery_new_at'] = $product?->gallery_new_at ?? now();
+        } else {
+            $data['gallery_new_at'] = null;
+        }
+
+        return $data;
     }
 
     protected function syncProductCategories(

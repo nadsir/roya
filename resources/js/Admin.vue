@@ -4800,6 +4800,29 @@ v-else-if="section === 'orders'"
                                         </small>
                                     </div>
                                 </label>
+
+                                <label class="toggle-card">
+                                    <input
+                                        v-model="
+                                            form.is_gallery_new
+                                        "
+                                        type="checkbox"
+                                    />
+
+                                    <span class="toggle">
+                                    </span>
+
+                                    <div>
+                                        <strong>
+                                            تازه‌های گالری
+                                        </strong>
+
+                                        <small>
+                                            در بخش تازه‌های گالری
+                                            صفحه اصلی نمایش داده شود.
+                                        </small>
+                                    </div>
+                                </label>
                             </div>
                         </div>
 
@@ -6353,7 +6376,7 @@ v-else-if="section === 'orders'"
 .toggle-row {
     display: grid;
     grid-template-columns:
-        repeat(2, minmax(0, 1fr));
+        repeat(auto-fit, minmax(190px, 1fr));
     gap: 12px;
 }
 

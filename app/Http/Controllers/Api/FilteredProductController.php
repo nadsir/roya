@@ -23,6 +23,8 @@ class FilteredProductController extends Controller
         'price_min',
         'price_max',
         'in_stock',
+        'featured',
+        'gallery_new',
         'vehicle_brand_id',
         'vehicle_model_id',
         'vehicle_generation_id',
@@ -105,6 +107,9 @@ class FilteredProductController extends Controller
 
         // ── Stock / in_stock ──────────────────────────────────────
         $this->applyStockFilter($query, $request);
+
+        // ── Homepage flags (featured / gallery new) ───────────────
+        $this->applyHomepageFlags($query, $request);
 
         // ── Vehicle compatibility ─────────────────────────────────
         $this->applyVehicleFilter($query, $request);
@@ -450,6 +455,32 @@ class FilteredProductController extends Controller
     }
 
     /* ────────────────────────────────────────────────────────────
+     | Homepage flags (featured / gallery new)
+     | ──────────────────────────────────────────────────────────── */
+
+    private function applyHomepageFlags($query, Request $request): void
+    {
+        if ($this->booleanFlag($request, 'featured')) {
+            $query->where('products.is_featured', true);
+        }
+
+        if ($this->booleanFlag($request, 'gallery_new')) {
+            $query->where('products.is_gallery_new', true);
+        }
+    }
+
+    private function booleanFlag(Request $request, string $key): bool
+    {
+        $value = $request->input($key);
+
+        if ($value === null || $value === '') {
+            return false;
+        }
+
+        return filter_var($value, FILTER_VALIDATE_BOOLEAN);
+    }
+
+    /* ────────────────────────────────────────────────────────────
      | Search
      | ──────────────────────────────────────────────────────────── */
 
@@ -480,6 +511,17 @@ class FilteredProductController extends Controller
         $sort = $request->input('sort');
 
         if ($sort === null) {
+            // Gallery new listings are curated by the admin: order by the moment
+            // each product was selected, never by publication date, so the order
+            // stays stable and independent from the catalog's recency.
+            if ($this->booleanFlag($request, 'gallery_new')) {
+                $query->orderByRaw('COALESCE(products.gallery_new_at, products.created_at) DESC')
+                    ->orderByDesc('products.created_at')
+                    ->orderByDesc('products.id');
+
+                return;
+            }
+
             $query->orderByDesc('products.published_at')
                 ->orderByDesc('products.created_at');
 

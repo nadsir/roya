@@ -86,6 +86,7 @@ export function createEmptyForm() {
         stock: 0,
         is_active: true,
         is_featured: false,
+        is_gallery_new: false,
         category_ids: [],
         attribute_value_ids: [],
         custom_attribute_values: [],
@@ -427,6 +428,9 @@ export async function loadProduct(id) {
 
             is_featured:
                 Boolean(product.is_featured),
+
+            is_gallery_new:
+                Boolean(product.is_gallery_new),
 
             category_ids:
                 (product.categories || [])

@@ -559,14 +559,25 @@
 .storefront-theme .hp-product-rail {
     display: flex;
     gap: clamp(16px, 1.8vw, 28px);
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
     overflow-x: auto;
+    overscroll-behavior-x: contain;
     scroll-snap-type: x proximity;
+    scroll-behavior: smooth;
     padding: 4px 4px 16px;
-    margin-inline: -4px;
     scrollbar-width: thin;
 }
 .storefront-theme .hp-product-rail .hp-product-card { flex: 0 0 calc((100% - 3 * clamp(16px, 1.8vw, 28px)) / 4); scroll-snap-align: start; }
 .storefront-theme .hp-product-card { min-width: 0; }
+.storefront-theme .hp-product-controls { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--sf-border); }
+.storefront-theme .hp-product-hint { font-size: .65rem; color: var(--sf-text-muted); }
+.storefront-theme .hp-product-arrows { display: flex; align-items: center; gap: 10px; }
+.storefront-theme .hp-product-arrows button { display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; background: transparent; color: var(--sf-text); font-size: 1.25rem; cursor: pointer; transition: opacity 250ms ease; }
+.storefront-theme .hp-product-arrows button:disabled { opacity: .25; cursor: default; }
+.storefront-theme .hp-product-position { min-width: 54px; text-align: center; font-size: .6875rem; color: var(--sf-text-muted); font-variant-numeric: tabular-nums; }
+.storefront-theme .hp-product-controls .mobile-hint { display: none; }
 .storefront-theme .hp-product-media { position: relative; background: var(--sf-surface-soft); aspect-ratio: 3 / 4; overflow: hidden; }
 .storefront-theme .hp-product-image-link { display: block; height: 100%; overflow: hidden; }
 .storefront-theme .hp-product-image {
@@ -799,6 +810,9 @@
     .storefront-theme .hp-product-grid { gap: 26px 12px; }
     .storefront-theme .hp-product-rail { gap: 12px; }
     .storefront-theme .hp-product-rail .hp-product-card { flex-basis: 70%; }
+    .storefront-theme .hp-product-controls { margin-top: 10px; }
+    .storefront-theme .hp-product-controls .desktop-hint { display: none; }
+    .storefront-theme .hp-product-controls .mobile-hint { display: inline; }
     .storefront-theme .hp-product-copy h3 { font-size: .8125rem; }
     .storefront-theme .hp-product-price { font-size: .8125rem; }
     .storefront-theme .hp-product-badge { top: 8px; inset-inline-end: 8px; font-size: .625rem; padding: 4px 7px; }

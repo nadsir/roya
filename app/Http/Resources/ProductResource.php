@@ -29,6 +29,7 @@ class ProductResource extends JsonResource
                 : null,
 
             'is_featured' => (bool) $this->is_featured,
+            'is_gallery_new' => (bool) $this->is_gallery_new,
             'published_at' => optional($this->published_at)->toISOString(),
 
             'categories' => $this->categories->map(function ($category) {
