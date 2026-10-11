@@ -2,7 +2,6 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { formatPrice, productHref, productImages, imageUrl } from '../../product-presentation.js';
 import { heroSlideImage } from '../../hero-slides.js';
-import { nextImageSrc } from '../../image-fallback.js';
 
 const props = defineProps({ product: { type: Object, default: null }, status: { type: String, default: 'idle' } });
 // Gallery campaign copy; each slide owns its own image and the third follows the product selection.
@@ -86,13 +85,16 @@ function imageError(event, index) {
     const image = event.target;
     const slide = slides.value[index];
     const current = image.currentSrc || image.src || '';
+    if (samePath(current, slide.art.fallbackSrc)) {
+        failed.value = { ...failed.value, [index]: true };
+        return;
+    }
     // A product photo that is not on disk must not cost the slide its own campaign image.
     if (slide.art.src && !samePath(current, slide.art.src)) {
         image.src = slide.art.src;
         return;
     }
-    const next = nextImageSrc(current, 'gallery-slide-' + (index + 1));
-    if (next) image.src = next;
+    if (slide.art.fallbackSrc) image.src = slide.art.fallbackSrc;
     else failed.value = { ...failed.value, [index]: true };
 }
 function visibility() { hidden.value = document.hidden; }

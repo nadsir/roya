@@ -204,22 +204,23 @@ const { heroSlideImages } = await namespace('resources/js/hero-slides.js');
 assert.equal(heroSlideImages.length, 3);
 assert.equal(new Set(heroSlideImages.map((image) => image.src)).size, 3);
 for (const image of heroSlideImages) {
-    assert.ok(image.src.startsWith('/images/'), image.src);
+    assert.equal(new URL(image.src).hostname, 'images.pexels.com');
+    assert.ok(await exists(resolve(project, 'public' + image.fallbackSrc)), image.fallbackSrc);
     assert.ok(image.width > 0 && image.height > 0, image.src);
     assert.ok(image.alt, image.src);
 }
 const sources = [...markup.matchAll(/<img[^>]+src="([^"]+)"/g)].map((match) => match[1]);
 assert.equal(sources.length, 3);
 assert.equal(new Set(sources).size, 3);
-for (const source of sources) assert.ok(await exists(resolve(project, 'public' + source)), source);
-passed.push('three slides render three distinct images from one config and every file exists on disk');
+for (const source of sources) assert.ok(heroSlideImages.some((image) => image.src === source.replaceAll('&amp;', '&')), source);
+passed.push('three distinct remote campaign photos render with existing local fallbacks');
 // A product no longer hijacks the third slide, and a broken product photo never
 // replaces a configured campaign image with a remote placeholder.
 const { default: productHero } = await namespace('resources/js/components/homepage/EditorialHero.vue', true);
 const product = { id: 2, name: 'پیراهن', price: 800, in_stock: true, images: [{ path: 'first.jpg', is_primary: true }] };
 const productMarkup = await renderToString(Vue.createSSRApp({ render: () => Vue.h(productHero, { product, status: 'ready' }) }));
 assert.ok(!productMarkup.includes('/storage/first.jpg'));
-assert.ok(productMarkup.includes(`src="${heroSlideImages[2].src}"`));
+assert.ok(productMarkup.includes(`src="${heroSlideImages[2].src.replaceAll('&', '&amp;')}"`));
 assert.ok(productMarkup.includes('>پیراهن<'));
 assert.equal(new Set([...productMarkup.matchAll(/<img[^>]+src="([^"]+)"/g)].map((match) => match[1])).size, 3);
 const errorHero = await mountHero();
@@ -227,6 +228,13 @@ const broken = { currentSrc: 'http://localhost/storage/first.jpg', src: 'http://
 errorHero.props.product = product; await flush();
 errorHero.proxy.imageErrorFor(broken, 2);
 assert.equal(broken.src, heroSlideImages[2].src);
+broken.currentSrc = broken.src;
+errorHero.proxy.imageErrorFor(broken, 2);
+assert.equal(broken.src, heroSlideImages[2].fallbackSrc);
+broken.currentSrc = broken.src;
+errorHero.proxy.imageErrorFor(broken, 2);
+assert.equal(broken.src, heroSlideImages[2].fallbackSrc);
+errorHero.unmount();
 passed.push('the configured third photo wins, and a failed product photo steps back to it instead of a remote placeholder');
 passed.forEach((name) => console.log('PASS ' + name));
 console.log(`${passed.length} verification groups passed (browser layout remains unverified).`);

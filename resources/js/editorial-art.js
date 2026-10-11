@@ -1,10 +1,11 @@
-// Replace this temporary graphic with approved campaign photography here.
-// Optional responsive srcset must list the actual widths of supplied image files.
+﻿import { homeVisuals } from './home-visuals.js';
+
 export const editorialArt = {
-    src: '/images/editorial/main.png',
+        src: 'https://images.pexels.com/photos/22890201/pexels-photo-22890201.jpeg?auto=compress&dpr=1&h=750&w=1260',
+
+    fallbackSrc: '/images/editorial/main.png',
     srcset: undefined,
     sizes: '(max-width: 600px) 100vw, (max-width: 900px) 70vw, 52vw',
-    width: 1280, height: 1600,
-    alt: 'ترکیب گرافیکی موقت گالری؛ جایگاه تصویر واقعی کمپین',
-    caption: 'گرافیک موقت Editorial؛ جایگزین عکس محصول نیست.',
+    width: 500, height: 750,
+    caption: 'الهام از استایل روزمره؛ عکس فضاسازی، نه تصویر محصول فروشگاه.',
 };

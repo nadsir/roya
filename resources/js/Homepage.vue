@@ -3,6 +3,7 @@ import { computed, onMounted, onBeforeUnmount } from 'vue';
 import SiteHeader from './SiteHeader.vue';
 import SiteFooter from './SiteFooter.vue';
 import EditorialHero from './components/homepage/EditorialHero.vue';
+import HomeStories from './components/homepage/HomeStories.vue';
 import CategoryShowcase from './components/homepage/CategoryShowcase.vue';
 import ProductSection from './components/homepage/ProductSection.vue';
 import EditorialCollection from './components/homepage/EditorialCollection.vue';
@@ -20,6 +21,7 @@ onBeforeUnmount(dispose);
     <SiteHeader />
     <main class="hp-home" dir="rtl">
         <EditorialHero :product="heroProduct" :status="state.status" />
+        <HomeStories />
         <nav class="hp-service-links hp-content" aria-label="همراه شما در گالری"><a href="/store"><i class="fa-solid fa-layer-group" aria-hidden="true" /><span>کشف مجموعه‌ها<small>انتخاب از میان دسته‌های گالری</small></span></a><a href="/wishlist"><i class="fa-regular fa-heart" aria-hidden="true" /><span>انتخاب‌های شما<small>علاقه‌مندی‌ها را کنار هم ببینید</small></span></a><a href="/orders"><i class="fa-solid fa-box" aria-hidden="true" /><span>سفارش‌های من<small>مشاهده وضعیت سفارش‌ها</small></span></a></nav>
         <div class="hp-content">
             <ProductSection id="hp-arrivals" title="تازه‌های گالری" eyebrow="NEW &amp; CONSIDERED" :products="arrivals" :status="state.status" :error="state.error" @retry="loadProducts" />
