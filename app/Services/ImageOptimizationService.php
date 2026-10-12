@@ -146,6 +146,10 @@ class ImageOptimizationService
 
     private function applyExifOrientation($image, string $sourcePath): void
     {
+        if (!function_exists('exif_read_data')) {
+            return;
+        }
+
         $exif = @exif_read_data($sourcePath);
         if ($exif === false || empty($exif['Orientation'])) {
             return;
