@@ -45,7 +45,7 @@
 .storefront-theme .pd-gallery { display:grid; grid-template-columns:auto minmax(0, 1fr); gap:16px; align-items:start; min-width:0; }
 .storefront-theme .pd-thumbs { grid-column:1; grid-row:1; display:flex; flex-direction:column; gap:10px; min-width:0; }
 .storefront-theme .pd-thumb { position:relative; display:block; width:72px; aspect-ratio:4/5; flex-shrink:0; padding:0; overflow:hidden; border:1px solid var(--sf-border); background:var(--sf-surface-soft); color:var(--sf-text); }
-.storefront-theme .pd-thumb img { display:block; width:100%; height:100%; object-fit:cover; }
+.storefront-theme .pd-thumb img { display:block; width:100%; height:100%; object-fit:contain; object-position: center; background-color: var(--sf-surface-soft); }
 .storefront-theme .pd-page .pd-thumb:hover { border-color:var(--sf-text-secondary); }
 .storefront-theme .pd-thumb.is-active { border-color:var(--sf-accent); box-shadow:0 0 0 1px var(--sf-accent); }
 .storefront-theme .pd-thumb.is-active::after { content:'\2713'; position:absolute; inset-inline-start:0; inset-block-end:0; min-width:18px; padding:2px 4px; background:var(--sf-accent); color:var(--sf-on-accent); font-size:9px; line-height:1.4; text-align:center; }
@@ -53,7 +53,7 @@
 .storefront-theme .pd-stage-wrap { position:relative; grid-column:-2 / -1; grid-row:1; min-width:0; }
 .storefront-theme .pd-stage-frame { position:absolute; inset:0; z-index:0; border:1px solid var(--sf-champagne); opacity:.7; transform:translate(-18px, 18px); }
 .storefront-theme .pd-stage { position:relative; z-index:1; aspect-ratio:4/5; overflow:hidden; background:var(--sf-surface-soft); box-shadow:var(--sf-shadow-card); }
-.storefront-theme .pd-stage-image { display:block; width:100%; height:100%; object-fit:cover; }
+.storefront-theme .pd-stage-image { display:block; width:100%; height:100%; object-fit:contain; object-position: center; background-color: var(--sf-surface-soft); }
 .storefront-theme .pd-fallback { display:flex; height:100%; flex-direction:column; align-items:center; justify-content:center; gap:14px; padding:24px; color:var(--sf-text-secondary); text-align:center; }
 .storefront-theme .pd-fallback > span { font:italic 110px/1 Georgia, serif; color:var(--sf-accent); opacity:.25; }
 .storefront-theme .pd-fallback small { font-size:11px; }

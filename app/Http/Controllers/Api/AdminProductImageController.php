@@ -5,10 +5,13 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\ProductImage;
+use App\Services\ImageOptimizationService;
 use App\Services\RoyaProductSocialPublisher;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class AdminProductImageController extends Controller
 {
@@ -37,12 +40,17 @@ class AdminProductImageController extends Controller
 
         $isPrimary = ! $product->images()->exists();
 
-        $path = $request
-            ->file('image')
-            ->store(
-                'products',
-                'public'
-            );
+        try {
+            $path = app(ImageOptimizationService::class)
+                ->optimizeAndStore(
+                    $request->file('image'),
+                    'products'
+                );
+        } catch (Throwable $e) {
+            throw ValidationException::withMessages([
+                'image' => 'پردازش تصویر ناموفق بود. لطفاً تصویر دیگری ارسال کنید.',
+            ]);
+        }
 
         $image = $product->images()->create([
             'path' => $path,
