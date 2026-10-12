@@ -210,8 +210,9 @@ onBeforeUnmount(() => {
 
                 <div class="hp-stories-stage" @touchstart.passive="onTouchStart" @touchend.passive="onTouchEnd"
                     @touchcancel="touchStart = null">
-                    <button type="button" class="hp-stories-nav hp-stories-nav--previous" aria-label="داستان قبلی"
-                        @click="previous"><span aria-hidden="true">→</span></button>
+                    <button type="button" class="hp-stories-nav hp-stories-nav--previous"
+                        style="right: 0; left: auto;" aria-label="ویدیوی بعدی"
+                        @click="next"><span aria-hidden="true">←</span></button>
 
                     <figure class="hp-stories-figure">
                         <video v-if="viewerOpen && !videoFailed" ref="media" :key="mediaKey"
@@ -228,8 +229,9 @@ onBeforeUnmount(() => {
                         <p v-if="videoFailed" class="hp-stories-unavailable">ویدیوی این داستان در دسترس نیست</p>
                     </figure>
 
-                    <button type="button" class="hp-stories-nav hp-stories-nav--next" aria-label="داستان بعدی"
-                        @click="next"><span aria-hidden="true">←</span></button>
+                    <button type="button" class="hp-stories-nav hp-stories-nav--next"
+                        style="left: 0; right: auto;" aria-label="ویدیوی قبلی"
+                        @click="previous"><span aria-hidden="true">→</span></button>
 
                     <div class="hp-stories-taps" aria-hidden="true">
                         <button type="button" class="hp-stories-tap" tabindex="-1" @click="tapZone('previous')" />
