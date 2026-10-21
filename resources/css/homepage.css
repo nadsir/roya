@@ -839,3 +839,310 @@
     .storefront-theme .hp-home * { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
     .storefront-theme .hp-slide, .storefront-theme .hp-slide-visual img { transition: none; transform: none; }
 }
+
+/* ============================================================
+   GALLERY SLIDER — «تازه‌های گالری» / «انتخاب‌های ویژه»
+   One shared component (ArrivalsSlider.vue) drives both homepage
+   galleries, so both sections get the exact same display system:
+   a fanned coverflow built from the reference design, one grid
+   cell per slide, offset from the active card by --hp-arr-shift
+   (percent of the card width) / --hp-arr-scale / --hp-arr-opacity.
+   The card is a clean product card: the photo sits complete in a
+   rounded frame on top, every piece of product data lives in the
+   information block underneath. Nothing is written over the photo.
+   Everything is scoped to .hp-arrivals so no other section moves.
+   ============================================================ */
+
+.storefront-theme .hp-arrivals {
+    /* Width of one fan cell (the slide), not of the visible card. The card is
+       the cell minus the slide padding, so the cell has to be wide enough for
+       the product to read clearly; the fan spreads over the free width of the
+       container instead of hugging the centre. */
+    --hp-arr-card-w: clamp(196px, 20.5vw, 272px);
+    /* Air kept between two neighbouring cards of the fan. */
+    --hp-arr-gap: 10px;
+    --hp-arr-nav-offset: 1.4;
+    --hp-arr-radius: 16px;
+    --hp-arr-frame-radius: 12px;
+    --hp-arr-frame-surface: var(--sf-surface-soft);
+    --hp-arr-card-surface: var(--sf-surface);
+    --hp-arr-hairline: color-mix(in srgb, var(--sf-border) 82%, transparent);
+    --hp-arr-shadow: 0 12px 28px rgb(17 17 17 / 4%), 0 2px 5px rgb(17 17 17 / 3%);
+    --hp-arr-shadow-active: 0 18px 40px rgb(17 17 17 / 6%), 0 3px 9px rgb(17 17 17 / 4%);
+    /* The fan overlaps its cells by design (80% shift, .92 scale), so the inline
+       padding of a slide is derived from the cell width to keep a real gap
+       between two visible cards instead of letting them overlap:
+       gap = 1.92 * padding - 0.16 * cell width. */
+    --hp-arr-slide-pad: calc((var(--hp-arr-gap) + var(--hp-arr-card-w) * 0.16) / 1.92);
+}
+
+.storefront-theme .hp-arr-viewport {
+    position: relative;
+    overflow: hidden;
+    padding-block: clamp(14px, 1.8vw, 22px);
+    touch-action: pan-y;
+    cursor: grab;
+}
+.storefront-theme .hp-arr-viewport[data-dragging] { cursor: grabbing; }
+
+.storefront-theme .hp-arr-stage {
+    display: grid;
+    grid-template-columns: 1fr;
+    justify-items: center;
+    align-items: stretch;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.storefront-theme .hp-arr-slide {
+    grid-area: 1 / 1;
+    width: var(--hp-arr-card-w);
+    /* keeps a clear breathing space between the fanned cards */
+    padding: 12px var(--hp-arr-slide-pad);
+    transform: translateX(calc(var(--hp-arr-shift) * -1%)) translateX(var(--hp-arr-drag, 0px)) scale(var(--hp-arr-scale));
+    opacity: var(--hp-arr-opacity);
+    z-index: var(--hp-arr-z);
+    transition: transform 520ms var(--sf-ease), opacity 420ms ease;
+    will-change: transform, opacity;
+}
+.storefront-theme .hp-arr-slide.is-far { pointer-events: none; }
+
+/* ---------- card shell ---------- */
+.storefront-theme .hp-arr-card {
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 8px;
+    border: 1px solid var(--hp-arr-hairline);
+    border-radius: var(--hp-arr-radius);
+    background: var(--hp-arr-card-surface);
+    box-shadow: var(--hp-arr-shadow);
+    transition: border-color var(--sf-duration-normal), box-shadow var(--sf-duration-normal);
+}
+.storefront-theme .hp-arr-slide.is-active .hp-arr-card {
+    border-color: color-mix(in srgb, var(--sf-text) 12%, var(--sf-border));
+    box-shadow: var(--hp-arr-shadow-active);
+}
+.storefront-theme .hp-arr-card--skeleton { gap: 12px; }
+.storefront-theme .hp-arr-sk-frame { display: block; width: 100%; aspect-ratio: 2 / 3; border-radius: 12px; }
+.storefront-theme .hp-arr-sk-line { display: block; height: 12px; width: 84%; }
+.storefront-theme .hp-arr-sk-line--short { width: 52%; }
+
+/* ---------- product photo: shown whole, never cropped ---------- */
+.storefront-theme .hp-arr-media {
+    position: relative;
+    display: block;
+    aspect-ratio: 2 / 3;
+    padding: 10px;
+    border: 1px solid var(--hp-arr-hairline);
+    border-radius: var(--hp-arr-frame-radius);
+    background: var(--hp-arr-frame-surface);
+    overflow: hidden;
+    transition: border-color var(--sf-duration-normal);
+}
+.storefront-theme .hp-arr-card:hover .hp-arr-media { border-color: color-mix(in srgb, var(--sf-text) 10%, var(--sf-border)); }
+.storefront-theme .hp-arrivals .hp-arr-image {
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    object-fit: contain;
+    object-position: center;
+    background: var(--hp-arr-frame-surface);
+}
+.storefront-theme .hp-arr-placeholder {
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: var(--sf-text-secondary);
+}
+.storefront-theme .hp-arr-placeholder > span { font: italic 64px / 1 Georgia, serif; opacity: .2; }
+.storefront-theme .hp-arr-placeholder small { font-size: .625rem; letter-spacing: .08em; }
+
+/* ---------- information block, always under the photo ---------- */
+.storefront-theme .hp-arr-info {
+    position: relative;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 6px;
+    padding: 11px 2px 2px;
+    text-align: start;
+}
+.storefront-theme .hp-arr-title {
+    margin: 0;
+    font-size: .875rem;
+    font-weight: 500;
+    line-height: 1.75;
+    color: var(--sf-text);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.storefront-theme .hp-arr-title a { color: inherit; transition: color var(--sf-duration-fast); }
+.storefront-theme .hp-arr-title a:hover { color: var(--sf-text-secondary); }
+.storefront-theme .hp-arr-desc {
+    margin: 0;
+    font-size: .6875rem;
+    line-height: 1.85;
+    color: var(--sf-text-muted);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.storefront-theme .hp-arr-buy {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    margin-top: auto;
+    padding-top: 10px;
+    border-top: 1px solid var(--hp-arr-hairline);
+}
+.storefront-theme .hp-arr-price {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 8px;
+    margin: 0;
+    color: var(--sf-text);
+    font-size: .875rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+.storefront-theme .hp-arr-price > span:first-child { white-space: nowrap; }
+.storefront-theme .hp-arr-price small { font-size: .625rem; font-weight: 400; color: var(--sf-text-muted); }
+.storefront-theme .hp-arr-price del { order: 2; font-size: .6875rem; font-weight: 400; color: var(--sf-text-muted); }
+.storefront-theme .hp-arr-badge {
+    order: 1;
+    background: color-mix(in srgb, var(--sf-sale) 10%, var(--sf-surface));
+    color: var(--sf-sale);
+    border: 1px solid color-mix(in srgb, var(--sf-sale) 24%, transparent);
+    border-radius: 999px;
+    padding: 2px 8px;
+    font-size: .5625rem;
+    font-weight: 600;
+    line-height: 1.7;
+    letter-spacing: .02em;
+    white-space: nowrap;
+}
+
+/* ---------- controls row ---------- */
+.storefront-theme .hp-arr-actions { display: flex; align-items: center; gap: 8px; }
+.storefront-theme .hp-arrivals .hp-arr-add {
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 0 9px;
+    border: 1px solid var(--sf-accent);
+    border-radius: 9px;
+    background: var(--sf-accent);
+    color: var(--sf-on-accent);
+    font-size: .6875rem;
+    font-weight: 500;
+    line-height: 1.3;
+    letter-spacing: .02em;
+    white-space: nowrap;
+    overflow: hidden;
+    transition: background var(--sf-duration-fast), border-color var(--sf-duration-fast), opacity var(--sf-duration-fast);
+}
+.storefront-theme .hp-arrivals .hp-arr-add:hover:not(:disabled) { background: var(--sf-accent-hover); border-color: var(--sf-accent-hover); }
+.storefront-theme .hp-arrivals .hp-arr-add:disabled { background: var(--sf-surface-soft); border-color: var(--sf-border); color: var(--sf-text-muted); cursor: default; }
+.storefront-theme .hp-arrivals .hp-arr-wish {
+    flex: 0 0 40px;
+    width: 40px;
+    height: 40px;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: 1px solid var(--hp-arr-hairline);
+    border-radius: 50%;
+    background: var(--sf-surface);
+    color: var(--sf-text);
+    font-size: .8125rem;
+    line-height: 1;
+    transition: color var(--sf-duration-fast), border-color var(--sf-duration-fast), background var(--sf-duration-fast), opacity var(--sf-duration-fast);
+}
+.storefront-theme .hp-arrivals .hp-arr-wish:hover:not(:disabled) { border-color: var(--sf-text); }
+.storefront-theme .hp-arrivals .hp-arr-wish:disabled { opacity: .5; cursor: default; }
+.storefront-theme .hp-arrivals .hp-arr-wish.is-saved { color: var(--sf-sale); border-color: color-mix(in srgb, var(--sf-sale) 40%, var(--sf-border)); }
+.storefront-theme .hp-arr-feedback {
+    margin: 0;
+    font-size: .625rem;
+    line-height: 1.7;
+    color: var(--sf-text-secondary);
+}
+.storefront-theme .hp-arr-feedback.is-error { color: var(--sf-sale); }
+
+.storefront-theme .hp-arr-nav {
+    position: absolute;
+    top: 50%;
+    translate: 0 -50%;
+    z-index: 30;
+    width: 44px;
+    height: 44px;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: 1px solid var(--sf-border);
+    border-radius: 50%;
+    background: var(--sf-surface);
+    color: var(--sf-text);
+    font-size: .75rem;
+    box-shadow: 0 8px 20px rgb(0 0 0 / 8%);
+    transition: border-color var(--sf-duration-fast), opacity var(--sf-duration-fast), transform var(--sf-duration-fast);
+}
+.storefront-theme .hp-arr-nav:hover:not(:disabled) { border-color: var(--sf-text); transform: scale(1.06); }
+.storefront-theme .hp-arr-nav:disabled { opacity: .3; cursor: default; }
+/* RTL: the previous product sits to the right, the next one to the left. */
+.storefront-theme .hp-arr-nav--prev { right: max(10px, calc(50% - var(--hp-arr-card-w) * var(--hp-arr-nav-offset) - 22px)); }
+.storefront-theme .hp-arr-nav--next { left: max(10px, calc(50% - var(--hp-arr-card-w) * var(--hp-arr-nav-offset) - 22px)); }
+
+.storefront-theme .hp-arr-hint {
+    margin: 14px 0 0;
+    text-align: center;
+    font-size: .65rem;
+    color: var(--sf-text-muted);
+}
+
+@media (min-width: 901px) {
+    .storefront-theme .hp-arr-viewport {
+        -webkit-mask-image: linear-gradient(to right, transparent 0, #000 3%, #000 97%, transparent 100%);
+        mask-image: linear-gradient(to right, transparent 0, #000 3%, #000 97%, transparent 100%);
+    }
+}
+
+@media (max-width: 900px) {
+    .storefront-theme .hp-arrivals { --hp-arr-card-w: clamp(172px, 26vw, 210px); --hp-arr-gap: 8px; --hp-arr-nav-offset: 1.4; }
+    .storefront-theme .hp-arr-media { padding: 9px; }
+}
+
+@media (max-width: 600px) {
+    .storefront-theme .hp-arrivals { --hp-arr-card-w: clamp(164px, 54vw, 220px); --hp-arr-gap: 6px; --hp-arr-nav-offset: .72; }
+    .storefront-theme .hp-arr-viewport { padding-block: 12px; }
+    .storefront-theme .hp-arr-slide { padding: 9px var(--hp-arr-slide-pad); }
+    .storefront-theme .hp-arr-card { padding: 7px; }
+    .storefront-theme .hp-arr-media { padding: 8px; }
+    .storefront-theme .hp-arr-info { padding: 10px 1px 2px; gap: 5px; }
+    .storefront-theme .hp-arr-title { font-size: .8125rem; line-height: 1.7; }
+    .storefront-theme .hp-arr-desc { font-size: .625rem; -webkit-line-clamp: 2; }
+    .storefront-theme .hp-arr-buy { gap: 8px; padding-top: 8px; }
+    .storefront-theme .hp-arr-price { font-size: .8125rem; gap: 4px 6px; }
+    .storefront-theme .hp-arrivals .hp-arr-add { min-height: 38px; font-size: .625rem; gap: 4px; padding: 0 6px; }
+    .storefront-theme .hp-arrivals .hp-arr-add > span[aria-hidden] { display: none; }
+    .storefront-theme .hp-arrivals .hp-arr-wish { flex: 0 0 38px; width: 38px; height: 38px; font-size: .75rem; }
+    .storefront-theme .hp-arr-nav { width: 38px; height: 38px; font-size: .6875rem; }
+    .storefront-theme .hp-arr-nav--prev { right: max(8px, calc(50% - var(--hp-arr-card-w) * var(--hp-arr-nav-offset) - 19px)); }
+    .storefront-theme .hp-arr-nav--next { left: max(8px, calc(50% - var(--hp-arr-card-w) * var(--hp-arr-nav-offset) - 19px)); }
+    .storefront-theme .hp-arr-hint { margin-top: 10px; }
+}
