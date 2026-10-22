@@ -131,20 +131,20 @@ onBeforeUnmount(() => {
                     <div v-else class="hp-hero-art"><span lang="en" aria-hidden="true">G.</span><small>روایت تصویری گالری</small></div>
                 </div>
                 <div class="hp-slide-copy">
-                    <p class="hp-eyebrow" lang="en" dir="ltr">GALLERY / {{ String(index + 1).padStart(2, '0') }}</p>
+                 <!--   <p class="hp-eyebrow" lang="en" dir="ltr">GALLERY / {{ String(index + 1).padStart(2, '0') }}</p> -->
                     <h1 v-if="index === 0">{{ slide.title }}</h1><h2 v-else>{{ slide.title }}</h2>
                     <p class="hp-slide-description">{{ slide.subtitle }}</p>
                     <p v-if="index === 2 && product" class="hp-slide-price">{{ formatPrice(product.price) }} <small>تومان</small></p>
                     <a :href="slide.target" class="hp-primary-link" :tabindex="active === index ? 0 : -1">{{ slide.cta }} <span aria-hidden="true">←</span></a>
                 </div>
-                <span class="hp-slide-word" lang="en" aria-hidden="true">{{ ['Gallery.', 'Everyday.', 'Your edit.'][index] }}</span>
+               <!--  <span class="hp-slide-word" lang="en" aria-hidden="true">{{ ['گالری.', 'Everyday.', 'Your edit.'][index] }}</span> -->
             </article>
         </div>
-        <div class="hp-slider-controls" @mouseenter="hovered = true" @mouseleave="hovered = false">
+        <!--  <div class="hp-slider-controls" @mouseenter="hovered = true" @mouseleave="hovered = false">
             <div class="hp-slider-arrows"><button type="button" aria-label="اسلاید قبلی" @click="previous">→</button><button type="button" aria-label="اسلاید بعدی" @click="next">←</button></div>
             <div class="hp-slider-indicators" role="group" aria-label="انتخاب اسلاید"><button v-for="(slide, index) in slides" :key="index" type="button" :aria-label="'نمایش اسلاید ' + (index + 1) + ': ' + slide.title" :aria-current="active === index ? 'true' : undefined" @click="select(index)"><span /></button></div>
             <button class="hp-slider-pause" type="button" :disabled="reducedMotion" :aria-label="reducedMotion ? 'پخش خودکار به دلیل تنظیم کاهش حرکت خاموش است' : paused ? 'شروع پخش خودکار' : 'توقف پخش خودکار'" @click="togglePlayback"><span aria-hidden="true">{{ paused || reducedMotion ? '▷' : 'Ⅱ' }}</span><span class="hp-slider-count">{{ (active + 1).toLocaleString('fa-IR') }} / {{ slides.length.toLocaleString('fa-IR') }}</span></button>
-        </div>
+        </div> -->
         <p class="hp-sr-only" aria-live="polite" aria-atomic="true">{{ announcement }}</p>
     </section>
 </template>

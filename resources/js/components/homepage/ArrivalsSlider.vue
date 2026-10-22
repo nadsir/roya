@@ -278,11 +278,11 @@ onBeforeUnmount(() => {
     <section :id="id" class="hp-section hp-arrivals" aria-labelledby="`${id}-title`">
         <div class="hp-section-heading">
             <div>
-                <p class="hp-eyebrow" lang="en" dir="ltr">{{ eyebrow }}</p>
-                <h2 :id="`${id}-title`">{{ title }}</h2>
-                <span v-if="ready" class="hp-section-count">{{ products.length.toLocaleString('fa-IR') }} انتخاب از گالری</span>
+               <!-- <p class="hp-eyebrow" lang="en" dir="ltr">{{ eyebrow }}</p> -->
+                 <h2 :id="`${id}-title`">{{ title }}</h2>
+               <!-- <span v-if="ready" class="hp-section-count">{{ products.length.toLocaleString('fa-IR') }} انتخاب از گالری</span> -->
             </div>
-            <a :href="moreHref" class="hp-underlined-link">{{ moreLabel }} <span aria-hidden="true">←</span></a>
+         <!--   <a :href="moreHref" class="hp-underlined-link">{{ moreLabel }} <span aria-hidden="true">←</span></a> -->
         </div>
 
         <div v-if="busy" class="hp-arr-viewport hp-arr-viewport--holding" role="status" aria-label="در حال دریافت محصولات">
@@ -412,7 +412,7 @@ onBeforeUnmount(() => {
                     @click="navigate(1)"
                 ><i class="fa-solid fa-chevron-left" aria-hidden="true" /></button>
             </div>
-            <p :id="`${id}-hint`" class="hp-arr-hint">برای دیدن بقیه بکشید یا از دکمه‌های کناری استفاده کنید</p>
+
         </template>
 
         <p class="hp-sr-only" aria-live="polite" aria-atomic="true">{{ announcement }}</p>

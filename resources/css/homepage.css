@@ -60,7 +60,7 @@
 .storefront-theme .hp-round-arrow { border: 1px solid var(--sf-border); width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; }
 
 /* ---------- sections ---------- */
-.storefront-theme .hp-section { padding-block: clamp(48px, 6vw, 92px); scroll-margin-top: 132px; }
+.storefront-theme .hp-section { padding-block: clamp(20px, 1vw, 92px); scroll-margin-top: 132px; }
 .storefront-theme .hp-section-heading {
     display: flex;
     flex-direction: column;
@@ -858,7 +858,7 @@
        the cell minus the slide padding, so the cell has to be wide enough for
        the product to read clearly; the fan spreads over the free width of the
        container instead of hugging the centre. */
-    --hp-arr-card-w: clamp(196px, 20.5vw, 272px);
+    --hp-arr-card-w: clamp(196px, 22.7vw, 318px);
     /* Air kept between two neighbouring cards of the fan. */
     --hp-arr-gap: 10px;
     --hp-arr-nav-offset: 1.4;
@@ -1120,6 +1120,21 @@
         -webkit-mask-image: linear-gradient(to right, transparent 0, #000 3%, #000 97%, transparent 100%);
         mask-image: linear-gradient(to right, transparent 0, #000 3%, #000 97%, transparent 100%);
     }
+    /* Desktop cards are noticeably larger, so the type, the price row and the
+       controls scale with them and keep the same rhythm as the small cards.
+       Tablet and mobile keep their own sizes below. */
+    .storefront-theme .hp-arr-card { padding: 10px; }
+    .storefront-theme .hp-arr-media { padding: 12px; }
+    .storefront-theme .hp-arr-info { gap: 8px; padding: 13px 2px 3px; }
+    .storefront-theme .hp-arr-title { font-size: .9375rem; }
+    .storefront-theme .hp-arr-desc { font-size: .75rem; }
+    .storefront-theme .hp-arr-buy { gap: 10px; padding-top: 12px; }
+    .storefront-theme .hp-arr-price { font-size: .9375rem; gap: 4px 10px; }
+    .storefront-theme .hp-arr-price small { font-size: .6875rem; }
+    .storefront-theme .hp-arr-price del { font-size: .75rem; }
+    .storefront-theme .hp-arr-badge { font-size: .625rem; padding: 3px 10px; }
+    .storefront-theme .hp-arrivals .hp-arr-add { min-height: 44px; font-size: .75rem; padding: 0 14px; }
+    .storefront-theme .hp-arrivals .hp-arr-wish { flex: 0 0 44px; width: 44px; height: 44px; font-size: .875rem; }
 }
 
 @media (max-width: 900px) {
