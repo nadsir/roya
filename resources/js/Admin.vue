@@ -157,6 +157,7 @@ import AdminOrderDetailPage from './AdminOrderDetailPage.vue';
 import AdminNotification from './AdminNotification.vue';
 import AdminUsersPage from './AdminUsersPage.vue';
 import AdminCommentsPage from './AdminCommentsPage.vue';
+import AdminNextChapterPage from './AdminNextChapterPage.vue';
 
 
 
@@ -350,6 +351,11 @@ const nav = [
         key: 'comments',
         label: 'نظرات کاربران',
         icon: '❝',
+    },
+    {
+        key: 'nextchapter',
+        label: 'مدیریت ارسال سراسری و فروش عمده',
+        icon: '✦',
     },
     {
         key: 'settings',
@@ -3759,6 +3765,17 @@ v-else-if="section === 'orders'"
                 v-else-if="section === 'comments'"
             >
                 <AdminCommentsPage />
+            </section>
+
+            <!-- ================================================= -->
+            <!-- NEXT CHAPTER -->
+            <!-- ================================================= -->
+
+            <section
+                v-else-if="section === 'nextchapter'"
+                class="panel"
+            >
+                <AdminNextChapterPage />
             </section>
 
             <!-- ================================================= -->

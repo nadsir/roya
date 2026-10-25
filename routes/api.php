@@ -26,6 +26,7 @@ use App\Http\Controllers\Api\ProductCommentController;
 use App\Http\Controllers\Api\ArticleCommentController;
 use App\Http\Controllers\Api\CommentReplyController;
 use App\Http\Controllers\Api\AdminCommentController;
+use App\Http\Controllers\Api\NextChapterController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -67,6 +68,9 @@ Route::get('/categories/{slug}', [CategoryController::class, 'show']);
 // ── Public Articles ──────────────────────────────────────────
 Route::get('/articles', [ArticleController::class, 'index']);
 Route::get('/articles/{slug}', [ArticleController::class, 'show']);
+
+// ── Public Next Chapter ──────────────────────────────────────
+Route::get('/next-chapter', [NextChapterController::class, 'show']);
 Route::get('/products', [FilteredProductController::class, 'index']);
 Route::get('/products/{id}', [ProductDetailController::class, 'show'])
     ->whereNumber('id');
@@ -192,4 +196,9 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
     Route::get('/comments', [AdminCommentController::class, 'index']);
     Route::patch('/comments/{comment}/status', [AdminCommentController::class, 'updateStatus']);
     Route::delete('/comments/{comment}', [AdminCommentController::class, 'destroy']);
+
+    // ── Homepage Next Chapter ────────────────────────────────────
+    Route::get('/next-chapter', [NextChapterController::class, 'show']);
+    Route::put('/next-chapter', [NextChapterController::class, 'update']);
+    Route::post('/next-chapter/images', [NextChapterController::class, 'uploadImage']);
 });

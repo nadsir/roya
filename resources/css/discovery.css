@@ -2,7 +2,7 @@
 .storefront-theme .dc-page *,.storefront-theme .dc-filters * { box-sizing:border-box; }
 .storefront-theme .dc-container { width:min(var(--sf-container),calc(100% - 2 * var(--sf-gutter))); margin-inline:auto; }
 .storefront-theme .dc-page a { text-decoration:none; color:inherit; }
-.storefront-theme .dc-page button,.storefront-theme .dc-filters button { font:inherit; color:inherit; cursor:pointer; }
+.storefront-theme .dc-page button:not(.hp-quick-add):not(.hp-quick-add-inline),.storefront-theme .dc-filters button { font:inherit; color:inherit; cursor:pointer; }
 .storefront-theme .dc-page :where(a,button,input,select):focus-visible,.storefront-theme .dc-filters :where(a,button,input):focus-visible { outline:2px solid var(--sf-accent); outline-offset:4px; }
 .storefront-theme .dc-page button:disabled,.storefront-theme .dc-filters button:disabled { opacity:.5; cursor:default; }
 .storefront-theme .dc-sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }

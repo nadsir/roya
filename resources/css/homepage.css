@@ -626,6 +626,7 @@
     transition: opacity var(--sf-duration-normal), transform var(--sf-duration-normal), background var(--sf-duration-fast);
 }
 .storefront-theme .hp-wishlist-button.is-saved { color: var(--sf-sale); opacity: 1; transform: none; }
+.storefront-theme .hp-quick-add-inline { display: none; }
 .storefront-theme .hp-quick-add {
     display: flex;
     align-items: center;
@@ -638,6 +639,7 @@
     border: 0;
     background: var(--sf-accent);
     color: var(--sf-on-accent);
+    white-space: nowrap;
     min-height: 50px;
     padding: 12px 18px;
     font-size: .75rem !important;
@@ -820,6 +822,16 @@
     .storefront-theme .hp-product-badge { top: 8px; inset-inline-end: 8px; font-size: .625rem; padding: 4px 7px; }
     .storefront-theme .hp-wishlist-button { top: 6px; inset-inline-start: 6px; opacity: 1; transform: none; width: 38px; height: 38px; }
     .storefront-theme .hp-quick-add { transform: none; opacity: 1; min-height: 44px; font-size: .6875rem !important; padding-inline: 12px; }
+    .storefront-theme .hp-quick-add { display: none; }
+    .storefront-theme .hp-quick-add-inline {
+        display: flex; align-items: center; justify-content: space-between; gap: 12px;
+        width: 100%; min-height: 44px; margin-top: 12px; padding: 10px 14px;
+        border: 0; border-radius: var(--sf-radius-button, 0px); background: var(--sf-accent); color: var(--sf-on-accent);
+        font-size: .8125rem; font-weight: 500; white-space: nowrap; cursor: pointer;
+        transition: background var(--sf-duration-fast, 160ms);
+    }
+    .storefront-theme .hp-quick-add-inline:disabled { background: var(--sf-surface-glass); color: var(--sf-text-muted); cursor: default; }
+    .storefront-theme .hp-quick-add-inline:hover:not(:disabled) { background: var(--sf-accent-hover); }
     .storefront-theme .hp-image-placeholder > span { font-size: 76px; }
 
     .storefront-theme .hp-editorial { margin: 16px 18px; }
@@ -833,6 +845,19 @@
     .storefront-theme .hp-closing { padding: 48px 20px 60px; }
     .storefront-theme .hp-closing h2 { font-size: 30px; }
     .storefront-theme .hp-closing-number { font-size: 300px; bottom: -110px; }
+}
+
+@media (hover: none), (pointer: coarse) {
+    .storefront-theme .hp-quick-add { display: none; }
+    .storefront-theme .hp-quick-add-inline {
+        display: flex; align-items: center; justify-content: space-between; gap: 12px;
+        width: 100%; min-height: 46px; margin-top: 12px; padding: 10px 14px;
+        border: 0; border-radius: var(--sf-radius-button, 0px); background: var(--sf-accent); color: var(--sf-on-accent);
+        font-size: .8125rem; font-weight: 500; white-space: nowrap; cursor: pointer;
+        transition: background var(--sf-duration-fast, 160ms);
+    }
+    .storefront-theme .hp-quick-add-inline:disabled { background: var(--sf-surface-glass); color: var(--sf-text-muted); cursor: default; }
+    .storefront-theme .hp-quick-add-inline:hover:not(:disabled) { background: var(--sf-accent-hover); }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -7,6 +7,8 @@ import HomeStories from './components/homepage/HomeStories.vue';
 import CategoryShowcase from './components/homepage/CategoryShowcase.vue';
 import ArrivalsSlider from './components/homepage/ArrivalsSlider.vue';
 import EditorialCollection from './components/homepage/EditorialCollection.vue';
+import EditorialJournal from './components/homepage/EditorialJournal.vue';
+import NextChapter from './components/homepage/NextChapter.vue';
 import { createHomepageData } from './homepage-data.js';
 import { categoryHref } from './catalog-state.js';
 import '../css/homepage.css';
@@ -31,8 +33,10 @@ onBeforeUnmount(dispose);
             <CategoryShowcase :product-image="categoryProductImage" />
             <ArrivalsSlider id="hp-featured" title="انتخاب‌های ویژه" eyebrow="THE GALLERY SELECTION" :products="featured" :status="state.status" :error="state.error" more-href="/store" @retry="loadProducts" />
         </div>
-        <section class="hp-story hp-content" aria-labelledby="hp-story-title"><p class="hp-eyebrow" lang="en" dir="ltr">A NOTE FROM GALLERY</p><h2 id="hp-story-title">کمد شما،<br /><span>روایت خودتان.</span></h2><div><p>در گالری، لباس و اکسسوری را کنار هم می‌بینیم؛ برای کشف ترکیب‌هایی که با سلیقه و زندگی روزمره شما هماهنگ‌اند.</p><p class="hp-story-note">این آغاز روایت گالری است؛ داستان کامل برند به‌زودی اینجا شکل می‌گیرد.</p></div><span class="hp-story-signature" lang="en" aria-hidden="true">Gallery.</span></section>
-        <section class="hp-closing" aria-labelledby="hp-closing-title"><span class="hp-eyebrow" lang="en" dir="ltr">YOUR NEXT CHAPTER</span><h2 id="hp-closing-title">انتخاب بعدی،<br />به سلیقه شما.</h2><a href="/store" class="hp-primary-link">ورود به گالری <span aria-hidden="true">←</span></a><span class="hp-closing-number" aria-hidden="true">G</span></section>
+        <div class="hp-content">
+            <EditorialJournal />
+        </div>
+        <NextChapter />
     </main>
     <SiteFooter />
 </template>

@@ -75,12 +75,13 @@ onBeforeUnmount(() => clearTimeout(feedbackTimer));
             </a>
             <span v-if="discount" class="hp-product-badge">{{ discount.toLocaleString('fa-IR') }}٪ تخفیف</span>
             <button class="hp-wishlist-button" :class="{ 'is-saved': inWishlist }" :aria-label="wishlistLabel" :aria-pressed="inWishlist" :aria-busy="pending" :disabled="pending || wishlistState.loading" @click="toggleWishlist"><i :class="pending ? 'fa-solid fa-spinner' : inWishlist ? 'fa-solid fa-heart' : 'fa-regular fa-heart'" aria-hidden="true" /></button>
-            <button class="hp-quick-add" :disabled="!product.in_stock" :aria-label="`${hasVariants ? 'انتخاب تنوع' : 'افزودن به سبد'} ${product.name}`" @click="quickAdd"><span>{{ !product.in_stock ? 'ناموجود' : hasVariants ? 'انتخاب سایز و جزئیات' : 'افزودن به سبد' }}</span><span v-if="product.in_stock" aria-hidden="true">{{ hasVariants ? '←' : '+' }}</span></button>
+            <button class="hp-quick-add" :disabled="!product.in_stock" :aria-label="`${hasVariants ? 'انتخاب سایز' : 'افزودن به سبد'} ${product.name}`" @click="quickAdd"><span>{{ !product.in_stock ? 'ناموجود' : hasVariants ? 'انتخاب سایز' : 'افزودن به سبد' }}</span><span v-if="product.in_stock" aria-hidden="true">{{ hasVariants ? '←' : '+' }}</span></button>
         </div>
         <div class="hp-product-copy">
             <p v-if="meta" class="hp-product-meta">{{ meta }}</p>
             <h3><a :href="productHref(product)">{{ product.name }}</a></h3>
             <p class="hp-product-price"><span>{{ formatPrice(product.price) }} <small>تومان</small></span><del v-if="discount" :aria-label="`قیمت پیشین ${formatPrice(product.compare_at_price)} تومان`">{{ formatPrice(product.compare_at_price) }}</del></p>
+            <button class="hp-quick-add-inline" :disabled="!product.in_stock" :aria-label="`${hasVariants ? 'انتخاب سایز' : 'افزودن به سبد'} ${product.name}`" @click="quickAdd"><span>{{ !product.in_stock ? 'ناموجود' : hasVariants ? 'انتخاب سایز' : 'افزودن به سبد' }}</span><span v-if="product.in_stock" aria-hidden="true">{{ hasVariants ? '←' : '+' }}</span></button>
             <div class="hp-product-colors" v-if="colors.length" aria-label="رنگ‌های محصول"><span v-for="color in colors.slice(0, 5)" :key="color.hex_color" :style="{ '--swatch': color.hex_color }" :title="color.label" role="img" :aria-label="color.label" /><span v-if="colors.length > 5" class="hp-more-colors">+{{ (colors.length - 5).toLocaleString('fa-IR') }}</span></div>
             <p class="hp-product-feedback" :class="{ 'is-error': feedbackError }" :role="feedbackError ? 'alert' : 'status'">{{ feedback }}</p>
         </div>
