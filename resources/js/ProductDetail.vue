@@ -219,6 +219,9 @@ watch(product, (p) => {
         seoCleanup = null;
     }
     if (p) {
+        // Remove any server-rendered product JSON-LD from the initial HTML so
+        // the freshly hydrated state never produces duplicate Product entities.
+        clearSeoJsonLd();
         applyProductSeo(p);
     } else if (!result.loading) {
         document.title = 'ROYA GALLERY | فروشگاه لباس و اکسسوری زنانه';

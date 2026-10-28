@@ -29,7 +29,7 @@ Route::get('/register', fn () => view('welcome'));
 
 Route::get('/account', fn () => view('welcome'));
 
-Route::get('/products/{id}', fn () => view('welcome'))
+Route::get('/products/{id}', [\App\Http\Controllers\ProductPageController::class, 'show'])
     ->whereNumber('id');
 
 Route::get('/articles', fn () => view('welcome'));

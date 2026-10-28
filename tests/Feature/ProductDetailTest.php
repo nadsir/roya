@@ -422,7 +422,9 @@ class ProductDetailTest extends TestCase
 
     public function test_web_route_serves_spa_view(): void
     {
-        $this->get('/products/123')
+        $product = $this->product('Shell Test', 'shell-test');
+
+        $this->get("/products/{$product->id}")
             ->assertOk()
             ->assertSee('app');
     }
