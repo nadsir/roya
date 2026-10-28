@@ -37,6 +37,194 @@ const {
     selectImage, nextImage, prevImage, isValueSelectable, isSelected, selectedLabel, toggleAxisValue,
 } = model;
 
+let seoCleanup = null;
+
+function getProductionBaseUrl() {
+    return 'https://royafashion.ir';
+}
+
+function toProductionUrl(path) {
+    if (!path) return '';
+    if (/^https?:\/\//i.test(path)) {
+        try {
+            const url = new URL(path);
+            if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') {
+                return `${getProductionBaseUrl()}${url.pathname}${url.search}${url.hash}`;
+            }
+            return path;
+        } catch {
+            return path;
+        }
+    }
+    if (path.startsWith('/')) {
+        return `${getProductionBaseUrl()}${path}`;
+    }
+    return `${getProductionBaseUrl()}/${path}`;
+}
+
+function setMeta(name, content) {
+    if (content === null || content === undefined || content === '') {
+        removeMeta(name);
+        return;
+    }
+    const isTwitter = name.startsWith('twitter:');
+    const isProperty = !isTwitter && (name.startsWith('og:') || name === 'product:price:amount' || name === 'product:price:currency');
+    const attr = isProperty ? 'property' : 'name';
+    let el = document.querySelector(`meta[${attr}="${name}"]`);
+    if (!el) {
+        el = document.createElement('meta');
+        el.setAttribute(attr, name);
+        document.head.appendChild(el);
+    }
+    el.content = String(content);
+}
+
+function removeMeta(name) {
+    document.querySelectorAll(`meta[name="${name}"], meta[property="${name}"]`).forEach((el) => el.remove());
+}
+
+function setCanonical(url) {
+    let link = document.querySelector('link[rel="canonical"]');
+    if (!link) {
+        link = document.createElement('link');
+        link.rel = 'canonical';
+        document.head.appendChild(link);
+    }
+    link.href = url;
+}
+
+function removeCanonical() {
+    const link = document.querySelector('link[rel="canonical"]');
+    if (link) link.remove();
+}
+
+function injectJsonLd(obj) {
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.dataset.seo = 'product';
+    script.textContent = JSON.stringify(obj);
+    document.head.appendChild(script);
+    return script;
+}
+
+function clearSeoJsonLd() {
+    document.querySelectorAll('script[type="application/ld+json"][data-seo="product"]').forEach((el) => el.remove());
+}
+
+function productImageUrl() {
+    const img = images.value?.[0];
+    if (!img?.path) return '';
+    if (/^https?:\/\//i.test(img.path)) return img.path;
+    const path = img.path.startsWith('/') ? img.path : '/' + img.path;
+    return `${getProductionBaseUrl()}${path}`;
+}
+
+function applyProductSeo(p) {
+    if (!p) return;
+    const siteName = 'ROYA GALLERY';
+    const title = p.meta_title || `${p.name} | ${siteName}`;
+    const rawDesc = p.meta_description || p.short_description || '';
+    const description = rawDesc ? String(rawDesc).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 160) : p.name;
+    document.title = title;
+    setMeta('description', description);
+    setMeta('robots', 'index,follow');
+    setMeta('og:type', 'product');
+    setMeta('og:title', title);
+    setMeta('og:description', description);
+    const canonical = (p.canonical_url && /^https?:\/\//i.test(p.canonical_url)) ? toProductionUrl(p.canonical_url) : toProductionUrl(`/products/${p.id}`);
+    setMeta('og:url', canonical);
+    setMeta('og:site_name', siteName);
+    setMeta('og:locale', 'fa_IR');
+    const img = productImageUrl();
+    if (img) setMeta('og:image', img);
+    setMeta('twitter:card', 'summary_large_image');
+    setMeta('twitter:title', title);
+    setMeta('twitter:description', description);
+    if (img) setMeta('twitter:image', img);
+    if (displayPrice.value !== null && displayPrice.value !== undefined) {
+        setMeta('product:price:amount', String(displayPrice.value));
+        setMeta('product:price:currency', 'IRR');
+    } else {
+        removeMeta('product:price:amount');
+        removeMeta('product:price:currency');
+    }
+    setCanonical(canonical);
+
+    const breadcrumbs = [
+        { '@type': 'ListItem', position: 1, name: 'خانه', item: `${getProductionBaseUrl()}/` },
+        { '@type': 'ListItem', position: 2, name: 'فروشگاه', item: `${getProductionBaseUrl()}/store` },
+    ];
+    if (categories.value?.length) {
+        const last = categories.value[categories.value.length - 1];
+        breadcrumbs.push({ '@type': 'ListItem', position: breadcrumbs.length + 1, name: last.name, item: toProductionUrl(`/c/${last.slug}`) });
+    }
+    breadcrumbs.push({ '@type': 'ListItem', position: breadcrumbs.length + 1, name: p.name, item: canonical });
+
+    const productLd = {
+        '@context': 'https://schema.org',
+        '@type': 'Product',
+        name: p.name,
+        description,
+    };
+    if (displaySku.value || p.sku) productLd.sku = displaySku.value || p.sku;
+    if (img) productLd.image = [img];
+    if (brand.value) productLd.brand = { '@type': 'Brand', name: brand.value };
+    productLd.offers = {
+        '@type': 'Offer',
+        url: canonical,
+        priceCurrency: 'IRR',
+        price: String(displayPrice.value ?? 0),
+        availability: displayInStock.value ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+        itemCondition: 'https://schema.org/NewCondition',
+    };
+
+    const breadcrumbLd = {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: breadcrumbs,
+    };
+
+    clearSeoJsonLd();
+    const nodes = [injectJsonLd(productLd), injectJsonLd(breadcrumbLd)];
+    seoCleanup = () => {
+        nodes.forEach((n) => {
+            if (n && n.parentNode) n.parentNode.removeChild(n);
+        });
+        clearSeoJsonLd();
+        removeMeta('description');
+        removeMeta('robots');
+        removeMeta('og:type');
+        removeMeta('og:title');
+        removeMeta('og:description');
+        removeMeta('og:url');
+        removeMeta('og:site_name');
+        removeMeta('og:locale');
+        removeMeta('og:image');
+        removeMeta('twitter:card');
+        removeMeta('twitter:title');
+        removeMeta('twitter:description');
+        removeMeta('twitter:image');
+        removeMeta('product:price:amount');
+        removeMeta('product:price:currency');
+        removeCanonical();
+        document.title = 'ROYA GALLERY | فروشگاه لباس و اکسسوری زنانه';
+    };
+}
+
+watch(product, (p) => {
+    if (seoCleanup) {
+        try {
+            seoCleanup();
+        } catch (e) {}
+        seoCleanup = null;
+    }
+    if (p) {
+        applyProductSeo(p);
+    } else if (!result.loading) {
+        document.title = 'ROYA GALLERY | فروشگاه لباس و اکسسوری زنانه';
+    }
+}, { immediate: false });
+
 const comments = createCommentSection('product');
 const panels = reactive({ description: true, specs: true });
 const hasSpecs = computed(() => displayAttributes.value.length > 0 || customAttributes.value.length > 0);
@@ -113,7 +301,15 @@ function goBack() {
 }
 
 onMounted(() => { if (ownsModel) load(); });
-onBeforeUnmount(() => { if (ownsModel) dispose(); });
+onBeforeUnmount(() => {
+    if (seoCleanup) {
+        try {
+            seoCleanup();
+        } catch (e) {}
+        seoCleanup = null;
+    }
+    if (ownsModel) dispose();
+});
 </script>
 
 <template>
