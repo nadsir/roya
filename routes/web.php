@@ -1,8 +1,10 @@
 ﻿<?php
 
 use App\Http\Controllers\Api\PaymentController;
+use App\Http\Controllers\SitemapController;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/sitemap.xml', [SitemapController::class, 'index']);
 Route::get('/admin', fn () => view('welcome'));
 
 Route::get('/', fn () => view('welcome'));

@@ -10,4 +10,4 @@ Disallow: /account
 Disallow: /wishlist
 Disallow: /login
 Disallow: /register
-Sitemap: /sitemap.xml
+Sitemap: https://royafashion.ir/sitemap.xml
