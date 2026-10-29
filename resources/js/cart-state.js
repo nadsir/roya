@@ -39,6 +39,7 @@ function addToCart(item) {
     );
 
     if (existing) {
+        if (!existing.product_slug && item.product_slug) existing.product_slug = item.product_slug;
         const maxQty = existing.stock || 999;
         existing.quantity = Math.min(
             existing.quantity + (item.quantity || 1),
@@ -48,6 +49,7 @@ function addToCart(item) {
         state.items.push({
             key: item.key,
             product_id: item.product_id,
+            product_slug: item.product_slug || null,
             variant_id: item.variant_id || null,
             name: item.name || '',
             price: Number(item.price) || 0,

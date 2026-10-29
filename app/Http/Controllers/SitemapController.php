@@ -5,79 +5,109 @@ namespace App\Http\Controllers;
 use App\Models\Article;
 use App\Models\Category;
 use App\Models\Product;
+use App\Services\SeoService;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\DB;
 
+/**
+ * Dynamic XML sitemap at /sitemap.xml listing all active categories,
+ * active products, and published articles with <lastmod> timestamps,
+ * using the semantic canonical URL structure (/category/{slug},
+ * /product/{slug}).
+ */
 class SitemapController extends Controller
 {
+    public function __construct(
+        private readonly SeoService $seo,
+    ) {}
+
     public function index(): Response
     {
-        $baseUrl = 'https://royafashion.ir';
+        $origin = $this->seo->origin();
 
-        $urls = [];
+        $entries = [
+            ['url' => $origin . '/', 'lastmod' => null],
+            ['url' => $origin . '/store', 'lastmod' => null],
+            ['url' => $origin . '/articles', 'lastmod' => null],
+        ];
 
-        $urls[] = rtrim($baseUrl, '/') . '/';
-        $urls[] = rtrim($baseUrl, '/') . '/store';
-        $urls[] = rtrim($baseUrl, '/') . '/articles';
-
-        // Categories
+        // Categories (active only)
         try {
-            $categories = Category::query()
+            Category::query()
                 ->where('is_active', true)
-                ->select('slug')
-                ->get();
-            foreach ($categories as $category) {
-                if (!empty($category->slug)) {
-                    $urls[] = rtrim($baseUrl, '/') . '/c/' . rawurlencode($category->slug);
-                }
-            }
-        } catch (\Throwable $e) {
+                ->select('slug', 'updated_at')
+                ->orderBy('id')
+                ->chunk(500, function ($categories) use ($origin, &$entries) {
+                    foreach ($categories as $category) {
+                        if (! empty($category->slug)) {
+                            $entries[] = [
+                                'url' => $origin . '/category/' . rawurlencode($category->slug),
+                                'lastmod' => $category->updated_at,
+                            ];
+                        }
+                    }
+                });
+        } catch (\Throwable) {
+            // Sitemap stays valid even when a section fails to load.
         }
 
-        // Products
+        // Products (active). Out-of-stock products still have valid canonical
+        // pages and remain indexable; availability is expressed in Product JSON-LD.
         try {
-            $products = Product::query()
+            Product::query()
                 ->where('is_active', true)
-                ->select('id', 'published_at')
-                ->get();
-            foreach ($products as $product) {
-                if (!empty($product->id)) {
-                    $urls[] = rtrim($baseUrl, '/') . '/products/' . $product->id;
-                }
-            }
-        } catch (\Throwable $e) {
+                ->select('slug', 'updated_at')
+                ->orderBy('id')
+                ->chunk(500, function ($products) use ($origin, &$entries) {
+                    foreach ($products as $product) {
+                        if (! empty($product->slug)) {
+                            $entries[] = [
+                                'url' => $origin . '/product/' . rawurlencode($product->slug),
+                                'lastmod' => $product->updated_at,
+                            ];
+                        }
+                    }
+                });
+        } catch (\Throwable) {
         }
 
-        // Articles
+        // Articles (published)
         try {
-            $articles = Article::query()
+            Article::query()
                 ->where('status', 'published')
-                ->select('slug', 'published_at')
-                ->get();
-            foreach ($articles as $article) {
-                if (!empty($article->slug)) {
-                    $urls[] = rtrim($baseUrl, '/') . '/articles/' . rawurlencode($article->slug);
-                }
-            }
-        } catch (\Throwable $e) {
+                ->select('slug', 'published_at', 'updated_at')
+                ->orderBy('id')
+                ->chunk(500, function ($articles) use ($origin, &$entries) {
+                    foreach ($articles as $article) {
+                        if (! empty($article->slug)) {
+                            $entries[] = [
+                                'url' => $origin . '/articles/' . rawurlencode($article->slug),
+                                'lastmod' => $article->updated_at ?: $article->published_at,
+                            ];
+                        }
+                    }
+                });
+        } catch (\Throwable) {
         }
 
-        // Deduplicate and ensure all from base domain
-        $urls = array_values(array_unique(array_filter($urls, function ($u) {
-            if (!is_string($u)) {
-                return false;
+        // Deduplicate URLs, preserving first occurrence.
+        $seen = [];
+        $unique = [];
+        foreach ($entries as $entry) {
+            if (isset($seen[$entry['url']])) {
+                continue;
             }
-            if (strpos($u, 'http://localhost') === 0 || strpos($u, 'http://127.0.0.1') === 0 || strpos($u, 'https://royagallery.ir') === 0) {
-                return false;
-            }
-            return strpos($u, 'https://royafashion.ir') === 0;
-        })));
+            $seen[$entry['url']] = true;
+            $unique[] = $entry;
+        }
 
         $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
         $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
-        foreach ($urls as $url) {
+        foreach ($unique as $entry) {
             $xml .= '  <url>' . "\n";
-            $xml .= '    <loc>' . htmlspecialchars($url, ENT_XML1 | ENT_COMPAT, 'UTF-8') . '</loc>' . "\n";
+            $xml .= '    <loc>' . htmlspecialchars($entry['url'], ENT_XML1 | ENT_COMPAT, 'UTF-8') . '</loc>' . "\n";
+            if ($entry['lastmod'] !== null && $entry['lastmod'] !== '') {
+                $xml .= '    <lastmod>' . $entry['lastmod']->toAtomString() . '</lastmod>' . "\n";
+            }
             $xml .= '  </url>' . "\n";
         }
         $xml .= '</urlset>' . "\n";

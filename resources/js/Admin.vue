@@ -577,6 +577,11 @@ function categoryAttributeConfigIndex(attributeId) {
     );
 }
 
+function categoryFaqsJson(faqs) {
+    if (!Array.isArray(faqs) || faqs.length === 0) return '';
+    return JSON.stringify(faqs, null, 2);
+}
+
 function createEmptyCategoryForm() {
     return {
         name: '',
@@ -586,6 +591,14 @@ function createEmptyCategoryForm() {
         image: '',
         is_active: true,
         sort_order: 0,
+        // SEO / GEO
+        meta_title: '',
+        meta_description: '',
+        canonical_url: '',
+        h1_title: '',
+        top_description: '',
+        bottom_content: '',
+        faqs_json: '',
     };
 }
 
@@ -788,6 +801,13 @@ function openEditCategory(category) {
         image: category.image || '',
         is_active: Boolean(category.is_active),
         sort_order: category.sort_order ?? 0,
+        meta_title: category.meta_title || '',
+        meta_description: category.meta_description || '',
+        canonical_url: category.canonical_url || '',
+        h1_title: category.h1_title || '',
+        top_description: category.top_description || '',
+        bottom_content: category.bottom_content || '',
+        faqs_json: categoryFaqsJson(category.faqs),
     };
     showCategoryEditor.value = true;
     selectCategory(category.id);
@@ -807,9 +827,32 @@ async function submitCategory() {
     successMessage.value = '';
 
     try {
+        let faqs = [];
+        const rawFaqs = String(categoryForm.value.faqs_json || '').trim();
+        if (rawFaqs !== '') {
+            let parsed;
+            try {
+                parsed = JSON.parse(rawFaqs);
+            } catch {
+                throw new Error('قالب JSON سوالات پرتکرار معتبر نیست.');
+            }
+            if (!Array.isArray(parsed)) {
+                throw new Error('سوالات پرتکرار باید یک آرایه JSON باشد.');
+            }
+            faqs = parsed
+                .filter(entry => entry && typeof entry === 'object')
+                .map(entry => ({
+                    question: String(entry.question || '').trim(),
+                    answer: String(entry.answer || '').trim(),
+                }))
+                .filter(entry => entry.question && entry.answer);
+        }
+
+        const { faqs_json, ...categoryFields } = categoryForm.value;
         const data = {
-            ...categoryForm.value,
+            ...categoryFields,
             parent_id: categoryForm.value.parent_id || null,
+            faqs,
         };
 
         if (categoryEditingId.value) {
@@ -825,7 +868,7 @@ async function submitCategory() {
         const errors = error.response?.data?.errors;
         errorMessage.value = errors
             ? Object.values(errors).flat().join(' ')
-            : 'ذخیره دسته‌بندی انجام نشد.';
+            : (!error.response && error.message ? error.message : 'ذخیره دسته‌بندی انجام نشد.');
         showAdminNotification('error', 'خطا', errorMessage.value);
     } finally {
         categorySaving.value = false;
@@ -2658,6 +2701,41 @@ const CategoryTreeNode = {
                                             <span>آدرس تصویر</span>
                                             <input v-model.trim="categoryForm.image" type="url" dir="ltr">
                                         </label>
+
+                                        <label class="form-field full-width">
+                                            <span>عنوان سئو (Meta Title)</span>
+                                            <input v-model.trim="categoryForm.meta_title" maxlength="70" placeholder="حداکثر ۷۰ کاراکتر">
+                                        </label>
+
+                                        <label class="form-field full-width">
+                                            <span>توضیحات سئو (Meta Description)</span>
+                                            <textarea v-model.trim="categoryForm.meta_description" rows="2" maxlength="160" placeholder="حداکثر ۱۶۰ کاراکتر"></textarea>
+                                        </label>
+
+                                        <label class="form-field full-width">
+                                            <span>Canonical URL (اختیاری)</span>
+                                            <input v-model.trim="categoryForm.canonical_url" type="url" dir="ltr" placeholder="https://…">
+                                        </label>
+
+                                        <label class="form-field full-width">
+                                            <span>عنوان H1 صفحه</span>
+                                            <input v-model.trim="categoryForm.h1_title" placeholder="اگر خالی باشد از نام دسته استفاده می‌شود">
+                                        </label>
+
+                                        <label class="form-field full-width">
+                                            <span>متن بالای لیست محصولات (Top Description)</span>
+                                            <textarea v-model.trim="categoryForm.top_description" rows="2"></textarea>
+                                        </label>
+
+                                        <label class="form-field full-width">
+                                            <span>محتوای پایین صفحه (راهنمای استایل)</span>
+                                            <textarea v-model.trim="categoryForm.bottom_content" rows="4"></textarea>
+                                        </label>
+
+                                        <label class="form-field full-width">
+                                            <span>سوالات پرتکرار (FAQ) — JSON</span>
+                                            <textarea v-model.trim="categoryForm.faqs_json" rows="4" dir="ltr" placeholder='[{"question": "…", "answer": "…"}]'></textarea>
+                                        </label>
                                     </div>
 
                                     <label class="category-active-toggle">
@@ -4220,6 +4298,46 @@ v-else-if="section === 'orders'"
                                         rows="5"
                                         placeholder="توضیحات کامل محصول..."
                                     ></textarea>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- SEO / GEO -->
+
+                        <div class="form-section">
+                            <div class="form-section-title">
+                                سئو و اطلاعات ساختاریافته
+                            </div>
+
+                            <div class="form-grid">
+                                <label class="field full">
+                                    <span>Meta Title</span>
+                                    <input v-model.trim="form.meta_title" type="text" maxlength="70" placeholder="حداکثر ۷۰ کاراکتر">
+                                </label>
+
+                                <label class="field full">
+                                    <span>Meta Description</span>
+                                    <textarea v-model.trim="form.meta_description" rows="2" maxlength="160" placeholder="حداکثر ۱۶۰ کاراکتر"></textarea>
+                                </label>
+
+                                <label class="field full">
+                                    <span>Canonical URL (اختیاری)</span>
+                                    <input v-model.trim="form.canonical_url" type="url" dir="ltr" placeholder="https://…">
+                                </label>
+
+                                <label class="field">
+                                    <span>برند</span>
+                                    <input v-model.trim="form.brand" type="text" maxlength="255">
+                                </label>
+
+                                <label class="field">
+                                    <span>جنس / متریال</span>
+                                    <input v-model.trim="form.material" type="text" maxlength="255" placeholder="مثلاً کرپ، ساتن">
+                                </label>
+
+                                <label class="field full">
+                                    <span>راهنمای نگهداری</span>
+                                    <textarea v-model.trim="form.care_instructions" rows="2"></textarea>
                                 </label>
                             </div>
                         </div>

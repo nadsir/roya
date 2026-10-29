@@ -64,11 +64,11 @@ class ProductSchemaBuilder
     }
 
     /**
-     * The canonical public URL of the product page.
+     * The canonical public URL of the product page (slug-based).
      */
     public function productUrl(Product $product): string
     {
-        return $this->origin() . '/products/' . $product->id;
+        return $this->origin() . '/product/' . rawurlencode($product->slug);
     }
 
     private function origin(): string

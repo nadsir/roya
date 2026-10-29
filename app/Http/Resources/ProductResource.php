@@ -23,6 +23,15 @@ class ProductResource extends JsonResource
             'short_description' => $this->short_description,
             'description' => $this->description,
 
+            // SEO / GEO fields (for the client-side meta layer)
+            'meta_title' => $this->meta_title,
+            'meta_description' => $this->meta_description,
+            'canonical_url' => $this->canonical_url,
+            'brand' => $this->brand,
+            'material' => $this->material,
+            'care_instructions' => $this->care_instructions,
+            'size_chart' => $this->size_chart,
+
             'price' => (float) $this->price,
             'compare_at_price' => $this->compare_at_price !== null
                 ? (float) $this->compare_at_price

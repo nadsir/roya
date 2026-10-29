@@ -72,8 +72,8 @@ Route::get('/articles/{slug}', [ArticleController::class, 'show']);
 // ── Public Next Chapter ──────────────────────────────────────
 Route::get('/next-chapter', [NextChapterController::class, 'show']);
 Route::get('/products', [FilteredProductController::class, 'index']);
-Route::get('/products/{id}', [ProductDetailController::class, 'show'])
-    ->whereNumber('id');
+// Accepts the numeric id (legacy clients) or the canonical slug.
+Route::get('/products/{identifier}', [ProductDetailController::class, 'show']);
 
 // ── Public Comments ──────────────────────────────────────────
 Route::get('/products/{product}/comments', [ProductCommentController::class, 'index']);

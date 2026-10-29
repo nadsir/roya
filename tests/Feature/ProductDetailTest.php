@@ -424,9 +424,18 @@ class ProductDetailTest extends TestCase
     {
         $product = $this->product('Shell Test', 'shell-test');
 
-        $this->get("/products/{$product->id}")
+        $this->get("/product/{$product->slug}")
             ->assertOk()
             ->assertSee('app');
+    }
+
+    public function test_legacy_numeric_product_url_redirects_to_canonical_slug(): void
+    {
+        $product = $this->product('Legacy Test', 'legacy-test');
+
+        $this->get("/products/{$product->id}")
+            ->assertStatus(301)
+            ->assertRedirect("/product/{$product->slug}");
     }
 
     /* ────────────────────────────────────────────────────────────

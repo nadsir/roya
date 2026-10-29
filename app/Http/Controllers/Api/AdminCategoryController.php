@@ -185,6 +185,18 @@ class AdminCategoryController extends Controller
             ],
             'parent_id' => ['sometimes', 'nullable', 'integer', 'exists:categories,id'],
             'description' => ['sometimes', 'nullable', 'string'],
+
+            // SEO / GEO fields
+            'meta_title' => ['sometimes', 'nullable', 'string', 'max:70'],
+            'meta_description' => ['sometimes', 'nullable', 'string', 'max:160'],
+            'canonical_url' => ['sometimes', 'nullable', 'string', 'max:2048', 'url'],
+            'h1_title' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'top_description' => ['sometimes', 'nullable', 'string'],
+            'bottom_content' => ['sometimes', 'nullable', 'string'],
+            'faqs' => ['sometimes', 'nullable', 'array'],
+            'faqs.*.question' => ['required_with:faqs', 'string', 'max:255'],
+            'faqs.*.answer' => ['required_with:faqs', 'string'],
+
             'image' => ['sometimes', 'nullable', 'string', 'max:2048'],
             'is_active' => ['sometimes', 'boolean'],
             'sort_order' => ['sometimes', 'integer', 'min:0'],

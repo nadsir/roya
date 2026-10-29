@@ -45,7 +45,7 @@ assert.equal(model.state.page, 1); assert.equal(model.params().get('color'), 'bl
 request = model.goToPage(3); assert.equal(model.params().get('page'), '3'); settle(); await request;
 assert.equal(model.pagination.currentPage, 3);
 request = model.clearFilters(); assert.equal(model.state.category, 'clothing'); assert.equal(model.state.sort, 'price_asc'); assert.equal(model.state.search, ''); assert.equal(Object.keys(model.state.values).length, 0); assert.equal(model.state.page, 1); settle(); await request;
-assert.equal(browser.location.pathname, '/c/clothing'); assert.ok(!browser.location.search.includes('size='));
+assert.equal(browser.location.pathname, '/category/clothing'); assert.ok(!browser.location.search.includes('size='));
 assert.equal(discoverySorts.length, 6);
 console.log('PASS filter toggle, page reset, pagination and clear-all preserves category and sort');
 
@@ -57,7 +57,7 @@ await newer;
 for (const pending of oldRequests) pending.resolve({ data: pending.url.endsWith('/filters') ? { data: facets } : pending.url === '/api/products' ? { data: [product] } : { data: { name: 'پیراهن', slug: 'shirts' } } });
 await old;
 assert.equal(model.title.value, 'کیف'); assert.equal(model.result.filters[0].slug, 'bag-type'); assert.equal(model.products.value[0].id, 2);
-assert.equal(browser.location.pathname, '/c/bags');
+assert.equal(browser.location.pathname, '/category/bags');
 console.log('PASS category-switch cancellation and late detail/filter/product response isolation');
 
 request = model.refresh(); const failureRequests = queued.splice(0);

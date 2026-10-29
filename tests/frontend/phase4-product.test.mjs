@@ -472,7 +472,7 @@ assert.ok(html.includes('کد کالا'));
 assert.ok(html.includes('MNT-1'));
 assert.ok(html.includes('انتخاب سایز'));
 assert.ok(html.includes('aria-pressed="false"'));
-assert.ok(html.includes('/c/coats'));
+assert.ok(html.includes('/category/coats'));
 assert.ok(html.includes('موجود در گالری'));
 assert.ok(html.includes('/products/8'));
 assert.ok(html.includes('تجربه‌های واقعی'));

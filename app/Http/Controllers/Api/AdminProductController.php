@@ -302,6 +302,52 @@ class AdminProductController extends Controller
                 'string',
             ],
 
+            // SEO / GEO fields
+            'meta_title' => [
+                'nullable',
+                'string',
+                'max:70',
+            ],
+
+            'meta_description' => [
+                'nullable',
+                'string',
+                'max:160',
+            ],
+
+            'canonical_url' => [
+                'nullable',
+                'string',
+                'max:2048',
+                'url',
+            ],
+
+            'brand' => [
+                'nullable',
+                'string',
+                'max:255',
+            ],
+
+            'material' => [
+                'nullable',
+                'string',
+                'max:255',
+            ],
+
+            'care_instructions' => [
+                'nullable',
+                'string',
+            ],
+
+            'size_chart' => [
+                'nullable',
+                'array',
+            ],
+
+            'size_chart.*' => [
+                'array',
+            ],
+
             'price' => [
                 'required',
                 'numeric',

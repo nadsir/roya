@@ -18,6 +18,13 @@ class Product extends Model
         'sku',
         'short_description',
         'description',
+        'meta_title',
+        'meta_description',
+        'canonical_url',
+        'brand',
+        'material',
+        'care_instructions',
+        'size_chart',
         'price',
         'compare_at_price',
         'is_active',
@@ -39,7 +46,33 @@ class Product extends Model
         'published_at' => 'datetime',
         'sort_order' => 'integer',
         'stock' => 'integer',
+        'size_chart' => 'array',
     ];
+
+    /**
+     * SEO title with a sensible fallback chain.
+     */
+    public function getSeoTitleAttribute(): string
+    {
+        $title = trim((string) ($this->meta_title ?: ''));
+
+        return $title !== '' ? $title : ($this->name ?: 'گالری رویا');
+    }
+
+    /**
+     * SEO description with fallbacks and search-snippet length truncation.
+     */
+    public function getSeoDescriptionAttribute(): string
+    {
+        foreach ([$this->meta_description, $this->short_description, $this->description] as $candidate) {
+            $text = trim(preg_replace('/\s+/u', ' ', strip_tags((string) $candidate)) ?? '');
+            if ($text !== '') {
+                return mb_substr($text, 0, 160);
+            }
+        }
+
+        return sprintf('خرید %s از گالری رویا با ارسال سریع و امکان تعویض.', $this->name);
+    }
 
     /**
      * Resolved stock availability.

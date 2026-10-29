@@ -21,6 +21,17 @@ class CategoryTreeResource extends JsonResource
             'image' => $this->image,
             'is_active' => (bool) $this->is_active,
             'sort_order' => $this->sort_order,
+
+            // SEO / GEO fields (used by the admin category editor and the
+            // public category API; harmless extra payload for tree consumers).
+            'meta_title' => $this->meta_title,
+            'meta_description' => $this->meta_description,
+            'canonical_url' => $this->canonical_url,
+            'h1_title' => $this->h1_title,
+            'top_description' => $this->top_description,
+            'bottom_content' => $this->bottom_content,
+            'faqs' => $this->normalized_faqs,
+
             'children' => self::collection($this->whenLoaded('children')),
         ];
     }

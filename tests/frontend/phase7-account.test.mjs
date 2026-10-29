@@ -592,7 +592,7 @@ assert.ok(html.includes('aria-current="page">علاقه‌مندی‌ها'), 'th
 assert.ok(html.includes('مانتو کتی پشمی'), 'the stored product name is shown');
 assert.ok(html.includes(formatPrice(850000)), 'the stored price is shown');
 assert.ok(html.includes('موجود'), 'the stored stock flag is shown');
-assert.ok(html.includes('href="/products/7"'), 'the item links to the real product route');
+assert.ok(html.includes(`href="/product/${encodeURIComponent(wishlistProduct.slug)}"`), 'the item links to the real product route');
 assert.ok(html.includes('/storage/coats/coat.jpg'), 'the primary image is used');
 
 html = await render(wishlistCard, { item: { product_id: 9, product: { id: 9, name: 'روسری ابریشمی', price: 320000, in_stock: false, images: [] } } });

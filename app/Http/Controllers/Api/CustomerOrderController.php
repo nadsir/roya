@@ -43,7 +43,10 @@ class CustomerOrderController extends Controller
             return array_merge($item->only([
                 'id', 'product_id', 'product_variant_id', 'product_name', 'sku',
                 'quantity', 'unit_price', 'subtotal', 'attributes',
-            ]), ['image' => $image?->path]);
+            ]), [
+                'image' => $image?->path,
+                'product_slug' => $item->product?->slug,
+            ]);
         })->values();
 
         return response()->json(['order' => $data]);

@@ -31,7 +31,8 @@ function resolveApp() {
     if (path === '/orders' || path === '/orders/') return OrdersPage;
     if (/^\/orders\/\d+\/?$/.test(path)) return OrderDetailPage;
     if (path === '/wishlist' || path === '/wishlist/') return WishlistPage;
-    if (/^\/products\/\d+/.test(path)) return ProductDetail;
+    if (/^\/product\/[^/]+\/?$/.test(path)) return ProductDetail;
+    if (/^\/category\/[^/]+\/?$/.test(path)) return App;
     if (/^\/articles\/[^/]+\/?$/.test(path)) return ArticleDetailPage;
     if (path === '/articles' || path === '/articles/') return ArticlesPage;
     if (path === '/' || path === '') return Homepage;

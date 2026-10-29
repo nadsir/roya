@@ -96,7 +96,7 @@ class RoyaProductSocialPublisher
                     'currency' => 'IRT',
                     'category' => $product->categories->sortBy('id')->first()?->name,
                     'description' => $product->description,
-                    'product_url' => $baseUrl.'/products/'.rawurlencode($product->slug),
+                    'product_url' => $baseUrl.'/product/'.rawurlencode($product->slug),
                     'image_url' => $primary['url'],
                     'images' => $imagePayload->all(),
                 ],

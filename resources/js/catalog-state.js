@@ -53,4 +53,4 @@ export function categoryImage(category) {
     return /^(https?:\/\/|\/)/i.test(image) ? image : `/storage/${image}`;
 }
 
-export function categoryHref(slug) { return `/c/${encodeURIComponent(slug)}`; }
+export function categoryHref(slug) { return `/category/${encodeURIComponent(slug)}`; }

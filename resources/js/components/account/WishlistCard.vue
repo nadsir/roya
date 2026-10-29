@@ -24,20 +24,20 @@ function fallBackImage(event, item) {
 
 <template>
     <article class="ac-item">
-        <a class="ac-item-media" :href="`/products/${item.product_id}`" :aria-label="item.product?.name || 'مشاهده محصول'">
+        <a class="ac-item-media" :href="item.product?.slug ? `/product/${encodeURIComponent(item.product.slug)}` : '/store'" :aria-label="item.product?.name || 'مشاهده محصول'">
             <img v-if="image(item)" :src="image(item)" :alt="item.product?.images?.[0]?.alt_text || item.product?.name || 'تصویر محصول'" loading="lazy" @error="fallBackImage($event, item)" />
             <span v-else class="ac-item-badge sf-type-caption">تصویر محصول به‌زودی</span>
         </a>
 
         <div class="ac-item-body">
             <h3>
-                <a :href="`/products/${item.product_id}`">{{ item.product?.name || 'مشاهده محصول' }}</a>
+                <a :href="item.product?.slug ? `/product/${encodeURIComponent(item.product.slug)}` : '/store'">{{ item.product?.name || 'مشاهده محصول' }}</a>
             </h3>
             <p class="ac-item-price">{{ formatPrice(item.product?.price) }} <small>تومان</small></p>
             <p v-if="item.product?.in_stock === false" class="sf-type-caption">ناموجود</p>
             <p v-else class="sf-type-caption">موجود</p>
             <div class="ac-item-foot">
-                <a class="sf-text-link" :href="`/products/${item.product_id}`">مشاهده محصول</a>
+                <a class="sf-text-link" :href="item.product?.slug ? `/product/${encodeURIComponent(item.product.slug)}` : '/store'">مشاهده محصول</a>
                 <button
                     type="button"
                     class="ac-item-remove"

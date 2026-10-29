@@ -9,9 +9,9 @@ use Illuminate\Http\JsonResponse;
 
 class ProductDetailController extends Controller
 {
-    public function show(int $id): JsonResponse
+    public function show(string $identifier): JsonResponse
     {
-        $product = Product::query()
+        $query = Product::query()
             ->with([
                 'categories:id,name,slug',
                 'images:id,product_id,variant_id,path,alt_text,is_primary,sort_order',
@@ -28,8 +28,13 @@ class ProductDetailController extends Controller
                 'vehicleEngines.trim.generation.model:id,name,vehicle_brand_id',
                 'vehicleEngines.trim.generation.model.brand:id,name,slug',
             ])
-            ->where('is_active', true)
-            ->find($id);
+            ->where('is_active', true);
+
+        // Numeric identifiers are the legacy public URL contract; anything
+        // else is treated as the canonical product slug.
+        $product = ctype_digit($identifier)
+            ? $query->find((int) $identifier)
+            : $query->where('slug', $identifier)->first();
 
         if (! $product) {
             return response()->json(['message' => 'Product not found.'], 404);

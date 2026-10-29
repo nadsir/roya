@@ -1,5 +1,10 @@
 // Shared presentation helpers; all catalog names, prices and images come from API data.
-export function productHref(product) { return `/products/${product.id}`; }
+// Canonical product URLs use the semantic slug-based structure.
+export function productHref(product) {
+    if (product?.slug) return `/product/${encodeURIComponent(product.slug)}`;
+    // Compatibility for cached/legacy payloads that predate the slug field.
+    return product?.id ? `/products/${encodeURIComponent(product.id)}` : '/store';
+}
 export function imageUrl(path) {
     if (!path) return '';
     return /^(https?:\/\/|\/)/i.test(path) ? path : `/storage/${path}`;
@@ -43,7 +48,8 @@ export function axisLabel(slug) {
 export function cartItemFromProduct(product) {
     if (hasProductVariants(product) || product.in_stock !== true) return null;
     return {
-        key: `product_${product.id}`, product_id: product.id, variant_id: null,
+        key: `product_${product.id}`, product_id: product.id,
+        product_slug: product.slug || null, variant_id: null,
         name: product.name, price: Number(product.price), quantity: 1,
         image: imageUrl(productImages(product)[0]?.path) || null,
         attributes: null, sku: product.sku || null,

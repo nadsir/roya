@@ -30,8 +30,11 @@ const discountPercent = computed(() => cartItemDiscountPercent(props.item));
 const variants = computed(() => cartItemAttributes(props.item));
 const monogram = computed(() => cartItemMonogram(props.item));
 const href = computed(() => {
-    const id = Number(props.item?.product_id);
-    return Number.isInteger(id) && id > 0 ? `/products/${id}` : '';
+    const slug = props.item?.product_slug;
+    if (slug) return `/product/${encodeURIComponent(slug)}`;
+    // Carts saved before the slug migration keep working through the 301.
+    const id = props.item?.product_id;
+    return /^\d+$/.test(String(id ?? '')) ? `/products/${encodeURIComponent(id)}` : '';
 });
 
 const imageSrc = ref(imageUrl(props.item?.image) || PLACEHOLDER);

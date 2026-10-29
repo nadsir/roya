@@ -417,7 +417,7 @@ onUnmounted(() => {
                             </h2>
                         </div>
                         <div class="grid grid-cols-2 lg:grid-cols-3 gap-3">
-                            <a v-for="(p, idx) in relatedProducts" :key="p.id" :href="`/products/${p.id}`" class="group rounded-lg border border-gray-200 bg-white hover:border-brand-accent/50 transition-colors p-4 flex flex-col">
+                            <a v-for="(p, idx) in relatedProducts" :key="p.id" :href="`/product/${p.slug}`" class="group rounded-lg border border-gray-200 bg-white hover:border-brand-accent/50 transition-colors p-4 flex flex-col">
                                 <div class="flex items-start justify-between mb-3">
                                     <span class="serif text-brand-accent font-bold text-lg leading-none">{{ padNumber(idx + 1) }}</span>
                                     <i class="fa-solid fa-gear text-slate-300 group-hover:text-brand-accent transition-colors"></i>

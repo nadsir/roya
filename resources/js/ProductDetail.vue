@@ -4,7 +4,7 @@ import SiteHeader from './SiteHeader.vue';
 import SiteFooter from './SiteFooter.vue';
 import ProductCard from './components/ProductCard.vue';
 import { createProductDetailState } from './product-detail-state.js';
-import { formatPrice } from './product-presentation.js';
+import { formatPrice, imageUrl } from './product-presentation.js';
 import { state as authState, isLoggedIn } from './auth-state.js';
 import {
     state as wishlistState,
@@ -108,15 +108,19 @@ function injectJsonLd(obj) {
 }
 
 function clearSeoJsonLd() {
-    document.querySelectorAll('script[type="application/ld+json"][data-seo="product"]').forEach((el) => el.remove());
+    // Remove our own blocks and the matching server-rendered Product /
+    // Breadcrumb entities. The server Organization graph is left in place.
+    document.querySelectorAll([
+        'script[type="application/ld+json"][data-seo="product"]',
+        'script[type="application/ld+json"][data-seo="server"][data-schema-type="Product"]',
+        'script[type="application/ld+json"][data-seo="server"][data-schema-type="BreadcrumbList"]',
+    ].join(',')).forEach((el) => el.remove());
 }
 
 function productImageUrl() {
     const img = images.value?.[0];
     if (!img?.path) return '';
-    if (/^https?:\/\//i.test(img.path)) return img.path;
-    const path = img.path.startsWith('/') ? img.path : '/' + img.path;
-    return `${getProductionBaseUrl()}${path}`;
+    return toProductionUrl(imageUrl(img.path));
 }
 
 function applyProductSeo(p) {
@@ -131,7 +135,9 @@ function applyProductSeo(p) {
     setMeta('og:type', 'product');
     setMeta('og:title', title);
     setMeta('og:description', description);
-    const canonical = (p.canonical_url && /^https?:\/\//i.test(p.canonical_url)) ? toProductionUrl(p.canonical_url) : toProductionUrl(`/products/${p.id}`);
+    const canonical = (p.canonical_url && /^https?:\/\//i.test(p.canonical_url))
+        ? toProductionUrl(p.canonical_url)
+        : toProductionUrl(p.slug ? `/product/${encodeURIComponent(p.slug)}` : `/products/${p.id}`);
     setMeta('og:url', canonical);
     setMeta('og:site_name', siteName);
     setMeta('og:locale', 'fa_IR');
@@ -156,15 +162,17 @@ function applyProductSeo(p) {
     ];
     if (categories.value?.length) {
         const last = categories.value[categories.value.length - 1];
-        breadcrumbs.push({ '@type': 'ListItem', position: breadcrumbs.length + 1, name: last.name, item: toProductionUrl(`/c/${last.slug}`) });
+        breadcrumbs.push({ '@type': 'ListItem', position: breadcrumbs.length + 1, name: last.name, item: toProductionUrl(`/category/${encodeURIComponent(last.slug)}`) });
     }
     breadcrumbs.push({ '@type': 'ListItem', position: breadcrumbs.length + 1, name: p.name, item: canonical });
 
     const productLd = {
         '@context': 'https://schema.org',
         '@type': 'Product',
+        '@id': `${canonical}#product`,
         name: p.name,
         description,
+        url: canonical,
     };
     if (displaySku.value || p.sku) productLd.sku = displaySku.value || p.sku;
     if (img) productLd.image = [img];
@@ -365,7 +373,7 @@ onBeforeUnmount(() => {
                     <a href="/store">گالری</a>
                     <template v-for="cat in categories" :key="cat.id">
                         <span aria-hidden="true">/</span>
-                        <a :href="`/c/${cat.slug}`">{{ cat.name }}</a>
+                        <a :href="`/category/${cat.slug}`">{{ cat.name }}</a>
                     </template>
                     <span aria-hidden="true">/</span>
                     <span aria-current="page">{{ product.name }}</span>

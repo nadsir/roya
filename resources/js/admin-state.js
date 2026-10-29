@@ -92,6 +92,15 @@ export function createEmptyForm() {
         custom_attribute_values: [],
         variants: [],
         images: [],
+
+        // SEO / GEO
+        meta_title: '',
+        meta_description: '',
+        canonical_url: '',
+        brand: 'گالری رویا',
+        material: '',
+        care_instructions: '',
+        size_chart: null,
     };
 }
 
@@ -431,6 +440,14 @@ export async function loadProduct(id) {
 
             is_gallery_new:
                 Boolean(product.is_gallery_new),
+
+            meta_title: product.meta_title || '',
+            meta_description: product.meta_description || '',
+            canonical_url: product.canonical_url || '',
+            brand: product.brand || 'گالری رویا',
+            material: product.material || '',
+            care_instructions: product.care_instructions || '',
+            size_chart: product.size_chart || null,
 
             category_ids:
                 (product.categories || [])

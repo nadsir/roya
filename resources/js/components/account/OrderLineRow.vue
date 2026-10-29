@@ -20,6 +20,13 @@ function attributes(item) {
             .filter(Boolean),
     })).filter((entry) => entry.labels.length);
 }
+
+function productHref(item) {
+    if (item?.product_slug) return `/product/${encodeURIComponent(item.product_slug)}`;
+    // Older order payloads did not include the slug; the legacy route 301s.
+    const id = item?.product_id;
+    return /^\d+$/.test(String(id ?? '')) ? `/products/${encodeURIComponent(id)}` : '';
+}
 </script>
 
 <template>
@@ -29,7 +36,7 @@ function attributes(item) {
         </span>
         <div class="ac-line-copy">
             <h3>
-                <a v-if="item.product_id" :href="`/products/${item.product_id}`">{{ item.product_name }}</a>
+                <a v-if="productHref(item)" :href="productHref(item)">{{ item.product_name }}</a>
                 <template v-else>{{ item.product_name }}</template>
             </h3>
             <p class="ac-line-meta">

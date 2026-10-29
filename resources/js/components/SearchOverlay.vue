@@ -100,7 +100,7 @@ function productImage(product) {
                 <div v-else-if="error" class="sf-shell-state" role="alert"><p>{{ error }}</p><button class="sf-button" @click="schedule">تلاش مجدد</button></div>
                 <template v-else-if="products.length">
                     <div class="sf-section-heading"><h2 class="sf-type-metadata">پیشنهادهای محصول</h2><button class="sf-text-link" @click="viewResults">همه نتایج ←</button></div>
-                    <a v-for="product in products" :key="product.id" :href="`/products/${product.id}`" class="sf-search-result" @click="remember">
+                    <a v-for="product in products" :key="product.id" :href="`/product/${product.slug}`" class="sf-search-result" @click="remember">
                         <span class="sf-result-image"><img v-if="productImage(product)" :src="productImage(product)" :alt="product.name" loading="lazy" @error="$event.target.style.visibility = 'hidden'" /><span v-else aria-hidden="true">G</span></span>
                         <span class="sf-result-copy"><strong>{{ product.name }}</strong><span class="sf-type-price">{{ Number(product.price || 0).toLocaleString('fa-IR') }} <small>تومان</small></span></span><span aria-hidden="true">←</span>
                     </a>

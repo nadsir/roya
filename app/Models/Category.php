@@ -20,12 +20,74 @@ class Category extends Model
         'image',
         'is_active',
         'sort_order',
+        'meta_title',
+        'meta_description',
+        'canonical_url',
+        'h1_title',
+        'top_description',
+        'bottom_content',
+        'faqs',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
         'sort_order' => 'integer',
+        'faqs' => 'array',
     ];
+
+    /**
+     * SEO title with a sensible fallback chain (explicit meta → name → site name).
+     */
+    public function getSeoTitleAttribute(): string
+    {
+        $title = trim((string) ($this->meta_title ?: ''));
+
+        return $title !== '' ? $title : ($this->name ?: 'گالری رویا');
+    }
+
+    /**
+     * SEO description with fallbacks and search-snippet length truncation.
+     */
+    public function getSeoDescriptionAttribute(): string
+    {
+        foreach ([$this->meta_description, $this->top_description, $this->description] as $candidate) {
+            $text = trim(preg_replace('/\s+/u', ' ', strip_tags((string) $candidate)) ?? '');
+            if ($text !== '') {
+                return mb_substr($text, 0, 160);
+            }
+        }
+
+        return sprintf('خرید %s از گالری رویا؛ مجموعه‌ای از انتخاب‌های شیک با ارسال سریع.', $this->name);
+    }
+
+    /**
+     * Display heading with fallback to the category name.
+     */
+    public function getH1TitleAttribute(): string
+    {
+        $title = trim((string) ($this->attributes['h1_title'] ?? ''));
+
+        return $title !== '' ? $title : ($this->name ?? '');
+    }
+
+    /**
+     * Normalized FAQ list: only entries with a question and an answer.
+     *
+     * @return array<int, array{question: string, answer: string}>
+     */
+    public function getNormalizedFaqsAttribute(): array
+    {
+        return collect($this->faqs)
+            ->filter(fn ($faq) => is_array($faq)
+                && ! empty(trim((string) ($faq['question'] ?? '')))
+                && ! empty(trim((string) ($faq['answer'] ?? ''))))
+            ->map(fn (array $faq) => [
+                'question' => trim((string) $faq['question']),
+                'answer' => trim((string) $faq['answer']),
+            ])
+            ->values()
+            ->all();
+    }
 
     /**
      * Parent category
@@ -36,18 +98,18 @@ class Category extends Model
     }
 
     public function ancestors()
-{
-    $ancestors = collect();
+    {
+        $ancestors = collect();
 
-    $category = $this->parent;
+        $category = $this->parent;
 
-    while ($category) {
-        $ancestors->prepend($category);
-        $category = $category->parent;
+        while ($category) {
+            $ancestors->prepend($category);
+            $category = $category->parent;
+        }
+
+        return $ancestors;
     }
-
-    return $ancestors;
-}
 
     /**
      * Child categories

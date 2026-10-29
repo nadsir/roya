@@ -9,9 +9,27 @@ import { PLACEHOLDER_SRC, nextImageSrc } from './image-fallback.js';
 
 export { axisLabel };
 
+// Legacy numeric URLs are still understood so existing links/bookmarks keep
+// working during the transition (the server responds with a 301 to the slug).
 export function productIdFromPath(pathname) {
     const match = String(pathname || '').match(/\/products\/(\d+)/);
     return match ? Number(match[1]) : null;
+}
+
+// Canonical product URLs are /product/{slug}; return the decoded slug.
+export function productSlugFromPath(pathname) {
+    const match = String(pathname || '').match(/^\/product\/([^/]+)\/?$/);
+    if (!match) return null;
+    try {
+        return decodeURIComponent(match[1]);
+    } catch {
+        return match[1];
+    }
+}
+
+// The detail API accepts either the numeric id or the slug as its identifier.
+export function productIdentifierFromPath(pathname) {
+    return productSlugFromPath(pathname) ?? productIdFromPath(pathname);
 }
 
 export function createProductDetailState(browser) {
@@ -91,7 +109,7 @@ export function createProductDetailState(browser) {
     }
 
     async function load() {
-        const id = productIdFromPath(env.location?.pathname);
+        const id = productIdentifierFromPath(env.location?.pathname);
         if (!id) {
             product.value = null;
             related.value = [];
@@ -374,6 +392,7 @@ export function createProductDetailState(browser) {
         addToCart({
             key: variant ? `variant_${variant.id}` : `product_${current.id}`,
             product_id: current.id,
+            product_slug: current.slug || null,
             variant_id: variant?.id || null,
             name: current.name,
             price: Number(displayPrice.value),

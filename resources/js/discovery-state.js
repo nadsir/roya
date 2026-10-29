@@ -28,7 +28,7 @@ export function createDiscoveryState(browser = window) {
     let active = true;
     function start(kind) { controllers[kind]?.abort(); controllers[kind] = new AbortController(); return { version: ++counters[kind], signal: controllers[kind].signal }; }
     function current(kind, version) { return active && counters[kind] === version; }
-    function pathSlug() { const match = browser.location.pathname.match(/^\/c\/([^/]+)\/?$/); if (!match) return ''; try { return decodeURIComponent(match[1]); } catch { return match[1]; } }
+    function pathSlug() { const match = browser.location.pathname.match(/^\/(?:category|c)\/([^/]+)\/?$/); if (!match) return ''; try { return decodeURIComponent(match[1]); } catch { return match[1]; } }
     const crumbs = computed(() => categoryPath(catalog.categories, state.category));
     const category = computed(() => result.detail || crumbs.value.at(-1) || null);
     const subcategories = computed(() => crumbs.value.at(-1)?.children || []);
