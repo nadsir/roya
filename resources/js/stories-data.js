@@ -9,21 +9,17 @@ export const stories = [
         id: 'style-today',
         title: 'استایل امروز',
         alt: 'استایل زنانه با دامن شیک و بلوز روشن',
-        cover: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/6/61/Fashionable_woman_in_a_skirt_%28Unsplash%29.jpg/500px-Fashionable_woman_in_a_skirt_%28Unsplash%29.jpg',
-        poster: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/6/61/Fashionable_woman_in_a_skirt_%28Unsplash%29.jpg/960px-Fashionable_woman_in_a_skirt_%28Unsplash%29.jpg',
+        cover: 'https://royafashion.ir/storage/video/2.webp',
+        poster: 'https://royafashion.ir/storage/video/2.webp',
         credit: 'Pete Bellis · Unsplash · CC0',
         film: 'Styling One Jumpsuit · Internet Archive',
         videos: [
             {
                 id: 'style-today-video-01',
                 title: 'Styling One Jumpsuit',
-                src: 'https://archive.org/download/styling-one-jumpsuit-in-four-different-vibes/Styling%20One%20Jumpsuit%20in%20Four%20Different%20Vibes.mp4',
+                src: 'https://royafashion.ir/storage/video/2.mp4',
             },
-                        {
-                id: 'style-today-video-01',
-                title: 'Styling One Jumpsuit',
-                src: 'https://archive.org/download/styling-one-jumpsuit-in-four-different-vibes/Styling%20One%20Jumpsuit%20in%20Four%20Different%20Vibes.mp4',
-            },
+        
                         {
                 id: 'style-today-video-01',
                 title: 'Styling One Jumpsuit',
@@ -36,15 +32,15 @@ export const stories = [
         id: 'bags',
         title: 'کیف‌های ویژه',
         alt: 'کیف دستی سفید و آبی روی زمین',
-        cover: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0c/White_and_blue_handbag_%28Unsplash%29.jpg/500px-White_and_blue_handbag_%28Unsplash%29.jpg',
-        poster: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0c/White_and_blue_handbag_%28Unsplash%29.jpg/960px-White_and_blue_handbag_%28Unsplash%29.jpg',
+        cover: 'https://royafashion.ir/storage/video/3.webp',
+        poster: 'https://royafashion.ir/storage/video/3.webp',
         credit: 'Anna Hamilton · Unsplash · CC0',
         film: 'SBS Broadcasting · Commons · CC BY-SA 3.0',
         videos: [
             {
                 id: 'bags-video-01',
                 title: 'Amsterdam Fashion Week — Aftermovie',
-                src: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/d/dd/Amsterdam_Fashion_Week_-_Aftermovie.webm/Amsterdam_Fashion_Week_-_Aftermovie.webm.480p.vp9.webm',
+                src: 'https://royafashion.ir/storage/video/3.mp4',
             },
         ],
     },
@@ -70,15 +66,15 @@ export const stories = [
         id: 'trend',
         title: 'ترند',
         alt: 'استایل زمستانی زنانه با پالتوی خز مصنوعی',
-        cover: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/5/51/Faux_Fur_Fashion_%28Unsplash%29.jpg/500px-Faux_Fur_Fashion_%28Unsplash%29.jpg',
-        poster: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/5/51/Faux_Fur_Fashion_%28Unsplash%29.jpg/960px-Faux_Fur_Fashion_%28Unsplash%29.jpg',
+        cover: 'https://royafashion.ir/storage/video/4.webp',
+        poster: 'https://royafashion.ir/storage/video/4.webp',
         credit: 'Pete Bellis · Unsplash · CC0',
         film: '88 Gymnastic Heroes · Commons · CC BY 3.0',
         videos: [
             {
                 id: 'trend-video-01',
                 title: 'THYREN Fashion Film',
-                src: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/2/2e/%28Fashion_film%29_THYREN_2018_SPIRNG_-_SUMMER_COLLECTION_Fashion_Ad_Film_%28feat.Julia_Ratner%29.webm/%28Fashion_film%29_THYREN_2018_SPIRNG_-_SUMMER_COLLECTION_Fashion_Ad_Film_%28feat.Julia_Ratner%29.webm.480p.vp9.webm',
+                src: 'https://royafashion.ir/storage/video/4.mp4',
             },
         ],
     },

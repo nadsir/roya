@@ -9,6 +9,7 @@ import ArrivalsSlider from './components/homepage/ArrivalsSlider.vue';
 import EditorialCollection from './components/homepage/EditorialCollection.vue';
 import EditorialJournal from './components/homepage/EditorialJournal.vue';
 import NextChapter from './components/homepage/NextChapter.vue';
+import SocialCommunity from './components/homepage/SocialCommunity.vue';
 import { createHomepageData } from './homepage-data.js';
 import { categoryHref } from './catalog-state.js';
 import '../css/homepage.css';
@@ -37,6 +38,7 @@ onBeforeUnmount(dispose);
             <EditorialJournal />
         </div>
         <NextChapter />
+        <SocialCommunity />
     </main>
     <SiteFooter />
 </template>

@@ -545,6 +545,21 @@
 .storefront-theme .sf-footer nav a:hover { color: var(--sf-text); transform: translateX(-3px); }
 .storefront-theme .sf-footer-bottom { display: flex; align-items: center; justify-content: space-between; gap: var(--sf-space-5); padding-block: clamp(20px, 2.5vw, 32px); border-top: 1px solid var(--sf-border); font-size: var(--sf-type-caption); color: var(--sf-text-muted); }
 
+/* ---------- footer social ---------- */
+.storefront-theme .sf-footer-social { margin-top: var(--sf-space-6); }
+.storefront-theme .sf-footer-social h2 { font-size: var(--sf-type-eyebrow); color: var(--sf-text); letter-spacing: var(--sf-tracking-wide); text-transform: uppercase; margin: 0 0 var(--sf-space-4); }
+.storefront-theme .sf-footer-social ul { display: flex; flex-direction: column; }
+.storefront-theme .sf-footer-social-link { display: inline-flex !important; align-items: center; gap: var(--sf-space-3); min-height: 44px; color: var(--sf-text-secondary); font-size: var(--sf-type-small); transition: color var(--sf-duration-fast); }
+.storefront-theme .sf-footer-social-link:hover { color: var(--sf-text); transform: none; }
+.storefront-theme .sf-footer-social-icon { display: grid; place-items: center; width: 36px; height: 36px; border: 1px solid var(--sf-border); color: var(--sf-text); background: var(--sf-surface); transition: border-color var(--sf-duration-fast), background var(--sf-duration-fast), color var(--sf-duration-fast); }
+.storefront-theme .sf-footer-social-link:hover .sf-footer-social-icon,
+.storefront-theme .sf-footer-social-link:focus-visible .sf-footer-social-icon { background: var(--sf-text); border-color: var(--sf-text); color: var(--sf-text-inverse); }
+.storefront-theme .sf-footer-social-link:focus-visible { outline: 2px solid var(--sf-focus); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) {
+    .storefront-theme .sf-footer-social-link,
+    .storefront-theme .sf-footer-social-icon { transition: none; }
+}
+
 /* ============================================================
    MOBILE BOTTOM NAVIGATION
    ============================================================ */
