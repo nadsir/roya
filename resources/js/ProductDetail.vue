@@ -34,7 +34,7 @@ const {
     displayPrice, displayCompareAtPrice, displayDiscount, displaySku, displayInStock, displayStock,
     needsVariantSelection, specifications, categories, brand,
     maxQuantity, canIncreaseQuantity, load, dispose, add, addLabel, addHint, showNotice, clearNotice,
-    setQuantity, increaseQuantity, decreaseQuantity, thumbSrc, markImageFailed, imageErrorSrc,
+    setQuantity, increaseQuantity, decreaseQuantity, thumbSrc, imageSrcSet, markImageFailed, imageErrorSrc,
     selectImage, nextImage, prevImage, isValueSelectable, isSelected, selectedLabel, toggleAxisValue,
 } = model;
 
@@ -395,7 +395,11 @@ onBeforeUnmount(() => {
                                 <img
                                     v-if="thumbSrc(image)"
                                     :src="thumbSrc(image)"
-                                    :alt="image.alt_text || ''"
+                                    :srcset="imageSrcSet(image)"
+                                    :alt="image.alt_text || product.name"
+                                    :width="72"
+                                    :height="90"
+                                    loading="lazy"
                                     decoding="async"
                                     @error="onImgError($event, image.path)"
                                 />
@@ -414,8 +418,14 @@ onBeforeUnmount(() => {
                                     v-if="activeImageSrc"
                                     :key="activeImage?.path"
                                     :src="activeImageSrc"
+                                    :srcset="imageSrcSet(activeImage)"
+                                    :sizes="imageSrcSet(activeImage) ? '(max-width: 1024px) 100vw, 40vw' : undefined"
                                     :alt="activeImage?.alt_text || product.name"
+                                    :width="600"
+                                    :height="750"
                                     class="pd-stage-image"
+                                    loading="eager"
+                                    fetchpriority="high"
                                     decoding="async"
                                     @error="onImgError($event, activeImage?.path)"
                                 />

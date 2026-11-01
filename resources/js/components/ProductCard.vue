@@ -4,7 +4,7 @@ import { addToCart } from '../cart-state.js';
 import { showCartAdded } from '../cart-notification-state.js';
 import { isLoggedIn } from '../auth-state.js';
 import { state as wishlistState, isInWishlist, addToWishlist, removeFromWishlist } from '../wishlist-state.js';
-import { cartItemFromProduct, discountPercent, formatPrice, hasProductVariants, imageUrl, productColors, productHref, productImages } from '../product-presentation.js';
+import { cartItemFromProduct, discountPercent, formatPrice, hasProductVariants, imageUrl, productColors, productHref, productImages, imageSrcSet as buildImageSrcSet } from '../product-presentation.js';
 import { PLACEHOLDER_SRC, nextImageSrc } from '../image-fallback.js';
 
 const props = defineProps({ product: { type: Object, required: true } });
@@ -19,6 +19,8 @@ const meta = computed(() => props.product.categories?.[0]?.name || '');
 const discount = computed(() => discountPercent(props.product));
 const inWishlist = computed(() => isLoggedIn.value && isInWishlist(props.product.id));
 const hasVariants = computed(() => hasProductVariants(props.product));
+// Responsive candidate list for the optimized WebP artwork (thumbnail + master).
+function imageSrcSet(image) { return buildImageSrcSet(image); }
 // Unchanged: a dead path is dropped so the card can show the next gallery image
 // and finally its own neutral monogram.
 function markImageFailed(event) {
@@ -69,8 +71,8 @@ onBeforeUnmount(() => clearTimeout(feedbackTimer));
     <article class="hp-product-card">
         <div class="hp-product-media">
             <a :href="productHref(product)" class="hp-product-image-link" :aria-label="product.name">
-                <img v-if="images[0]" :key="images[0].path" :data-image-path="images[0].path" class="hp-product-image" :src="imageUrl(images[0].path)" :alt="images[0].alt_text || product.name" width="600" height="750" loading="lazy" decoding="async" @error="onImageError" />
-                <img v-if="images[1]" :key="images[1].path" :data-image-path="images[1].path" class="hp-product-image hp-product-image--alternate" :src="imageUrl(images[1].path)" alt="" width="600" height="750" loading="lazy" decoding="async" @error="onImageError" />
+                <img v-if="images[0]" :key="images[0].path" :data-image-path="images[0].path" class="hp-product-image" :src="imageUrl(images[0].path)" :srcset="imageSrcSet(images[0])" :alt="images[0].alt_text || product.name" width="600" height="750" loading="lazy" decoding="async" @error="onImageError" />
+                <img v-if="images[1]" :key="images[1].path" :data-image-path="images[1].path" class="hp-product-image hp-product-image--alternate" :src="imageUrl(images[1].path)" :srcset="imageSrcSet(images[1])" alt="" width="600" height="750" loading="lazy" decoding="async" @error="onImageError" />
                 <span v-if="!images.length" class="hp-image-placeholder"><span lang="en" aria-hidden="true">G</span><small>تصویر محصول به‌زودی</small></span>
             </a>
             <span v-if="discount" class="hp-product-badge">{{ discount.toLocaleString('fa-IR') }}٪ تخفیف</span>

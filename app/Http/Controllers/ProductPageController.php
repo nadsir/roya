@@ -34,7 +34,7 @@ class ProductPageController extends Controller
                 'price', 'stock', 'compare_at_price', 'published_at',
             ])
             ->with([
-                'images:id,product_id,variant_id,path,alt_text,is_primary,sort_order',
+                'images:id,product_id,variant_id,path,thumbnail,alt_text,is_primary,sort_order',
                 'variants:id,product_id,price,stock,is_active',
                 'categories:id,name,slug,parent_id',
                 'comments.user:id,name',

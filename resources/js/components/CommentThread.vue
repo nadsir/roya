@@ -29,14 +29,14 @@ const showReplyThread = computed(() => Boolean(
 
         <div
             v-if="kind === 'product'"
-            class="mt-1 flex flex-wrap items-center gap-2 border-t border-slate-100 pb-2 pt-3 sm:ms-12 dark:border-slate-700/60"
+            class="mt-1 flex flex-wrap items-center gap-2 border-t border-[color:var(--sf-border)] pt-2 pb-2 sm:ms-12"
         >
             <button
                 type="button"
                 class="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-bold transition disabled:cursor-not-allowed disabled:opacity-60"
                 :class="comment.is_helpful
                     ? 'border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-300'
-                    : 'border-slate-200 text-slate-500 hover:border-amber-300 hover:text-amber-600 dark:border-slate-700 dark:text-slate-400 dark:hover:border-amber-500/50 dark:hover:text-amber-300'"
+                    : 'border-[color:var(--sf-border)] text-[color:var(--sf-text-secondary)] hover:border-amber-300 hover:text-amber-600 dark:hover:border-amber-500/50 dark:hover:text-amber-300'"
                 :aria-pressed="Boolean(comment.is_helpful)"
                 :disabled="helpfulBusy"
                 @click="section.toggleHelpful(comment)"
@@ -58,7 +58,7 @@ const showReplyThread = computed(() => Boolean(
             <button
                 v-if="section.replyOpenFor !== comment.id"
                 type="button"
-                class="inline-flex items-center gap-1.5 rounded-full border border-slate-200 px-3 py-1.5 text-[11px] font-bold text-slate-500 transition hover:border-slate-300 hover:text-ink dark:border-slate-700 dark:text-slate-400 dark:hover:border-slate-500 dark:hover:text-slate-100"
+                class="inline-flex items-center gap-1.5 rounded-full border border-[color:var(--sf-border)] px-3 py-1.5 text-[11px] font-bold text-[color:var(--sf-text-secondary)] transition hover:border-amber-300 hover:text-amber-600 dark:hover:border-amber-500/50 dark:hover:text-amber-300"
                 @click="section.openReply(comment)"
             >
                 <i class="fa-regular fa-comment-dots" aria-hidden="true" />
@@ -73,7 +73,7 @@ const showReplyThread = computed(() => Boolean(
             <button
                 v-if="section.replyOpenFor !== comment.id"
                 type="button"
-                class="inline-flex items-center gap-2 rounded px-3 py-2 text-xs font-bold text-slate-500 transition hover:text-ink dark:text-slate-400 dark:hover:text-slate-100"
+                class="inline-flex items-center gap-2 rounded px-3 py-2 text-xs font-bold text-[color:var(--sf-text-secondary)] transition hover:text-[color:var(--sf-text)] dark:hover:text-[color:var(--sf-text)]"
                 @click="section.openReply(comment)"
             >
                 <i class="fa-regular fa-comment-dots" aria-hidden="true" />
@@ -83,14 +83,14 @@ const showReplyThread = computed(() => Boolean(
 
         <div
             v-if="showReplyThread"
-            class="ms-6 border-s border-slate-200 ps-5 sm:ms-9 sm:ps-7 dark:border-slate-700"
+            class="ms-6 border-s border-[color:var(--sf-border)] ps-5 sm:ms-9 sm:ps-7"
         >
             <ul v-if="comment.replies && comment.replies.length">
                 <li
                     v-for="(reply, i) in comment.replies"
                     :key="reply.id"
                     :class="{
-                        'border-t border-slate-200 dark:border-slate-700': i > 0,
+                        'border-t border-[color:var(--sf-border)]': i > 0,
                     }"
                 >
                     <CommentItem
@@ -111,7 +111,7 @@ const showReplyThread = computed(() => Boolean(
                 پاسخ شما ثبت شد؛ پس از بررسی تیم ما نمایش داده خواهد شد.
                 <button
                     type="button"
-                    class="ms-2 rounded font-bold text-slate-400 underline decoration-slate-300 underline-offset-4 hover:text-slate-600 dark:text-slate-500 dark:decoration-slate-600"
+                    class="ms-2 rounded font-bold text-[color:var(--sf-text-muted)] underline decoration-[color:var(--sf-border-strong)] underline-offset-4 hover:text-[color:var(--sf-text)]"
                     @click="section.closeReply()"
                 >
                     بستن
@@ -129,7 +129,7 @@ const showReplyThread = computed(() => Boolean(
                     :rows="3"
                     maxlength="1000"
                     placeholder="پاسخ خود را بنویسید…"
-                    class="w-full resize-y rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm leading-6 text-ink placeholder:text-slate-400 focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400/40 dark:border-slate-600 dark:bg-black/30 dark:text-slate-100 dark:placeholder:text-slate-500"
+                    class="w-full resize-y rounded-xl border border-[color:var(--sf-border-strong)] bg-[color:var(--sf-surface)] px-4 py-3 text-sm leading-6 text-[color:var(--sf-text)] placeholder:text-[color:var(--sf-text-muted)] focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400/40"
                 />
                 <p
                     v-if="section.replyFieldErrors.body"
@@ -140,7 +140,7 @@ const showReplyThread = computed(() => Boolean(
                 <div class="flex items-center justify-end gap-3">
                     <button
                         type="button"
-                        class="rounded px-3 py-2 text-xs font-bold text-slate-500 transition hover:text-ink dark:text-slate-400 dark:hover:text-slate-100"
+                        class="rounded px-3 py-2 text-xs font-bold text-[color:var(--sf-text-secondary)] transition hover:text-[color:var(--sf-text)]"
                         @click="section.closeReply()"
                     >
                         انصراف

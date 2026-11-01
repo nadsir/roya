@@ -24,51 +24,51 @@ const emptyHint = isProduct
 <template>
     <div>
         <div v-if="section.error && !section.items.length" class="py-10 text-center">
-            <svg class="mx-auto h-9 w-9 text-slate-300 dark:text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+            <svg class="mx-auto h-9 w-9 text-[color:var(--sf-text-muted)] opacity-60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
                 <path d="M12 3a9 9 0 109 9M21 3l-9 9M21 3v6M21 3h-6" />
             </svg>
-            <p class="mt-4 text-sm font-bold text-ink dark:text-slate-100">
+            <p class="mt-4 text-sm font-bold text-[color:var(--sf-text)]">
                 امکان دریافت اطلاعات وجود نداشت.
             </p>
-            <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+            <p class="mt-1 text-xs text-[color:var(--sf-text-secondary)]">
                 {{ section.error }}
             </p>
             <button
                 type="button"
-                class="mt-5 rounded-md border border-slate-300 px-5 py-2.5 text-xs font-bold text-ink transition hover:border-ink dark:border-slate-600 dark:text-slate-100 dark:hover:border-slate-400"
+                class="mt-5 rounded-md border border-[color:var(--sf-border-strong)] px-5 py-2.5 text-xs font-bold text-[color:var(--sf-text)] transition hover:border-[color:var(--sf-text)]"
                 @click="section.loadFirstPage()"
             >
                 تلاش دوباره
             </button>
         </div>
 
-        <div v-else-if="!section.isLoading && !section.items.length" class="border-t border-slate-200 py-10 text-center dark:border-slate-700">
-            <p class="text-sm font-black text-ink dark:text-slate-100">
+        <div v-else-if="!section.isLoading && !section.items.length" class="border-t border-[color:var(--sf-border)] py-10 text-center">
+            <p class="text-sm font-black text-[color:var(--sf-text)]">
                 {{ emptyTitle }}
             </p>
-            <p class="mx-auto mt-2 max-w-xs text-xs leading-6 text-slate-500 dark:text-slate-400">
+            <p class="mx-auto mt-2 max-w-xs text-xs leading-6 text-[color:var(--sf-text-secondary)]">
                 {{ emptyHint }}
             </p>
         </div>
 
-        <div v-else-if="section.isLoading && !section.items.length" class="border-t border-slate-200 dark:border-slate-700" aria-hidden="true">
+        <div v-else-if="section.isLoading && !section.items.length" class="border-t border-[color:var(--sf-border)]" aria-hidden="true">
             <div
                 v-for="i in 3"
                 :key="i"
-                class="animate-pulse border-b border-slate-100 py-8 dark:border-slate-700/60"
-                :class="i > 1 ? 'border-t border-slate-200 dark:border-slate-700/60' : ''"
+                class="animate-pulse border-b border-[color:var(--sf-border)] py-8"
+                :class="i > 1 ? 'border-t border-[color:var(--sf-border)]' : ''"
             >
                 <div class="flex items-center gap-3">
-                    <span class="h-9 w-9 rounded-full bg-slate-200 dark:bg-slate-700" />
+                    <span class="h-9 w-9 rounded-full bg-[color:var(--sf-surface-soft)]" />
                     <div class="space-y-2">
-                        <span class="block h-3 w-24 rounded bg-slate-200 dark:bg-slate-700" />
-                        <span class="block h-2 w-14 rounded bg-slate-100 dark:bg-slate-700/60" />
+                        <span class="block h-3 w-24 rounded bg-[color:var(--sf-surface-soft)]" />
+                        <span class="block h-2 w-14 rounded bg-[color:var(--sf-border)]" />
                     </div>
                 </div>
                 <div class="ms-12 mt-4 space-y-2.5">
-                    <span class="block h-3 w-1/2 rounded bg-slate-200 dark:bg-slate-700" />
-                    <span class="block h-3 w-2/3 rounded bg-slate-200 dark:bg-slate-700" />
-                    <span class="block h-3 w-1/3 rounded bg-slate-100 dark:bg-slate-700/60" />
+                    <span class="block h-3 w-1/2 rounded bg-[color:var(--sf-surface-soft)]" />
+                    <span class="block h-3 w-2/3 rounded bg-[color:var(--sf-surface-soft)]" />
+                    <span class="block h-3 w-1/3 rounded bg-[color:var(--sf-border)]" />
                 </div>
             </div>
         </div>
@@ -79,8 +79,8 @@ const emptyHint = isProduct
                     v-for="(comment, i) in section.items"
                     :key="comment.id"
                     :class="isProduct
-                        ? 'rounded-xl border border-slate-200 bg-white px-4 sm:px-5 dark:border-slate-700 dark:bg-[#161616]'
-                        : 'border-t border-slate-200 dark:border-slate-700'"
+                        ? 'rounded-xl border border-[color:var(--sf-border)] bg-[color:var(--sf-surface)] px-4 sm:px-5'
+                        : 'border-t border-[color:var(--sf-border)]'"
                 >
                     <CommentThread
                         :comment="comment"
@@ -93,7 +93,7 @@ const emptyHint = isProduct
 
             <p
                 v-if="section.total"
-                class="mt-4 border-t border-slate-200 pt-4 text-[11px] font-bold text-slate-400 dark:border-slate-700 dark:text-slate-500"
+                class="mt-4 border-t border-[color:var(--sf-border)] pt-4 text-[11px] font-bold text-[color:var(--sf-text-muted)]"
             >
                 {{
                     isProduct
@@ -125,7 +125,7 @@ const emptyHint = isProduct
                 <button
                     type="button"
                     :disabled="section.loadingMore"
-                    class="inline-flex items-center gap-2 rounded-md border border-ink px-6 py-3 text-sm font-bold text-ink transition hover:bg-ink hover:text-cream disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-300 dark:text-slate-100 dark:hover:bg-slate-100 dark:hover:text-ink"
+                    class="inline-flex items-center gap-2 rounded-md border border-[color:var(--sf-text)] px-6 py-3 text-sm font-bold text-[color:var(--sf-text)] transition hover:bg-[color:var(--sf-surface-soft)] disabled:cursor-not-allowed disabled:opacity-50"
                     @click="section.loadMore()"
                 >
                     <svg

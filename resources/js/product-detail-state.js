@@ -4,7 +4,7 @@ import { computed, reactive, ref } from 'vue';
 import axios from 'axios';
 import { addToCart } from './cart-state.js';
 import { showCartAdded } from './cart-notification-state.js';
-import { imageUrl, productImages, axisLabel, specificationLabel, isLegacyAutomotiveSpec } from './product-presentation.js';
+import { imageUrl, productImages, axisLabel, specificationLabel, isLegacyAutomotiveSpec, imageSrcSet as buildImageSrcSet } from './product-presentation.js';
 import { PLACEHOLDER_SRC, nextImageSrc } from './image-fallback.js';
 
 export { axisLabel };
@@ -178,6 +178,13 @@ export function createProductDetailState(browser) {
     function thumbSrc(image) {
         if (!image?.path || failedPaths.value.includes(image.path)) return '';
         return imageUrl(image.path);
+    }
+
+    // Responsive candidate list: the backend-generated WebP thumbnail (480w) wins for
+    // small viewports, the optimized master (capped at 2000w by the backend) for
+    // everything else. Falls back to a single `src` when no thumbnail exists.
+    function imageSrcSet(image) {
+        return buildImageSrcSet(image);
     }
 
     function markImageFailed(path) {
@@ -540,6 +547,7 @@ export function createProductDetailState(browser) {
         increaseQuantity,
         decreaseQuantity,
         thumbSrc,
+        imageSrcSet,
         markImageFailed,
         imageErrorSrc,
         selectImage,

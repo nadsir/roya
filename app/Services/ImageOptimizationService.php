@@ -11,6 +11,7 @@ use Throwable;
 class ImageOptimizationService
 {
     private const MAX_DIMENSION = 2000;
+    private const THUMBNAIL_WIDTH = 480;
     private const JPEG_QUALITY = 85;
     private const WEBP_QUALITY = 85;
     private const PNG_COMPRESSION = 6;
@@ -22,6 +23,24 @@ class ImageOptimizationService
     ];
 
     public function optimizeAndStore(UploadedFile $file, string $directory): string
+    {
+        $details = $this->process($file, $directory);
+
+        return $details['path'];
+    }
+
+    /**
+     * Optimize an uploaded image and return the processed details,
+     * including the generated WebP thumbnail used for responsive `srcset` delivery.
+     *
+     * @return array{path: string, mime: string, width: int, height: int, thumbnail: string|null}
+     */
+    public function optimizeAndStoreDetailed(UploadedFile $file, string $directory): array
+    {
+        return $this->process($file, $directory);
+    }
+
+    private function process(UploadedFile $file, string $directory): array
     {
         $this->validateFile($file);
 
@@ -55,33 +74,74 @@ class ImageOptimizationService
             $hasAlpha = $this->imageHasTransparency($processedImage);
             $originalSize = filesize($sourcePath);
 
+            $finalMime = null;
+            $finalRelativePath = null;
+            $finalSize = null;
+
             if ($hasAlpha && $mimeType === 'image/png') {
                 $pngResult = $this->saveAsPng($processedImage, $directory);
                 $webpResult = $this->saveAsWebp($sourceImage, $directory, $originalWidth, $originalHeight, $needsResize);
 
                 if ($pngResult['size'] <= $originalSize && $pngResult['size'] <= $webpResult['size']) {
                     $this->deleteStorageFile($webpResult['path']);
-                    return $pngResult['path'];
+                    $finalMime = 'image/png';
+                    $finalRelativePath = $pngResult['path'];
+                    $finalSize = $pngResult['size'];
+                } elseif ($webpResult['size'] <= $originalSize) {
+                    $this->deleteStorageFile($pngResult['path']);
+                    $finalMime = 'image/webp';
+                    $finalRelativePath = $webpResult['path'];
+                    $finalSize = $webpResult['size'];
+                } else {
+                    $this->deleteStorageFile($pngResult['path']);
+                    $this->deleteStorageFile($webpResult['path']);
                 }
+            }
+
+            if ($finalRelativePath === null) {
+                $webpResult = $this->saveAsWebp($sourceImage, $directory, $originalWidth, $originalHeight, $needsResize);
 
                 if ($webpResult['size'] <= $originalSize) {
-                    $this->deleteStorageFile($pngResult['path']);
-                    return $webpResult['path'];
+                    $finalMime = 'image/webp';
+                    $finalRelativePath = $webpResult['path'];
+                    $finalSize = $webpResult['size'];
+                } else {
+                    $this->deleteStorageFile($webpResult['path']);
+
+                    $finalMime = 'image/jpeg';
+                    $finalRelativePath = $this->saveAsJpeg(
+                        $sourceImage,
+                        $directory,
+                        $originalWidth,
+                        $originalHeight,
+                        $needsResize,
+                        $originalSize
+                    )['path'];
+                    $finalSize = filesize(storage_path('app/public/' . $finalRelativePath));
                 }
-
-                $this->deleteStorageFile($pngResult['path']);
-                $this->deleteStorageFile($webpResult['path']);
             }
 
-            $webpResult = $this->saveAsWebp($sourceImage, $directory, $originalWidth, $originalHeight, $needsResize);
-
-            if ($webpResult['size'] <= $originalSize) {
-                return $webpResult['path'];
+            $finalSource = $finalMime === 'image/png' ? $processedImage : $sourceImage;
+            $finalWidth = (int) $originalWidth;
+            $finalHeight = (int) $originalHeight;
+            if ($needsResize) {
+                $ratio = min(self::MAX_DIMENSION / $originalWidth, self::MAX_DIMENSION / $originalHeight);
+                $finalWidth = (int) round($originalWidth * $ratio);
+                $finalHeight = (int) round($originalHeight * $ratio);
             }
 
-            $this->deleteStorageFile($webpResult['path']);
+            $thumbnail = null;
+            if ($finalWidth > self::THUMBNAIL_WIDTH) {
+                $thumbnail = $this->generateThumbnail($finalSource, $finalMime, $directory);
+            }
 
-            return $this->saveAsJpeg($sourceImage, $directory, $originalWidth, $originalHeight, $needsResize, $originalSize)['path'];
+            return [
+                'path' => $finalRelativePath,
+                'mime' => $finalMime,
+                'width' => $finalWidth,
+                'height' => $finalHeight,
+                'thumbnail' => $thumbnail,
+            ];
         } finally {
             if (isset($processedImage) && $processedImage !== $sourceImage) {
                 @imagedestroy($processedImage);
@@ -280,30 +340,46 @@ class ImageOptimizationService
         ];
     }
 
-    private function moveToStorage(string $tempPath, string $relativePath): void
+    private function generateThumbnail($source, string $mime, string $directory): string
     {
-        $destinationPath = storage_path('app/public/' . $relativePath);
-        $destinationDir = dirname($destinationPath);
+        $extension = match ($mime) {
+            'image/png' => 'png',
+            'image/jpeg' => 'jpg',
+            default => 'webp',
+        };
+        $filename = Str::uuid()->toString() . '-' . self::THUMBNAIL_WIDTH . '.' . $extension;
+        $relativePath = $directory . '/' . $filename;
+        $tempPath = storage_path('app/temp_' . $filename);
 
-        if (!is_dir($destinationDir)) {
-            mkdir($destinationDir, 0755, true);
+        if (!is_dir(dirname($tempPath))) {
+            mkdir(dirname($tempPath), 0755, true);
         }
 
-        if (!@rename($tempPath, $destinationPath)) {
-            $content = file_get_contents($tempPath);
-            if ($content === false) {
-                @unlink($tempPath);
-                throw new RuntimeException('Failed to read processed image.');
-            }
+        $width = (int) min(self::THUMBNAIL_WIDTH, imagesx($source));
+        $height = max(1, (int) round((imagesy($source) * $width) / imagesx($source)));
+        $resized = imagecreatetruecolor($width, $height);
 
-            $written = file_put_contents($destinationPath, $content);
+        $bg = imagecolorallocatealpha($resized, 255, 255, 255, 127);
+        imagefill($resized, 0, 0, $bg);
+        imagealphablending($resized, false);
+        imagesavealpha($resized, true);
+        imagecopyresampled($resized, $source, 0, 0, 0, 0, $width, $height, imagesx($source), imagesy($source));
+
+        $success = match ($mime) {
+            'image/png' => @imagepng($resized, $tempPath, self::PNG_COMPRESSION),
+            'image/webp' => @imagewebp($resized, $tempPath, self::WEBP_QUALITY),
+            default => @imagejpeg($resized, $tempPath, self::JPEG_QUALITY),
+        };
+        imagedestroy($resized);
+
+        if (!$success) {
             @unlink($tempPath);
-
-            if ($written === false) {
-                @unlink($destinationPath);
-                throw new RuntimeException('Failed to store processed image.');
-            }
+            throw new RuntimeException('Failed to save thumbnail image.');
         }
+
+        $this->moveToStorage($tempPath, $relativePath);
+
+        return $relativePath;
     }
 
     private function saveAsJpeg($source, string $directory, int $origWidth, int $origHeight, bool $needsResize, int $originalSize): array
@@ -350,6 +426,32 @@ class ImageOptimizationService
             'path' => $relativePath,
             'size' => $size,
         ];
+    }
+
+    private function moveToStorage(string $tempPath, string $relativePath): void
+    {
+        $destinationPath = storage_path('app/public/' . $relativePath);
+        $destinationDir = dirname($destinationPath);
+
+        if (!is_dir($destinationDir)) {
+            mkdir($destinationDir, 0755, true);
+        }
+
+        if (!@rename($tempPath, $destinationPath)) {
+            $content = file_get_contents($tempPath);
+            if ($content === false) {
+                @unlink($tempPath);
+                throw new RuntimeException('Failed to read processed image.');
+            }
+
+            $written = file_put_contents($destinationPath, $content);
+            @unlink($tempPath);
+
+            if ($written === false) {
+                @unlink($destinationPath);
+                throw new RuntimeException('Failed to store processed image.');
+            }
+        }
     }
 
     private function deleteStorageFile(string $relativePath): void

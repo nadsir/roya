@@ -9,6 +9,15 @@ export function imageUrl(path) {
     if (!path) return '';
     return /^(https?:\/\/|\/)/i.test(path) ? path : `/storage/${path}`;
 }
+// Responsive candidate list for optimized product artwork: the backend-generated
+// WebP thumbnail (480w) plus the optimized master (capped at 2000w). Returns
+// undefined when no thumbnail was produced so callers can fall back to `src`.
+export function imageSrcSet(image) {
+    const src = imageUrl(image?.path);
+    const thumbnail = image?.thumbnail ? imageUrl(image.thumbnail) : '';
+    if (!src || !thumbnail) return undefined;
+    return [`${thumbnail} 480w`, `${src} 2000w`].join(', ');
+}
 export function productImages(product) {
     return [...(product?.images || [])].filter((image) => image.path)
         .sort((a, b) => Number(Boolean(b.is_primary)) - Number(Boolean(a.is_primary)) || (a.sort_order ?? 0) - (b.sort_order ?? 0))

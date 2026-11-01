@@ -53,6 +53,7 @@ class ProductResource extends JsonResource
                 return [
                     'id' => $image->id,
                     'path' => $image->path,
+                    'thumbnail' => $image->thumbnail,
                     'alt_text' => $image->alt_text,
                     'is_primary' => (bool) $image->is_primary,
                     'sort_order' => $image->sort_order,

@@ -14,7 +14,7 @@ class ProductDetailController extends Controller
         $query = Product::query()
             ->with([
                 'categories:id,name,slug',
-                'images:id,product_id,variant_id,path,alt_text,is_primary,sort_order',
+                'images:id,product_id,variant_id,path,thumbnail,alt_text,is_primary,sort_order',
                 'attributeValues:id,attribute_id,label,value,hex_color,sort_order',
                 'attributeValues.attribute:id,name,slug,type',
                 'customAttributeValues:id,product_id,attribute_id,value_type,value_number,value_boolean,value_text',

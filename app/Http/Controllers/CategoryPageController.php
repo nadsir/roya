@@ -51,7 +51,7 @@ class CategoryPageController extends Controller
             ->orderByDesc('published_at')
             ->orderBy('sort_order')
             ->with([
-                'images:id,product_id,variant_id,path,alt_text,is_primary,sort_order',
+                'images:id,product_id,variant_id,path,thumbnail,alt_text,is_primary,sort_order',
             ])
             ->forPage($page, self::SSR_PRODUCT_LIMIT)
             ->get();

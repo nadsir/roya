@@ -11,6 +11,7 @@ class ProductImage extends Model
         'product_id',
         'variant_id',
         'path',
+        'thumbnail',
         'alt_text',
         'is_primary',
         'sort_order',

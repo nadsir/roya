@@ -41,8 +41,8 @@ class AdminProductImageController extends Controller
         $isPrimary = ! $product->images()->exists();
 
         try {
-            $path = app(ImageOptimizationService::class)
-                ->optimizeAndStore(
+            $details = app(ImageOptimizationService::class)
+                ->optimizeAndStoreDetailed(
                     $request->file('image'),
                     'products'
                 );
@@ -53,7 +53,9 @@ class AdminProductImageController extends Controller
         }
 
         $image = $product->images()->create([
-            'path' => $path,
+            'path' => $details['path'],
+
+            'thumbnail' => $details['thumbnail'],
 
             'alt_text' =>
                 $data['alt_text']
@@ -187,6 +189,10 @@ class AdminProductImageController extends Controller
 
             Storage::disk('public')
                 ->delete($image->path);
+
+            if ($image->thumbnail) {
+                Storage::disk('public')->delete($image->thumbnail);
+            }
 
             $image->delete();
 

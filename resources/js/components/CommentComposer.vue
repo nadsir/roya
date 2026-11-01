@@ -1,5 +1,6 @@
 <script setup>
 import {
+    computed,
     ref,
     watch,
     onMounted,
@@ -7,6 +8,7 @@ import {
     nextTick,
 } from 'vue';
 import StarRatingInput from './StarRatingInput.vue';
+import { storefrontDark } from '../storefront-theme.js';
 
 const props = defineProps({
     modelValue: { type: Boolean, default: false },
@@ -22,6 +24,8 @@ const ratingId = 'composer-rating';
 const firstField = ref(null);
 const titleId = 'composer-title';
 const bodyId = 'composer-body';
+
+const themeClass = computed(() => (storefrontDark.value ? 'dark' : 'light'));
 
 function close() {
     if (props.section.composerSubmitting) return;
@@ -69,7 +73,8 @@ onBeforeUnmount(() => {
         >
             <div
                 v-if="modelValue"
-                class="fixed inset-0 z-[90] bg-black/50 backdrop-blur-sm md:flex md:items-center md:justify-center md:p-6"
+                class="fixed inset-0 z-[90] storefront-theme bg-black/50 backdrop-blur-sm md:flex md:items-center md:justify-center md:p-6"
+                :class="themeClass"
                 @click.self="close"
             >
                 <Transition
@@ -77,15 +82,15 @@ onBeforeUnmount(() => {
                     enter-from-class="md:opacity-0 md:translate-y-2 md:scale-[0.985] translate-y-full"
                     enter-to-class="md:opacity-100 md:translate-y-0 md:scale-100 translate-y-0"
                     leave-active-class="transition duration-150 ease-in"
-                    leave-from-class="md:opacity-100 translate-y-0"
-                    leave-to-class="md:opacity-0 md:translate-y-2 translate-y-full"
+                    leave-from-class="md:opacity-100 md:translate-y-0"
+                    leave-to-class="md:opacity-0 md:translate-y-2 md:translate-y-full"
                 >
                     <div
                         v-if="modelValue"
                         role="dialog"
                         aria-modal="true"
                         :aria-label="isProduct ? 'ثبت تجربه' : 'افزودن دیدگاه'"
-                        class="fixed inset-x-0 bottom-0 md:static md:inset-auto z-[95] max-h-[92dvh] overflow-y-auto rounded-t-2xl md:max-w-lg md:rounded-2xl bg-cream dark:bg-[#161616] shadow-[0_-8px_40px_rgba(0,0,0,0.18)] md:shadow-[0_24px_60px_rgba(0,0,0,0.28)]"
+                        class="fixed inset-x-0 bottom-0 md:static md:inset-auto z-[95] max-h-[92dvh] overflow-y-auto rounded-t-2xl md:max-w-lg md:rounded-2xl bg-[color:var(--sf-surface)] shadow-[0_-8px_40px_rgba(0,0,0,0.18)] md:shadow-[0_24px_60px_rgba(0,0,0,0.28)]"
                     >
                         <div class="mx-auto flex max-w-2xl flex-col gap-6 px-5 py-6 sm:px-8 sm:py-8">
                             <div
@@ -97,14 +102,14 @@ onBeforeUnmount(() => {
                                         <path d="M20 6L9 17l-5-5" />
                                     </svg>
                                 </span>
-                                <h3 class="mt-4 text-lg font-black text-ink dark:text-slate-50">
+                                <h3 class="mt-4 text-lg font-black text-[color:var(--sf-text)]">
                                     {{
                                         isProduct
                                             ? 'تجربه شما ثبت شد'
                                             : 'دیدگاه شما ثبت شد'
                                     }}
                                 </h3>
-                                <p class="mt-2 max-w-xs text-sm leading-6 text-slate-500 dark:text-slate-400">
+                                <p class="mt-2 max-w-xs text-sm leading-6 text-[color:var(--sf-text-secondary)]">
                                     پس از بررسی تیم ما منتشر خواهد شد.
                                 </p>
                                 <button
@@ -122,14 +127,14 @@ onBeforeUnmount(() => {
                             >
                                 <div class="flex items-start justify-between gap-6">
                                     <div>
-                                        <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">
+                                        <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-[color:var(--sf-text-muted)]">
                                             {{
                                                 isProduct
                                                     ? 'Ship a Review'
                                                     : 'Join the Discussion'
                                             }}
                                         </p>
-                                        <h2 class="mt-1.5 serif text-2xl leading-none text-ink dark:text-slate-50">
+                                        <h2 class="mt-1.5 serif text-2xl leading-none text-[color:var(--sf-text)]">
                                             {{
                                                 isProduct
                                                     ? 'تجربه\u200cات را بنویس'
@@ -140,7 +145,7 @@ onBeforeUnmount(() => {
                                     <button
                                         type="button"
                                         :aria-label="'بستن'"
-                                        class="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-slate-200 text-slate-500 transition hover:border-slate-300 hover:text-ink dark:border-slate-700 dark:text-slate-400 dark:hover:text-slate-100"
+                                        class="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-[color:var(--sf-border-strong)] text-[color:var(--sf-text-secondary)] transition hover:border-[color:var(--sf-text)] hover:text-[color:var(--sf-text)]"
                                         @click="close"
                                     >
                                         <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
@@ -149,8 +154,8 @@ onBeforeUnmount(() => {
                                     </button>
                                 </div>
 
-                                <div v-if="isProduct" class="mt-7 border-t border-slate-200 pt-6 dark:border-slate-700">
-                                    <p class="text-sm font-bold text-ink dark:text-slate-100">
+                                <div v-if="isProduct" class="mt-7 border-t border-[color:var(--sf-border)] pt-6">
+                                    <p class="text-sm font-bold text-[color:var(--sf-text)]">
                                         این محصول را چگونه ارزیابی می‌کنید؟
                                     </p>
                                     <div class="mt-3 flex items-center gap-3">
@@ -170,15 +175,15 @@ onBeforeUnmount(() => {
 
                                 <div
                                     class="mt-6 space-y-5"
-                                    :class="isProduct ? '' : 'border-t border-slate-200 pt-6 dark:border-slate-700'"
+                                    :class="isProduct ? '' : 'border-t border-[color:var(--sf-border)] pt-6'"
                                 >
                                     <div>
                                         <label
                                             :for="titleId"
-                                            class="mb-2 block text-sm font-bold text-ink dark:text-slate-100"
+                                            class="mb-2 block text-sm font-bold text-[color:var(--sf-text)]"
                                         >
                                             {{ isProduct ? 'عنوان تجربه' : 'عنوان دیدگاه' }}
-                                            <span class="text-slate-400 dark:text-slate-500">(دلخواه)</span>
+                                            <span class="text-[color:var(--sf-text-muted)]">(دلخواه)</span>
                                         </label>
                                         <input
                                             :id="titleId"
@@ -187,7 +192,7 @@ onBeforeUnmount(() => {
                                             type="text"
                                             maxlength="120"
                                             placeholder="مثلاً: جایگزین مناسبی بود"
-                                            class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-ink placeholder:text-slate-400 focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400/40 dark:border-slate-600 dark:bg-black/30 dark:text-slate-100 dark:placeholder:text-slate-500"
+                                            class="w-full rounded-xl border border-[color:var(--sf-border-strong)] bg-[color:var(--sf-surface)] px-4 py-3 text-sm text-[color:var(--sf-text)] placeholder:text-[color:var(--sf-text-muted)] focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400/40"
                                         />
                                         <p
                                             v-if="section.composerFieldErrors.title"
@@ -200,7 +205,7 @@ onBeforeUnmount(() => {
                                     <div>
                                         <label
                                             :for="bodyId"
-                                            class="mb-2 block text-sm font-bold text-ink dark:text-slate-100"
+                                            class="mb-2 block text-sm font-bold text-[color:var(--sf-text)]"
                                         >
                                             {{ isProduct ? 'متن تجربه' : 'متن دیدگاه' }}
                                         </label>
@@ -210,7 +215,7 @@ onBeforeUnmount(() => {
                                             :rows="5"
                                             maxlength="1500"
                                             placeholder="نظر خود را بنویسید؛ پس از بررسی تیم ما منتشر می‌شود…"
-                                            class="w-full resize-y rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm leading-7 text-ink placeholder:text-slate-400 focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400/40 dark:border-slate-600 dark:bg-black/30 dark:text-slate-100 dark:placeholder:text-slate-500"
+                                            class="w-full resize-y rounded-xl border border-[color:var(--sf-border-strong)] bg-[color:var(--sf-surface)] px-4 py-3 text-sm leading-7 text-[color:var(--sf-text)] placeholder:text-[color:var(--sf-text-muted)] focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400/40"
                                         />
                                         <p
                                             v-if="section.composerFieldErrors.body"
@@ -221,8 +226,8 @@ onBeforeUnmount(() => {
                                     </div>
                                 </div>
 
-                                <div class="mt-7 flex items-center justify-between gap-4 border-t border-slate-200 pt-5 dark:border-slate-700">
-                                    <span class="text-xs leading-5 text-slate-400 dark:text-slate-500">
+                                <div class="mt-7 flex items-center justify-between gap-4 border-t border-[color:var(--sf-border)] pt-5">
+                                    <span class="text-xs leading-5 text-[color:var(--sf-text-muted)]">
                                         نظر شما پس از بررسی تیم ما <br class="sm:hidden" />
                                         در این صفحه نمایش داده خواهد شد.
                                     </span>
