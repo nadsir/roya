@@ -125,9 +125,14 @@ onBeforeUnmount(() => {
             <article v-for="(slide, index) in slides" :key="index" class="hp-slide" :class="['hp-slide--' + (index + 1), { 'is-active': active === index }]"
                 role="group" aria-roledescription="اسلاید" :aria-label="(index + 1) + ' از ' + slides.length" :aria-hidden="active !== index" :inert="active !== index">
                 <div class="hp-slide-visual">
-                    <img v-if="!failed[index]" :key="slide.image" :src="slide.image" :srcset="slide.art.srcset" :sizes="slide.art.srcset ? slide.art.sizes : undefined"
-                        :alt="slide.alt || slide.art.alt" :width="slide.art.width" :height="slide.art.height"
-                        :loading="index === 0 ? 'eager' : 'lazy'" :fetchpriority="index === 0 ? 'high' : 'auto'" decoding="async" @error="imageError($event, index)" />
+                    <picture v-if="!failed[index]">
+                        <!-- Responsive LCP artwork: lightweight WebP below 768px, full-resolution WebP from 768px up.
+                             Source order guarantees the first match wins, so the mobile file is only used on small screens. -->
+                        <source :src="slide.art.mobileSrc" media="(max-width: 767px)" type="image/webp" />
+                        <source :src="slide.art.src" media="(min-width: 768px)" type="image/webp" />
+                        <img v-if="!failed[index]" :key="slide.image" :src="slide.image" :alt="slide.alt || slide.art.alt" :width="slide.art.width" :height="slide.art.height"
+                            :loading="index === 0 ? 'eager' : 'lazy'" :fetchpriority="index === 0 ? 'high' : 'auto'" decoding="async" @error="imageError($event, index)" />
+                    </picture>
                     <div v-else class="hp-hero-art"><span lang="en" aria-hidden="true">G.</span><small>روایت تصویری گالری</small></div>
                 </div>
                 <div class="hp-slide-copy">

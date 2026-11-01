@@ -175,6 +175,10 @@
     transform: scale(1.06);
     transition: transform 7s linear;
 }
+/* <picture> is inline by default; keep it a block spanning the visual frame so
+   the absolutely-positioned cover image (and the static mobile sizing) resolve
+   percentages correctly and the aspect ratio never shifts. */
+.storefront-theme .hp-slide-visual picture { display: block; height: 100%; }
 .storefront-theme .hp-slide.is-active .hp-slide-visual img { transform: scale(1); }
 .storefront-theme .hp-slide-copy {
     grid-column: 1;

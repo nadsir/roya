@@ -3,9 +3,13 @@
 // /photo/a-woman-in-a-beige-set-with-a-handbag-22890201/
 // /photo/woman-in-beige-blouse-skirt-and-sunglasses-holds-handbag-20167616/
 export const homeVisuals = [
-    { src: '/images/slider/slide-01.webp', alt: 'استایل زنانه با بلوز روشن، دامن پلیسه بژ، کیف مشکی و نیم‌بوت' },
-    { src: '/images/slider/slide-02.webp', alt: 'استایل شهری زنانه با لباس بژ، کیف دستی روشن و عینک آفتابی' },
-    { src: '/images/slider/slide-03.webp', alt: 'عکس مد زنانه با لباس بژ و کیف دوشی در نور گرم استودیو' },
+    // `mobileSrc` is the lightweight WebP variant served below 768px; `src` is
+    // the full-resolution campaign photograph served from 768px up. The
+    // <picture> source order in EditorialHero picks the first match: the mobile
+    // file wins on small screens, the desktop file from tablet portrait up.
+    { src: '/images/slider/slide-01.webp', mobileSrc: '/images/slider/slide-01-mobile.webp', alt: 'استایل زنانه با بلوز روشن، دامن پلیسه بژ، کیف مشکی و نیم‌بوت' },
+    { src: '/images/slider/slide-02.webp', mobileSrc: '/images/slider/slide-02-mobile.webp', alt: 'استایل شهری زنانه با لباس بژ، کیف دستی روشن و عینک آفتابی' },
+    { src: '/images/slider/slide-03.webp', mobileSrc: '/images/slider/slide-03-mobile.webp', alt: 'عکس مد زنانه با لباس بژ و کیف دوشی در نور گرم استودیو' },
 ];
 
 export function homeCategoryVisual(category) {
