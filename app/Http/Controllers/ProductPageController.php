@@ -37,6 +37,7 @@ class ProductPageController extends Controller
                 'images:id,product_id,variant_id,path,alt_text,is_primary,sort_order',
                 'variants:id,product_id,price,stock,is_active',
                 'categories:id,name,slug,parent_id',
+                'comments.user:id,name',
             ])
             ->where('is_active', true)
             ->find($product->id);

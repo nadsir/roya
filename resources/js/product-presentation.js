@@ -39,6 +39,81 @@ const AXIS_LABELS = {
     brand: 'برند',
 };
 
+// Persian labels for the product specification table. Keys are normalised to
+// lower-case kebab-case so both `country_of_origin` and `country-of-origin`
+// resolve to the same row.
+const SPEC_LABELS = {
+    brand: 'برند',
+    material: 'جنس / متریال',
+    'country-of-origin': 'کشور سازنده',
+    country: 'کشور سازنده',
+    origin: 'کشور سازنده',
+    'made-in': 'کشور سازنده',
+    size: 'سایزبندی',
+    'size-type': 'نوع سایز',
+    'shoe-size': 'سایز کفش',
+    season: 'فصل',
+    'care-instructions': 'دستورالعمل نگهداری',
+    'washing-instructions': 'دستورالعمل نگهداری',
+    color: 'رنگ',
+    colour: 'رنگ',
+    fit: 'فرم / تن‌خور',
+    style: 'استایل',
+    pattern: 'طرح',
+    'bag-type': 'نوع کیف',
+    'shoe-type': 'نوع کفش',
+    'frame-material': 'جنس فریم',
+    'frame-shape': 'شکل فریم',
+    'sleeve-length': 'آستین',
+    length: 'قد',
+    closure: 'نوع بسته‌شدن',
+    lining: 'آستر',
+    weight: 'وزن',
+    'warranty-months': 'گارانتی',
+    'part-condition': 'وضعیت قطعه',
+    'installation-side': 'محل نصب',
+    'axle-position': 'محور',
+    'vehicle-type': 'نوع خودرو',
+    'fuel-type': 'نوع سوخت',
+    voltage: 'ولتاژ',
+    amperage: 'آمپراژ',
+    standard: 'استاندارد',
+    'part-number': 'شماره فنی',
+    'oem-number': 'شماره OEM',
+    'engine-code': 'کد موتور',
+};
+
+// The storefront is a women's fashion gallery. Legacy automotive rows are
+// filtered out so an old record can never leak "محور" or "ولتاژ" into the
+// clothing specification table.
+const LEGACY_AUTOMOTIVE_SPECS = new Set([
+    'part-condition',
+    'installation-side',
+    'axle-position',
+    'vehicle-type',
+    'fuel-type',
+    'voltage',
+    'amperage',
+    'standard',
+    'part-number',
+    'oem-number',
+    'engine-code',
+    'warranty-months',
+]);
+
+function normalizeSpecKey(slug) {
+    return String(slug || '').toLowerCase().replace(/_/g, '-').trim();
+}
+
+export function specificationLabel(slug, fallback = '') {
+    const key = normalizeSpecKey(slug);
+    return SPEC_LABELS[key] || fallback || key;
+}
+
+export function isLegacyAutomotiveSpec(slug) {
+    return LEGACY_AUTOMOTIVE_SPECS.has(normalizeSpecKey(slug));
+}
+
 // Shared by the product detail page and the cart so a variant axis reads the same everywhere.
 export function axisLabel(slug) {
     const key = String(slug || '').toLowerCase();

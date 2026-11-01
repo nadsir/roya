@@ -1,8 +1,9 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import SiteHeader from './SiteHeader.vue';
 import SiteFooter from './SiteFooter.vue';
 import ProductCard from './components/ProductCard.vue';
+import ProductSpecifications from './components/ProductSpecifications.vue';
 import { createProductDetailState } from './product-detail-state.js';
 import { formatPrice, imageUrl } from './product-presentation.js';
 import { state as authState, isLoggedIn } from './auth-state.js';
@@ -31,7 +32,7 @@ const {
     product, result, notice, quantity, activeIndex, selectedVariants, related, relatedLoading,
     images, activeImage, activeImageSrc, activeImageFailed, attributeAxes, hasVariants,
     displayPrice, displayCompareAtPrice, displayDiscount, displaySku, displayInStock, displayStock,
-    needsVariantSelection, displayAttributes, customAttributes, categories, brand,
+    needsVariantSelection, specifications, categories, brand,
     maxQuantity, canIncreaseQuantity, load, dispose, add, addLabel, addHint, showNotice, clearNotice,
     setQuantity, increaseQuantity, decreaseQuantity, thumbSrc, markImageFailed, imageErrorSrc,
     selectImage, nextImage, prevImage, isValueSelectable, isSelected, selectedLabel, toggleAxisValue,
@@ -237,8 +238,6 @@ watch(product, (p) => {
 }, { immediate: false });
 
 const comments = createCommentSection('product');
-const panels = reactive({ description: true, specs: true });
-const hasSpecs = computed(() => displayAttributes.value.length > 0 || customAttributes.value.length > 0);
 const galleryLabel = computed(() => `گالری تصاویر ${product.value?.name || ''}`.trim());
 const touchStartX = ref(null);
 const PLACEHOLDER = '/images/placeholder.svg';
@@ -551,46 +550,18 @@ onBeforeUnmount(() => {
                     </div>
                 </div>
 
-                <!-- Details -->
-                <section v-if="product.description || hasSpecs" class="pd-section pd-details" aria-labelledby="pd-details-title">
-                    <header class="pd-section-head">
-                        <span class="pd-section-rule" aria-hidden="true" />
-                        <div>
-                            <p class="pd-eyebrow" lang="en" dir="ltr">THE DETAILS</p>
-                            <h2 id="pd-details-title">درباره این انتخاب</h2>
-                        </div>
-                    </header>
-
-                    <div class="pd-accordion">
-                        <details v-if="product.description" class="pd-panel" :open="panels.description" @toggle="panels.description = $event.target.open">
-                            <summary>توضیحات</summary>
-                            <div class="pd-panel-body"><p class="pd-prose">{{ product.description }}</p></div>
-                        </details>
-
-                        <details v-if="hasSpecs" class="pd-panel" :open="panels.specs" @toggle="panels.specs = $event.target.open">
-                            <summary>مشخصات</summary>
-                            <div class="pd-panel-body">
-                                <dl class="pd-specs">
-                                    <div v-for="attr in displayAttributes" :key="attr.slug" class="pd-spec-row">
-                                        <dt>{{ attr.label }}</dt>
-                                        <dd>{{ attr.values.map((value) => value.label).join('، ') }}</dd>
-                                    </div>
-                                    <div v-for="attr in customAttributes" :key="attr.id" class="pd-spec-row">
-                                        <dt>{{ attr.name }}</dt>
-                                        <dd>{{ attr.value }}</dd>
-                                    </div>
-                                </dl>
-                            </div>
-                        </details>
-                    </div>
-                </section>
+                <!-- Specifications + description -->
+                <ProductSpecifications
+                    :specifications="specifications"
+                    :description="product.description || ''"
+                />
 
                 <!-- Reviews -->
                 <section class="pd-section pd-reviews" aria-labelledby="pd-reviews-title">
                     <header class="pd-section-head">
                         <span class="pd-section-rule" aria-hidden="true" />
                         <div>
-                            <p class="pd-eyebrow" lang="en" dir="ltr">REVIEWS</p>
+                            <p class="pd-eyebrow" lang="en" dir="ltr">REAL EXPERIENCES</p>
                             <h2 id="pd-reviews-title">تجربه‌های واقعی</h2>
                             <p v-if="comments.section.total" class="pd-section-note">
                                 ثبت‌شده توسط {{ faNum(comments.section.total) }} خریدار گالری
@@ -605,17 +576,41 @@ onBeforeUnmount(() => {
                                 :count="comments.section.ratingSummary.count"
                                 :distribution="comments.section.ratingSummary.distribution"
                             />
-                            <div class="pd-reviews-cta">
-                                <p class="pd-reviews-cta-title">تجربه‌ات را با این محصول ثبت کن</p>
-                                <p class="pd-section-note">نگاه شما به خریدارانی که همین انتخاب را می‌سنجند کمک می‌کند.</p>
-                                <button type="button" class="pd-button pd-button--block" @click="comments.openComposer()">
+                            <div class="rounded-xl border border-[color:var(--sf-border)] bg-[color:var(--sf-surface)] p-5">
+                                <p class="text-sm font-black text-[color:var(--sf-text)]">
+                                    تجربه‌ات را با این محصول ثبت کن
+                                </p>
+                                <p class="mt-1.5 text-xs leading-6 text-[color:var(--sf-text-secondary)]">
+                                    نگاه شما به خریدارانی که همین انتخاب را می‌سنجند کمک می‌کند.
+                                </p>
+                                <button
+                                    type="button"
+                                    class="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brand-500 px-5 py-3 text-sm font-black text-[#1a1a1a] shadow-sm transition duration-200 hover:bg-brand-600 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 active:translate-y-px"
+                                    @click="comments.openComposer()"
+                                >
                                     <i class="fa-solid fa-pen-to-square" aria-hidden="true" />
                                     ثبت تجربه خرید
                                 </button>
+                                <p class="mt-3 text-center text-[11px] leading-5 text-[color:var(--sf-text-muted)]">
+                                    پس از تأیید تیم گالری منتشر می‌شود.
+                                </p>
                             </div>
                         </aside>
 
-                        <CommentList :section="comments.section" kind="product" />
+                        <div class="min-w-0">
+                            <div class="mb-4 flex items-center justify-between gap-3 border-b border-[color:var(--sf-border)] pb-3">
+                                <h3 class="text-sm font-black text-[color:var(--sf-text)]">
+                                    نظرات خریداران
+                                </h3>
+                                <span
+                                    v-if="comments.section.total"
+                                    class="rounded-full bg-[color:var(--sf-surface-soft)] px-3 py-1 text-[11px] font-bold text-[color:var(--sf-text-secondary)]"
+                                >
+                                    {{ faNum(comments.section.total) }} تجربه
+                                </span>
+                            </div>
+                            <CommentList :section="comments.section" kind="product" />
+                        </div>
                     </div>
                 </section>
 

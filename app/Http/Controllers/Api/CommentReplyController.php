@@ -69,6 +69,11 @@ class CommentReplyController extends Controller
         $payload['parent_id'] = $reply->parent_id;
         $payload['status'] = $reply->status;
 
+        if ($comment->commentable_type === Product::class) {
+            $payload['helpful_count'] = 0;
+            $payload['is_helpful'] = false;
+        }
+
         return response()->json(['data' => $payload], 201);
     }
 }

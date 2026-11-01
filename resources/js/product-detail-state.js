@@ -4,7 +4,7 @@ import { computed, reactive, ref } from 'vue';
 import axios from 'axios';
 import { addToCart } from './cart-state.js';
 import { showCartAdded } from './cart-notification-state.js';
-import { imageUrl, productImages, axisLabel } from './product-presentation.js';
+import { imageUrl, productImages, axisLabel, specificationLabel, isLegacyAutomotiveSpec } from './product-presentation.js';
 import { PLACEHOLDER_SRC, nextImageSrc } from './image-fallback.js';
 
 export { axisLabel };
@@ -358,6 +358,95 @@ export function createProductDetailState(browser) {
         return '';
     });
 
+    function attributeValuesFor(slug) {
+        const values = product.value?.attributes?.[slug];
+        return Array.isArray(values)
+            ? values.map((value) => value?.label).filter(Boolean)
+            : [];
+    }
+
+    function customAttributeFor(slugs) {
+        const wanted = slugs.map((slug) => String(slug).toLowerCase().replace(/_/g, '-'));
+        const match = (product.value?.custom_attributes || []).find((attr) => {
+            const key = String(attr?.slug || attr?.name || '').toLowerCase().replace(/_/g, '-');
+            return wanted.includes(key);
+        });
+        return match?.value;
+    }
+
+    // A clean, fashion-oriented specification table. Product columns win over
+    // attribute rows, and legacy automotive attributes are never rendered.
+    const specifications = computed(() => {
+        const current = product.value;
+        if (!current) return [];
+        if (Array.isArray(current.specifications) && current.specifications.length) {
+            return current.specifications.filter((row) => row && row.label && row.value);
+        }
+
+        const rows = [];
+        const seen = new Set();
+        const add = (key, label, value) => {
+            const text = Array.isArray(value)
+                ? value.filter(Boolean).join('، ')
+                : String(value ?? '').trim();
+            if (!text || seen.has(key)) return;
+            seen.add(key);
+            rows.push({ key, label, value: text });
+        };
+
+        add('brand', 'برند', brand.value || current.brand);
+
+        add(
+            'material',
+            specificationLabel('material'),
+            current.material || attributeValuesFor('material').join('، ') || customAttributeFor(['material']),
+        );
+
+        add(
+            'country-of-origin',
+            specificationLabel('country-of-origin'),
+            attributeValuesFor('country-of-origin').join('، ')
+                || customAttributeFor(['country-of-origin', 'country', 'origin', 'made-in']),
+        );
+
+        add('size', specificationLabel('size'), attributeValuesFor('size'));
+        add('shoe-size', specificationLabel('shoe-size'), attributeValuesFor('shoe-size'));
+
+        add(
+            'season',
+            specificationLabel('season'),
+            attributeValuesFor('season').join('، ') || customAttributeFor(['season']),
+        );
+
+        add(
+            'care-instructions',
+            specificationLabel('care-instructions'),
+            current.care_instructions
+                || attributeValuesFor('care-instructions').join('، ')
+                || customAttributeFor(['care-instructions', 'washing-instructions']),
+        );
+
+        for (const [slug, values] of Object.entries(current.attributes || {})) {
+            const key = String(slug).toLowerCase().replace(/_/g, '-');
+            if (seen.has(key) || isLegacyAutomotiveSpec(key)) continue;
+            const labels = Array.isArray(values)
+                ? values.map((value) => value?.label).filter(Boolean)
+                : [];
+            if (!labels.length) continue;
+            add(key, specificationLabel(key), labels);
+        }
+
+        for (const attr of current.custom_attributes || []) {
+            const key = String(attr?.slug || attr?.name || '').toLowerCase().replace(/_/g, '-');
+            if (!key || seen.has(key) || isLegacyAutomotiveSpec(key)) continue;
+            add(key, specificationLabel(key, attr?.name), attr?.value);
+        }
+
+        add('sku', 'کد کالا', current.sku);
+
+        return rows;
+    });
+
     /* --------------------------------- quantity --------------------------------- */
 
     // Unknown stock (the detail API only exposes in_stock) falls back to the cart's 999 ceiling.
@@ -437,6 +526,7 @@ export function createProductDetailState(browser) {
         addHint,
         displayAttributes,
         customAttributes,
+        specifications,
         categories,
         brand,
         maxQuantity,

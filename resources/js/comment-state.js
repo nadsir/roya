@@ -113,6 +113,9 @@ export function createCommentSection(kind) {
         replySubmitting: false,
         replyFieldErrors: {},
         replySuccess: null,
+
+        helpfulBusy: {},
+        helpfulError: '',
     });
 
     const hasMore = computed(() => section.page < section.lastPage);
@@ -319,6 +322,32 @@ export function createCommentSection(kind) {
         }
     }
 
+    async function toggleHelpful(comment) {
+        if (!comment?.id || section.helpfulBusy[comment.id]) return;
+
+        if (!isLoggedIn.value) {
+            window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname)}`;
+            return;
+        }
+
+        section.helpfulBusy[comment.id] = true;
+        section.helpfulError = '';
+
+        try {
+            const { data } = await axios.post(`/api/comments/${comment.id}/helpful`);
+            comment.helpful_count = Number(data?.helpful_count) || 0;
+            comment.is_helpful = Boolean(data?.is_helpful);
+        } catch (e) {
+            if (e.response?.status === 401) {
+                window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname)}`;
+                return;
+            }
+            section.helpfulError = e.response?.data?.message || 'ثبت بازخورد انجام نشد. دوباره تلاش کنید.';
+        } finally {
+            section.helpfulBusy[comment.id] = false;
+        }
+    }
+
     function restoreIntent() {
         if (!isLoggedIn.value) return;
         const intent = peekIntent();
@@ -343,6 +372,7 @@ export function createCommentSection(kind) {
     section.openReply = openReply;
     section.closeReply = closeReply;
     section.submitReply = submitReply;
+    section.toggleHelpful = toggleHelpful;
     section.loadFirstPage = loadFirstPage;
     section.loadMore = loadMore;
 
@@ -357,6 +387,7 @@ export function createCommentSection(kind) {
         openReply,
         closeReply,
         submitReply,
+        toggleHelpful,
         restoreIntent,
     };
 }

@@ -323,7 +323,20 @@ assert.equal(model.displayAttributes.value[0].label, 'برند');
 assert.equal(model.displayAttributes.value[0].values[0].label, 'گالری');
 assert.equal(model.customAttributes.value.length, 1);
 assert.equal(model.brand.value, 'نوین');
-console.log('PASS variant axes, disabled combinations, matched price/stock/sku, quantity ceiling and cart keying');
+assert.deepEqual(
+    Array.from(model.specifications.value).map((row) => row.key),
+    ['brand', 'size', 'color', 'sku'],
+    'fashion specifications keep brand, size, colour and sku in a stable order',
+);
+assert.deepEqual(
+    Array.from(model.specifications.value).map((row) => row.label),
+    ['برند', 'سایزبندی', 'رنگ', 'کد کالا'],
+);
+assert.equal(model.specifications.value[1].value, 'S، M، L');
+assert.equal(helpers.specificationLabel('country-of-origin'), 'کشور سازنده');
+assert.equal(helpers.isLegacyAutomotiveSpec('voltage'), true);
+assert.equal(helpers.isLegacyAutomotiveSpec('season'), false);
+console.log('PASS fashion specification table labels and legacy automotive filtering');
 
 /* simple product without variants */
 const simple = detail.createProductDetailState({ location: { pathname: '/products/12' } });

@@ -12,13 +12,19 @@ class ProductCommentController extends Controller
 {
     private const PER_PAGE = 15;
 
-    public function index(Product $product): JsonResponse
+    public function index(Request $request, Product $product): JsonResponse
     {
+        $userId = $request->user()?->id;
+
         $comments = $product->comments()
             ->with('user:id,name')
-            ->with(['replies' => function ($query) {
+            ->withCount('helpfulVotes')
+            ->with(['helpfulVotes' => fn ($query) => $query->where('user_id', $userId)])
+            ->with(['replies' => function ($query) use ($userId) {
                 $query->where('status', 'approved')
                     ->with('user:id,name')
+                    ->withCount('helpfulVotes')
+                    ->with(['helpfulVotes' => fn ($voteQuery) => $voteQuery->where('user_id', $userId)])
                     ->latest('created_at');
             }])
             ->where('status', 'approved')
@@ -76,8 +82,16 @@ class ProductCommentController extends Controller
                         'name' => $reply->user->name,
                     ] : null,
                     'replies' => [],
+                    'helpful_count' => (int) ($reply->helpful_votes_count ?? 0),
+                    'is_helpful' => $reply->relationLoaded('helpfulVotes')
+                        ? $reply->helpfulVotes->isNotEmpty()
+                        : false,
                 ];
             })->values(),
+            'helpful_count' => (int) ($comment->helpful_votes_count ?? 0),
+            'is_helpful' => $comment->relationLoaded('helpfulVotes')
+                ? $comment->helpfulVotes->isNotEmpty()
+                : false,
         ];
     }
 

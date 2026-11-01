@@ -310,8 +310,66 @@ class CommentApiTest extends TestCase
         $this->assertSame(0, $response->json('rating_summary.distribution.1'));
     }
 
-    // ── 13-14. Admin moderation ──────────────────────────────
+    public function test_customer_can_toggle_helpful_vote_on_product_comment(): void
+    {
+        $user = $this->customer();
+        $product = $this->product();
+        $comment = $this->comment($user, $product, ['status' => 'approved']);
+        Sanctum::actingAs($user, ['customer']);
 
+        $this->postJson("/api/comments/{$comment->id}/helpful")
+            ->assertOk()
+            ->assertJsonPath('helpful_count', 1)
+            ->assertJsonPath('is_helpful', true);
+
+        $this->assertDatabaseHas('comment_helpfuls', [
+            'comment_id' => $comment->id,
+            'user_id' => $user->id,
+        ]);
+
+        $this->postJson("/api/comments/{$comment->id}/helpful")
+            ->assertOk()
+            ->assertJsonPath('helpful_count', 0)
+            ->assertJsonPath('is_helpful', false);
+
+        $this->assertDatabaseMissing('comment_helpfuls', [
+            'comment_id' => $comment->id,
+            'user_id' => $user->id,
+        ]);
+    }
+
+    public function test_helpful_vote_is_exposed_in_public_listing(): void
+    {
+        $author = $this->customer();
+        $voter = $this->customer();
+        $product = $this->product();
+        $comment = $this->comment($author, $product, ['status' => 'approved']);
+
+        Sanctum::actingAs($voter, ['customer']);
+        $this->postJson("/api/comments/{$comment->id}/helpful")->assertOk();
+
+        $this->getJson("/api/products/{$product->id}/comments")
+            ->assertOk()
+            ->assertJsonPath('data.0.helpful_count', 1)
+            ->assertJsonPath('data.0.is_helpful', true);
+    }
+
+    public function test_guest_cannot_vote_helpful_and_pending_comment_is_hidden(): void
+    {
+        $user = $this->customer();
+        $product = $this->product();
+        $comment = $this->comment($user, $product, ['status' => 'approved']);
+
+        $this->postJson("/api/comments/{$comment->id}/helpful")->assertUnauthorized();
+
+        Sanctum::actingAs($user, ['customer']);
+        $pending = $this->comment($user, $product, ['status' => 'pending']);
+        $this->postJson("/api/comments/{$pending->id}/helpful")->assertNotFound();
+
+        $this->assertDatabaseCount('comment_helpfuls', 0);
+    }
+
+    // ── 13-14. Admin moderation ──────────────────────────────
     public function test_admin_can_update_comment_status(): void
     {
         $admin = $this->admin();
@@ -435,11 +493,11 @@ class CommentApiTest extends TestCase
 
         // comment and reply MUST share the exact same shape so Vue uses one model
         $this->assertSame(
-            ['id', 'title', 'body', 'rating', 'created_at', 'user', 'replies'],
+            ['id', 'title', 'body', 'rating', 'created_at', 'user', 'replies', 'helpful_count', 'is_helpful'],
             array_keys($response->json('data.0'))
         );
         $this->assertSame(
-            ['id', 'title', 'body', 'rating', 'created_at', 'user', 'replies'],
+            ['id', 'title', 'body', 'rating', 'created_at', 'user', 'replies', 'helpful_count', 'is_helpful'],
             array_keys($response->json('data.0.replies.0'))
         );
         $this->assertSame([], $response->json('data.0.replies.0.replies'));

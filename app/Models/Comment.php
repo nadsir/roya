@@ -58,4 +58,12 @@ class Comment extends Model
     {
         return $this->hasMany(Comment::class, 'parent_id');
     }
+
+    /**
+     * "Helpful" votes left by signed-in customers.
+     */
+    public function helpfulVotes(): HasMany
+    {
+        return $this->hasMany(CommentHelpful::class);
+    }
 }

@@ -25,6 +25,7 @@ use App\Http\Controllers\Api\AdminUserController;
 use App\Http\Controllers\Api\ProductCommentController;
 use App\Http\Controllers\Api\ArticleCommentController;
 use App\Http\Controllers\Api\CommentReplyController;
+use App\Http\Controllers\Api\CommentHelpfulController;
 use App\Http\Controllers\Api\AdminCommentController;
 use App\Http\Controllers\Api\NextChapterController;
 
@@ -83,6 +84,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/products/{product}/comments', [ProductCommentController::class, 'store']);
     Route::post('/articles/{article}/comments', [ArticleCommentController::class, 'store']);
     Route::post('/comments/{comment}/replies', [CommentReplyController::class, 'store']);
+    Route::post('/comments/{comment}/helpful', [CommentHelpfulController::class, 'toggle']);
 });
 
 // ── Public vehicle hierarchy ────────────────────────────────────

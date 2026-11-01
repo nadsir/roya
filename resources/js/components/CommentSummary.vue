@@ -38,50 +38,65 @@ onMounted(() => {
     requestAnimationFrame(animateBars);
 });
 
-watch(hasRating, (v) => {
-    if (v) {
-        ready.value = true;
-    }
+watch(hasRating, (value) => {
+    if (value) ready.value = true;
 });
 </script>
 
 <template>
-    <div>
-        <div v-if="hasRating" class="flex items-center gap-4">
-            <span class="serif text-5xl leading-none text-ink dark:text-slate-50">
-                {{ faDecimal(average) }}
-            </span>
-            <div class="space-y-1.5">
-                <StarRating :rating="Number(average)" size="md" />
-                <p class="text-xs text-slate-500 dark:text-slate-400">
-                    از روی {{ faNum(total) }} امتیاز ثبت‌شده
+    <div class="rounded-xl border border-[color:var(--sf-border)] bg-[color:var(--sf-surface)] p-5 sm:p-6">
+        <div v-if="hasRating" class="flex items-start justify-between gap-4">
+            <div>
+                <div class="flex items-end gap-2">
+                    <span class="serif text-6xl leading-none text-[color:var(--sf-text)]">
+                        {{ faDecimal(average) }}
+                    </span>
+                    <span class="pb-1.5 text-sm font-bold text-[color:var(--sf-text-muted)]">
+                        از ۵
+                    </span>
+                </div>
+                <StarRating :rating="Number(average)" size="md" class="mt-3" />
+                <p class="mt-2 text-xs leading-6 text-[color:var(--sf-text-secondary)]">
+                    بر اساس {{ faNum(total) }} امتیاز ثبت‌شده
                 </p>
             </div>
+            <span class="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-amber-400/15 text-amber-500" aria-hidden="true">
+                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                </svg>
+            </span>
         </div>
-        <div v-else class="space-y-1">
+
+        <div v-else class="space-y-1.5">
             <StarRating :rating="0" size="md" />
-            <p class="text-sm text-slate-500 dark:text-slate-400">
-                هنوز امتیازی ثبت نشده؛ اولین نفر باشید.
+            <p class="text-sm font-bold text-[color:var(--sf-text)]">
+                هنوز امتیازی ثبت نشده
+            </p>
+            <p class="text-xs leading-6 text-[color:var(--sf-text-secondary)]">
+                اولین نفر باشید و تجربه خود را ثبت کنید.
             </p>
         </div>
 
-        <dl v-if="hasRating" class="mt-6 space-y-2.5">
+        <dl v-if="hasRating" class="mt-6 space-y-3">
             <div
                 v-for="row in rows"
                 :key="row.stars"
                 class="flex items-center gap-3"
             >
-                <dt class="w-5 shrink-0 text-left text-[11px] font-bold tabular-nums text-slate-500 dark:text-slate-400">
-                    {{ faNum(row.stars) }}
+                <dt class="flex w-14 shrink-0 items-center gap-1 text-[11px] font-bold tabular-nums text-[color:var(--sf-text-secondary)]">
+                    <span>{{ faNum(row.stars) }}</span>
+                    <svg class="h-3 w-3 text-amber-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                    </svg>
                 </dt>
-                <dd class="flex h-1.5 flex-1 items-center overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
+                <dd class="flex h-2 flex-1 items-center overflow-hidden rounded-full bg-[color:var(--sf-surface-soft)]">
                     <span
-                        class="h-full rounded-full bg-brand-accent transition-[width] duration-500 ease-out"
+                        class="h-full rounded-full bg-amber-400 transition-[width] duration-700 ease-out"
                         :class="ready ? '' : 'w-0'"
                         :style="{ width: ready ? row.percent + '%' : '0%' }"
                     />
                 </dd>
-                <dd class="w-8 shrink-0 text-left text-[11px] tabular-nums text-slate-400 dark:text-slate-500">
+                <dd class="w-10 shrink-0 text-left text-[11px] tabular-nums text-[color:var(--sf-text-muted)]">
                     {{ faNum(row.count) }}
                 </dd>
             </div>

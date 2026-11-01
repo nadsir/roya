@@ -92,8 +92,8 @@ onBeforeUnmount(() => {
                                 v-if="section.composerSuccess"
                                 class="flex flex-col items-center py-6 text-center"
                             >
-                                <span class="grid h-12 w-12 place-items-center rounded-full bg-brand-accent/15">
-                                    <svg class="h-6 w-6 text-brand-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <span class="grid h-12 w-12 place-items-center rounded-full bg-amber-400/15">
+                                    <svg class="h-6 w-6 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                         <path d="M20 6L9 17l-5-5" />
                                     </svg>
                                 </span>
@@ -109,7 +109,7 @@ onBeforeUnmount(() => {
                                 </p>
                                 <button
                                     type="button"
-                                    class="mt-6 rounded-md bg-ink px-6 py-3 text-sm font-bold text-cream transition hover:bg-black dark:bg-slate-100 dark:text-ink"
+                                    class="mt-6 rounded-xl bg-brand-500 px-6 py-3 text-sm font-black text-[#1a1a1a] transition hover:bg-brand-600"
                                     @click="close"
                                 >
                                     بستن
@@ -187,7 +187,7 @@ onBeforeUnmount(() => {
                                             type="text"
                                             maxlength="120"
                                             placeholder="مثلاً: جایگزین مناسبی بود"
-                                            class="w-full rounded-md border border-slate-300 bg-white px-4 py-3 text-sm text-ink placeholder:text-slate-400 focus:border-brand-accent focus:outline-none focus:ring-2 focus:ring-brand-accent/40 dark:border-slate-600 dark:bg-black/30 dark:text-slate-100 dark:placeholder:text-slate-500"
+                                            class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-ink placeholder:text-slate-400 focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400/40 dark:border-slate-600 dark:bg-black/30 dark:text-slate-100 dark:placeholder:text-slate-500"
                                         />
                                         <p
                                             v-if="section.composerFieldErrors.title"
@@ -210,7 +210,7 @@ onBeforeUnmount(() => {
                                             :rows="5"
                                             maxlength="1500"
                                             placeholder="نظر خود را بنویسید؛ پس از بررسی تیم ما منتشر می‌شود…"
-                                            class="w-full resize-y rounded-md border border-slate-300 bg-white px-4 py-3 text-sm leading-7 text-ink placeholder:text-slate-400 focus:border-brand-accent focus:outline-none focus:ring-2 focus:ring-brand-accent/40 dark:border-slate-600 dark:bg-black/30 dark:text-slate-100 dark:placeholder:text-slate-500"
+                                            class="w-full resize-y rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm leading-7 text-ink placeholder:text-slate-400 focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400/40 dark:border-slate-600 dark:bg-black/30 dark:text-slate-100 dark:placeholder:text-slate-500"
                                         />
                                         <p
                                             v-if="section.composerFieldErrors.body"
@@ -229,7 +229,7 @@ onBeforeUnmount(() => {
                                     <button
                                         type="submit"
                                         :disabled="section.composerSubmitting"
-                                        class="inline-flex shrink-0 items-center gap-2 rounded-md bg-brand-accent px-6 py-3 text-sm font-black text-ink transition hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-60"
+                                        class="inline-flex shrink-0 items-center gap-2 rounded-xl bg-brand-500 px-6 py-3 text-sm font-black text-[#1a1a1a] transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-60"
                                     >
                                         <svg
                                             v-if="section.composerSubmitting"

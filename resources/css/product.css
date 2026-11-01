@@ -30,6 +30,10 @@
 .storefront-theme .pd-state > p:not(.pd-eyebrow) { max-width:440px; margin:0 0 28px; font-size:13px; line-height:2.1; color:var(--sf-text-secondary); }
 .storefront-theme .pd-state-actions { display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:12px 24px; }
 .storefront-theme .pd-state-actions .sf-text-link { color:var(--sf-accent); }
+.storefront-theme .pd-button { display:inline-flex; min-height:48px; align-items:center; justify-content:center; gap:10px; padding:12px 24px; border:1px solid var(--sf-accent); background:var(--sf-accent); color:var(--sf-on-accent); font-size:13px; font-weight:600; transition:background var(--sf-duration-fast), transform var(--sf-duration-fast); }
+.storefront-theme .pd-page .pd-button:hover { background:var(--sf-accent-hover); }
+.storefront-theme .pd-page .pd-button:active { transform:translateY(1px); }
+.storefront-theme .pd-button--block { width:100%; }
 
 /* -------------------------------- breadcrumb ---------------------------------- */
 .storefront-theme .pd-breadcrumb { display:flex; flex-wrap:wrap; align-items:center; gap:4px 12px; padding-top:26px; font-size:11px; color:var(--sf-text-secondary); }

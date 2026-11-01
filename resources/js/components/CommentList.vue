@@ -74,11 +74,13 @@ const emptyHint = isProduct
         </div>
 
         <template v-else>
-            <ul>
+            <ul :class="isProduct ? 'space-y-4' : ''">
                 <li
                     v-for="(comment, i) in section.items"
                     :key="comment.id"
-                    class="border-t border-slate-200 dark:border-slate-700"
+                    :class="isProduct
+                        ? 'rounded-xl border border-slate-200 bg-white px-4 sm:px-5 dark:border-slate-700 dark:bg-[#161616]'
+                        : 'border-t border-slate-200 dark:border-slate-700'"
                 >
                     <CommentThread
                         :comment="comment"
@@ -91,7 +93,7 @@ const emptyHint = isProduct
 
             <p
                 v-if="section.total"
-                class="border-t border-slate-200 pt-4 text-[11px] font-bold text-slate-400 dark:border-slate-700 dark:text-slate-500"
+                class="mt-4 border-t border-slate-200 pt-4 text-[11px] font-bold text-slate-400 dark:border-slate-700 dark:text-slate-500"
             >
                 {{
                     isProduct

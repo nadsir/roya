@@ -229,6 +229,34 @@ class SeoService
             'returnFees' => 'https://schema.org/FreeReturn',
         ];
 
+        $schema['offers']['shippingDetails'] = [
+            '@type' => 'OfferShippingDetails',
+            'shippingRate' => [
+                '@type' => 'MonetaryAmount',
+                'value' => '0',
+                'currency' => self::CURRENCY,
+            ],
+            'shippingDestination' => [
+                '@type' => 'DefinedRegion',
+                'addressCountry' => 'IR',
+            ],
+            'deliveryTime' => [
+                '@type' => 'ShippingDeliveryTime',
+                'handlingTime' => [
+                    '@type' => 'QuantitativeValue',
+                    'minValue' => 0,
+                    'maxValue' => 2,
+                    'unitCode' => 'DAY',
+                ],
+                'transitTime' => [
+                    '@type' => 'QuantitativeValue',
+                    'minValue' => 1,
+                    'maxValue' => 7,
+                    'unitCode' => 'DAY',
+                ],
+            ],
+        ];
+
         $schema['brand'] = [
             '@type' => 'Brand',
             'name' => $product->brand ?: self::SITE_NAME,

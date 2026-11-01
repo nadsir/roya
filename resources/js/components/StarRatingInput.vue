@@ -95,7 +95,7 @@ function focusStar(i) {
                 :class="[
                     sizeClass[size],
                     i <= active
-                        ? 'fill-brand-accent text-brand-accent'
+                        ? 'fill-amber-400 text-amber-400'
                         : 'fill-transparent text-slate-300 dark:text-slate-600',
                 ]"
                 viewBox="0 0 24 24"

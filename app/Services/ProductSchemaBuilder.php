@@ -7,9 +7,9 @@ use App\Models\Product;
 /**
  * Builds schema.org Product structured data (JSON-LD) for a public product.
  *
- * Only real, verifiable fields are emitted: no ratings, reviews, GTINs,
- * or invented brand details. Returns null when the product lacks the data
- * Google needs for a valid Product entity.
+ * Emits real, verifiable fields including customer ratings/reviews when
+ * available. Returns null when the product lacks the data Google needs for
+ * a valid Product entity.
  */
 class ProductSchemaBuilder
 {
@@ -59,6 +59,8 @@ class ProductSchemaBuilder
                 : 'https://schema.org/OutOfStock',
             'itemCondition' => 'https://schema.org/NewCondition',
         ];
+
+        $this->addReviews($schema, $product);
 
         return $schema;
     }
@@ -151,6 +153,66 @@ class ProductSchemaBuilder
         // Stored relative paths live on the public disk, exposed via
         // the `storage` symlink — same convention as the Vue frontend.
         return $this->origin() . '/storage/' . $path;
+    }
+
+    /**
+     * Attach aggregate rating and individual reviews derived from approved
+     * customer comments that carry a rating.
+     *
+     * @param array<string, mixed> $schema
+     */
+    private function addReviews(array &$schema, Product $product): void
+    {
+        $reviews = $product->comments()
+            ->where('status', 'approved')
+            ->whereNotNull('rating')
+            ->with('user:id,name')
+            ->orderByDesc('created_at')
+            ->get();
+
+        if ($reviews->isEmpty()) {
+            return;
+        }
+
+        $average = round((float) $reviews->avg('rating'), 1);
+
+        $schema['aggregateRating'] = [
+            '@type' => 'AggregateRating',
+            'ratingValue' => number_format($average, 1, '.', ''),
+            'reviewCount' => $reviews->count(),
+            'bestRating' => '5',
+            'worstRating' => '1',
+        ];
+
+        $schema['review'] = $reviews->map(function ($comment): array {
+            $node = [
+                '@type' => 'Review',
+                'reviewRating' => [
+                    '@type' => 'Rating',
+                    'ratingValue' => (string) $comment->rating,
+                    'bestRating' => '5',
+                    'worstRating' => '1',
+                ],
+                'author' => [
+                    '@type' => 'Person',
+                    'name' => $comment->user?->name ?: 'Anonymous',
+                ],
+            ];
+
+            if (is_string($comment->body) && trim($comment->body) !== '') {
+                $node['reviewBody'] = trim($comment->body);
+            }
+
+            if ($comment->created_at !== null) {
+                $node['datePublished'] = $comment->created_at->toDateString();
+            }
+
+            if (is_string($comment->title) && trim($comment->title) !== '') {
+                $node['name'] = trim($comment->title);
+            }
+
+            return $node;
+        })->values()->all();
     }
 
     private function formatPrice(float $price): string
