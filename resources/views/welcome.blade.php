@@ -38,6 +38,8 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&display=swap">
 
     {{-- Fallback styling for the server-rendered block. It only exists until
          Vue mounts #app and replaces its contents, but keeps the page readable
@@ -60,6 +62,142 @@
 </head>
 
 <body>
+    {{-- ============================================================= --}}
+    {{-- Luxury brand preloader: full-screen overlay, blocks scroll,   --}}
+    {{-- tracks window load / Vue mount, then removes itself.          --}}
+    {{-- Lives outside #app so Vue never replaces it.                  --}}
+    {{-- ============================================================= --}}
+    <div id="rg-preloader" aria-hidden="false" role="status" aria-label="Loading ROYA GALLERY">
+        <div class="rg-preloader-inner">
+            <div class="rg-monogram" aria-hidden="true">RG</div>
+            <h1 class="rg-preloader-title">ROYA GALLERY</h1>
+            <p class="rg-preloader-sub">Haute Couture &mdash; Women's Fashion</p>
+            <div class="rg-progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100">
+                <div class="rg-progress-bar"></div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        @keyframes rg-breathe {
+            0%, 100% { opacity: .55; transform: scale(1); }
+            50%      { opacity: 1;   transform: scale(1.04); }
+        }
+        @keyframes rg-sheen {
+            from { transform: translateX(-100%); }
+            to   { transform: translateX(300%); }
+        }
+        @keyframes rg-progress {
+            from { width: 0%; }
+            to   { width: 82%; }
+        }
+        #rg-preloader {
+            position: fixed;
+            inset: 0;
+            z-index: 100000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #fbf9f5;
+            overflow: hidden;
+            opacity: 1;
+            visibility: visible;
+            transition: opacity .7s cubic-bezier(.22, 1, .36, 1), visibility 0s linear .7s, transform .7s cubic-bezier(.22, 1, .36, 1);
+        }
+        #rg-preloader.rg-done { opacity: 0; visibility: hidden; transform: scale(1.02); pointer-events: none; }
+        #rg-preloader.rg-done .rg-preloader-inner { transform: translateY(-6px); opacity: 0; }
+        body.rg-loading { overflow: hidden !important; }
+        .rg-preloader-inner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 0 24px;
+            transition: transform .7s cubic-bezier(.22, 1, .36, 1), opacity .5s ease;
+        }
+        .rg-monogram {
+            font-family: "Cormorant Garamond", "Playfair Display", Georgia, serif;
+            font-size: clamp(44px, 8vw, 72px);
+            line-height: 1;
+            color: #c5a880;
+            letter-spacing: .12em;
+            animation: rg-breathe 3s ease-in-out infinite;
+        }
+        .rg-preloader-title {
+            margin: 22px 0 8px;
+            font-family: "Cormorant Garamond", "Playfair Display", Georgia, serif;
+            font-size: clamp(15px, 2.4vw, 20px);
+            font-weight: 500;
+            color: #1f1c19;
+            letter-spacing: .45em;
+            text-indent: .45em;
+            text-transform: uppercase;
+        }
+        .rg-preloader-sub {
+            margin: 0 0 34px;
+            font-family: Georgia, serif;
+            font-size: 11px;
+            color: #8d8577;
+            letter-spacing: .28em;
+            text-transform: uppercase;
+        }
+        .rg-progress-track {
+            position: relative;
+            width: min(260px, 62vw);
+            height: 1px;
+            background: rgba(197, 168, 128, .25);
+            overflow: hidden;
+        }
+        .rg-progress-bar {
+            position: absolute;
+            inset-block: 0;
+            left: 0;
+            width: 0%;
+            background: linear-gradient(90deg, #c5a880, #e8d5ae 50%, #c5a880);
+            animation: rg-progress 6s cubic-bezier(.4, 0, .2, 1) infinite;
+        }
+        .rg-progress-bar::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .85), transparent);
+            width: 40%;
+            animation: rg-sheen 2.2s linear infinite;
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .rg-monogram, .rg-progress-bar, .rg-progress-bar::after { animation: none; }
+            .rg-progress-bar { width: 100%; }
+        }
+    </style>
+
+    <script>
+        (function () {
+            var overlay = document.getElementById('rg-preloader');
+            if (!overlay) return;
+            document.documentElement.style.overflowY = 'hidden';
+            var dismissed = false;
+
+            function dismiss() {
+                if (dismissed) return;
+                dismissed = true;
+                overlay.classList.add('rg-done');
+                document.documentElement.style.overflowY = '';
+                window.setTimeout(function () {
+                    if (overlay.parentNode) { overlay.parentNode.removeChild(overlay); }
+                }, 800);
+            }
+
+            // Hide as soon as the page (or any vibe check) signals readiness.
+            if (document.readyState === 'complete') {
+                window.setTimeout(dismiss, 300);
+            } else {
+                window.addEventListener('load', function () { window.setTimeout(dismiss, 300); });
+            }
+            // Hard timeout so a hung sub-resource never locks the page.
+            window.setTimeout(dismiss, 7000);
+        })();
+    </script>
+
     {{-- The Vue app mounts here and replaces the server-rendered fallback. --}}
     <div id="app">
         @if (! empty($seoBlock))
