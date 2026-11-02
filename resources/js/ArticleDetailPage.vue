@@ -113,7 +113,7 @@ function injectJsonLd(obj) {
 }
 
 function applySeo(a) {
-    const title = a.meta_title || `${a.title} | مجله توربوپارت`;
+    const title = a.meta_title || `${a.title} | مجله ROYA`;
     const description = a.meta_description || (a.excerpt ? a.excerpt.slice(0, 160) : a.title);
     document.title = title;
     setMeta('description', description);
@@ -121,7 +121,7 @@ function applySeo(a) {
     setMeta('og:title', title);
     setMeta('og:description', description);
     setMeta('og:url', window.location.href);
-    setMeta('og:site_name', 'توربوپارت');
+    setMeta('og:site_name', 'ROYA');
     setMeta('og:locale', 'fa_IR');
     if (articleImage()) setMeta('og:image', absoluteImageUrl(articleImage()));
     setCanonical(a.canonical_url || `${window.location.origin}/articles/${a.slug}`);
@@ -134,8 +134,8 @@ function applySeo(a) {
             description,
             image: articleImage() ? absoluteImageUrl(articleImage()) : undefined,
             datePublished: a.published_at || undefined,
-            author: a.author ? { '@type': 'Person', name: a.author.name } : { '@type': 'Organization', name: 'توربوپارت' },
-            publisher: { '@type': 'Organization', name: 'توربوپارت', logo: { '@type': 'ImageObject', url: `${window.location.origin}/favicon.svg` } },
+            author: a.author ? { '@type': 'Person', name: a.author.name } : { '@type': 'Organization', name: 'ROYA' },
+            publisher: { '@type': 'Organization', name: 'ROYA', logo: { '@type': 'ImageObject', url: `${window.location.origin}/favicon.svg` } },
             mainEntityOfPage: { '@type': 'WebPage', '@id': window.location.href },
         },
         {
@@ -205,6 +205,53 @@ const relatedProducts = computed(() => article.value?.products || []);
 const relatedVehicles = computed(() => article.value?.vehicles || []);
 const relatedBrands = computed(() => article.value?.brands || []);
 const categories = computed(() => article.value?.categories || []);
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text || '';
+    return div.innerHTML;
+}
+
+const formattedArticleContent = computed(() => {
+    if (!article.value?.content) return '';
+    if (/<\/?(p|div|h[1-6]|ul|ol|li|blockquote|figure|figcaption|table|thead|tbody|tr|th|td|img|br|strong|em|a|span|pre|code|section|article)\b[^>]*>/i.test(article.value.content)) {
+        return article.value.content;
+    }
+
+    const lines = String(article.value.content)
+        .replace(/\r\n/g, '\n')
+        .split('\n');
+    const blocks = [];
+    let currentParagraph = [];
+
+    const flushParagraph = () => {
+        if (currentParagraph.length === 0) return;
+        blocks.push(
+            `<p>${currentParagraph
+                .map((line) => escapeHtml(line).replace(/\s+/g, ' ').trim())
+                .filter(Boolean)
+                .join('<br>')}</p>`
+        );
+        currentParagraph = [];
+    };
+
+    for (const raw of lines) {
+        const line = raw.trim();
+        if (line === '') {
+            flushParagraph();
+            continue;
+        }
+        if (/^[۰-۹0-9]+[.．]\s+.+/.test(line)) {
+            flushParagraph();
+            blocks.push(`<h2>${escapeHtml(line)}</h2>`);
+            continue;
+        }
+        currentParagraph.push(raw);
+    }
+
+    flushParagraph();
+    return blocks.join('');
+});
 
 function goBack() {
     if (window.history.length > 1) window.history.back();
@@ -277,9 +324,9 @@ onUnmounted(() => {
                 <!-- Header -->
                 <header class="mb-10 max-w-[46rem] mx-auto">
                     <div class="mb-5 flex flex-wrap items-center gap-2">
-                        <span class="hidden sm:flex items-center gap-2 pl-2 text-[10px] font-bold text-slate-400">
+                        <span class="hidden sm:flex items-center gap-2 pl-2 text-[10px] font-bold text-slate-500">
                             <span class="w-1.5 h-1.5 rotate-45 bg-brand-accent inline-block"></span>
-                            مجله توربوپارت
+                            مجله ROYA
                         </span>
                         <a v-for="cat in categories" :key="cat.id" :href="`/store?category=${encodeURIComponent(cat.slug)}`" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-brand-accent/25 text-brand-accent text-[10px] font-bold hover:bg-brand-accent/10 transition-colors">
                             <span class="w-1 h-1 rotate-45 bg-brand-accent inline-block"></span>
@@ -297,8 +344,8 @@ onUnmounted(() => {
                                 {{ article.author.name?.charAt(0) || 'م' }}
                             </div>
                             <div>
-                                <div class="text-[11px] font-bold text-ink">{{ article.author?.name || 'تیم توربوپارت' }}</div>
-                                <div class="text-[10px] text-slate-400">نویسنده</div>
+                                <div class="text-[11px] font-bold text-ink">{{ article.author?.name || 'تیم تحریریه ROYA' }}</div>
+                                <div class="text-[10px] text-slate-500">نویسنده</div>
                             </div>
                         </div>
                         <span class="hidden sm:inline-block w-1 h-1 rotate-45 bg-brand-accent"></span>
@@ -327,13 +374,13 @@ onUnmounted(() => {
                 <div class="max-w-[46rem] mx-auto">
 
                     <!-- Body -->
-                    <div v-html="article.content" class="article-body" />
+                    <div v-html="formattedArticleContent" class="article-body" />
 
                     <!-- End of article signoff -->
                     <div class="mt-12 mb-6 flex items-center gap-4">
                         <span class="h-px flex-1 bg-gray-200"></span>
-                        <span class="text-[10px] font-bold text-slate-400 tracking-wide">پایان مقاله</span>
-                        <span class="serif text-lg text-brand-accent leading-none px-1">TP</span>
+                        <span class="text-[10px] font-bold text-slate-500 tracking-wide">پایان مقاله</span>
+                        <span class="serif text-lg text-brand-accent leading-none px-1">R</span>
                         <span class="h-px flex-1 bg-gray-200"></span>
                     </div>
 
@@ -348,39 +395,41 @@ onUnmounted(() => {
                                 <span class="text-sm font-black text-ink">{{ article.author.name }}</span>
                                 <span class="px-2 py-0.5 rounded-md bg-brand-accent/10 text-brand-accent text-[10px] font-bold border border-brand-accent/20">نویسنده متخصص</span>
                             </div>
-                            <p class="mt-1.5 text-xs text-slate-500 leading-relaxed">راهنمای تخصصی انتخاب قطعات خودرو در مجله توربوپارت؛ این مقاله با دقت فنی و منابع معتبر به قلم تیم توربوپارت تهیه شده است.</p>
+                            <p class="mt-1.5 text-xs text-slate-500 leading-relaxed">در مجله ROYA، با روایت‌های مد، استایل و انتخاب‌های روز دنیای پوشاک آشنا شوید؛ این مقاله با دقت و نگاه تحریریه تهیه شده است.</p>
                         </div>
                     </div>
 
-                    <!-- Calm end CTA -->
-                    <div class="mt-8 reveal rounded-xl border border-gray-200 bg-white p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
+                    <!-- Editorial closing CTA -->
+                    <section class="mt-8 reveal rounded-xl border border-gray-200 bg-white p-6 sm:p-8" aria-labelledby="article-continue-title">
                         <div class="flex items-start gap-4">
-                            <div class="w-10 h-10 rounded-lg bg-brand-accent/10 flex items-center justify-center shrink-0">
-                                <i class="fa-solid fa-road text-brand-accent"></i>
+                            <div class="w-10 h-10 rounded-lg bg-brand-accent/10 flex items-center justify-center shrink-0" aria-hidden="true">
+                                <i class="fa-solid fa-arrow-left text-brand-accent"></i>
                             </div>
                             <div>
-                                <div class="text-[10px] font-bold text-slate-400 tracking-wide mb-1">ادامه مسیر در توربوپارت</div>
-                                <h2 class="text-base sm:text-lg font-black text-ink">راهنمای دیگری خواندید؟ حالا قطعه مناسب را پیدا کنید.</h2>
-                                <p class="text-xs text-slate-500 mt-1">با انتخاب خودروی خود، قطعات سازگار را سریع و مطمئن بیابید.</p>
+                                <div class="text-[10px] font-bold text-slate-500 tracking-wide mb-1">ادامه مسیر با ROYA</div>
+                                <h2 id="article-continue-title" class="text-base sm:text-lg font-black text-ink">از تازه‌ترین انتخاب‌ها تا روایت‌های دنیای مد</h2>
+                                <p class="text-xs text-slate-500 mt-1 leading-relaxed">از تازه‌ترین انتخاب‌ها، استایل‌ها و روایت‌های دنیای مد و پوشاک دیدن کنید.</p>
                             </div>
                         </div>
-                        <div class="flex items-center gap-2.5 shrink-0 sm:pr-4">
-                            <a href="/store" class="px-5 py-2.5 rounded-lg bg-brand-accent text-ink text-xs font-bold hover:bg-brand-hover transition-colors whitespace-nowrap">
-                                ورود به فروشگاه
+                        <div class="mt-5 flex flex-col sm:flex-row sm:items-center gap-2.5">
+                            <a href="/store" class="article-cta article-cta--primary whitespace-nowrap">
+                                <i class="fa-solid fa-bag-shopping" aria-hidden="true"></i>
+                                مشاهده محصولات
                             </a>
-                            <a href="/articles" class="px-4 py-2.5 rounded-lg border border-gray-200 text-xs font-bold text-slate-600 hover:border-brand-accent/40 hover:text-brand-accent transition-colors whitespace-nowrap">
-                                مقالات بیشتر
+                            <a href="/articles" class="article-cta article-cta--secondary whitespace-nowrap">
+                                مطالعه مقالات بیشتر
+                                <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
                             </a>
                         </div>
-                    </div>
+                    </section>
 
-                    <!-- Discussion -->
+                    <!-- Comments -->
                     <section class="mt-14 sm:mt-16" aria-labelledby="discussion-title">
-                        <div class="mb-7 flex items-start justify-between gap-6">
+                        <div class="mb-7 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
                             <div>
-                                <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Discussion</p>
+                                <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">ROYA JOURNAL</p>
                                 <h2 id="discussion-title" class="mt-2 text-xl font-black leading-tight text-ink sm:text-2xl">
-                                    گفتگو درباره این مقاله
+                                    گفت‌وگو درباره این مقاله
                                 </h2>
                                 <p v-if="discussion.section.total" class="mt-1.5 text-xs text-slate-500">
                                     {{ faNum(discussion.section.total) }} دیدگاه ثبت شده است
@@ -388,7 +437,7 @@ onUnmounted(() => {
                             </div>
                             <button
                                 type="button"
-                                class="inline-flex shrink-0 items-center gap-2 rounded-lg bg-brand-accent px-5 py-3 text-xs font-black text-ink transition hover:bg-brand-hover min-h-[44px]"
+                                class="article-cta article-cta--primary shrink-0 self-start sm:self-auto"
                                 @click="discussion.openComposer()"
                             >
                                 <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
@@ -410,44 +459,44 @@ onUnmounted(() => {
                         <div class="mb-6">
                             <div class="flex items-center gap-2 mb-2">
                                 <span class="h-px w-6 bg-brand-accent"></span>
-                                <span class="text-[10px] font-bold text-slate-400 tracking-wide">مرتبط با این مقاله</span>
+                                <span class="text-[10px] font-bold text-slate-500 tracking-wide">از مجموعه ROYA</span>
                             </div>
                             <h2 class="text-lg sm:text-xl font-black text-ink flex items-center gap-2">
-                                <i class="fa-solid fa-boxes-stacked text-brand-accent text-base"></i> قطعات مرتبط با این مقاله
+                                <i class="fa-solid fa-bag-shopping text-brand-accent text-base"></i> انتخاب‌هایی برای سبک شما
                             </h2>
                         </div>
                         <div class="grid grid-cols-2 lg:grid-cols-3 gap-3">
                             <a v-for="(p, idx) in relatedProducts" :key="p.id" :href="`/product/${p.slug}`" class="group rounded-lg border border-gray-200 bg-white hover:border-brand-accent/50 transition-colors p-4 flex flex-col">
                                 <div class="flex items-start justify-between mb-3">
                                     <span class="serif text-brand-accent font-bold text-lg leading-none">{{ padNumber(idx + 1) }}</span>
-                                    <i class="fa-solid fa-gear text-slate-300 group-hover:text-brand-accent transition-colors"></i>
+                                    <i class="fa-solid fa-plus text-slate-300 group-hover:text-brand-accent transition-colors"></i>
                                 </div>
                                 <span class="block text-xs font-bold text-ink leading-relaxed line-clamp-2 group-hover:text-brand-accent transition-colors">{{ p.name }}</span>
                                 <span class="mt-3 pt-3 border-t border-gray-200/70 inline-flex items-center gap-1.5 text-[10px] font-bold text-brand-accent">
-                                    مشاهده قطعه <i class="fa-solid fa-arrow-left text-[9px] transition-transform duration-300 group-hover:-translate-x-1"></i>
+                                    مشاهده محصول <i class="fa-solid fa-arrow-left text-[9px] transition-transform duration-300 group-hover:-translate-x-1"></i>
                                 </span>
                             </a>
                         </div>
                     </div>
 
-                    <!-- Related vehicles & brands -->
+                    <!-- Related brands & selections -->
                     <div v-if="relatedVehicles.length || relatedBrands.length" class="mt-10">
                         <div class="mb-5">
                             <div class="flex items-center gap-2 mb-2">
                                 <span class="h-px w-6 bg-brand-accent"></span>
-                                <span class="text-[10px] font-bold text-slate-400 tracking-wide">این مقاله درباره</span>
+                                <span class="text-[10px] font-bold text-slate-500 tracking-wide">دنیای ROYA</span>
                             </div>
-                            <h2 class="text-lg font-black text-ink">خودروها و برندهای پوشش‌داده‌شده</h2>
+                            <h2 class="text-lg font-black text-ink">برندها و انتخاب‌های این مقاله</h2>
                         </div>
                         <div class="rounded-xl border border-gray-200 bg-white p-5">
                             <div v-if="relatedBrands.length" class="flex flex-wrap gap-2">
                                 <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 bg-gray-50 text-[11px] font-bold text-ink">
-                                    <i class="fa-solid fa-car text-[10px] text-brand-accent"></i> {{ relatedBrands.map((b) => b.name).join('، ') }}
+                                    <i class="fa-solid fa-tag text-[10px] text-brand-accent"></i> {{ relatedBrands.map((b) => b.name).join('، ') }}
                                 </span>
                             </div>
                             <div v-if="relatedVehicles.length" class="mt-2.5 flex flex-wrap gap-2">
                                 <span v-for="v in relatedVehicles" :key="v.id" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand-accent/10 border border-brand-accent/20 text-[11px] font-bold text-brand-accent">
-                                    <i class="fa-solid fa-engine text-[10px]"></i> {{ v.name }}
+                                    <i class="fa-solid fa-tag text-[10px]"></i> {{ v.name }}
                                 </span>
                             </div>
                         </div>
@@ -478,6 +527,66 @@ select { background-image: none; }
 input::placeholder { opacity: 0.75; }
 :focus-visible { outline: 2px solid #FFCD00; outline-offset: 2px; }
 
+.article-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 44px;
+    padding: 0.625rem 1.15rem;
+    border: 1px solid transparent;
+    border-radius: 0.5rem;
+    font-family: inherit;
+    font-size: 0.75rem;
+    font-weight: 800;
+    line-height: 1.4;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease, opacity 180ms ease;
+}
+.article-cta i { font-size: 0.75rem; }
+.article-cta--primary {
+    background: #FFCD00;
+    border-color: #FFCD00;
+    color: #1a1a1a;
+}
+.article-cta--primary:hover {
+    background: #e6b800;
+    border-color: #e6b800;
+    color: #1a1a1a;
+}
+.article-cta--secondary {
+    background: #1a1a1a;
+    border-color: #FFCD00;
+    color: #ffffff;
+}
+.article-cta--secondary:hover {
+    background: #333333;
+    border-color: #FFCD00;
+    color: #ffffff;
+}
+.article-cta:focus-visible {
+    outline: 2px solid #FFCD00;
+    outline-offset: 2px;
+}
+.article-cta--primary:focus-visible {
+    outline-color: #1a1a1a;
+}
+.article-cta:active {
+    opacity: 0.92;
+    transform: translateY(1px);
+}
+.article-cta:disabled,
+.article-cta[aria-disabled="true"] {
+    opacity: 0.55;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+</style>
+
+<style>
 .article-body {
     color: var(--color-ink);
     font-size: 1.05rem;
@@ -531,6 +640,9 @@ input::placeholder { opacity: 0.75; }
 }
 .article-body p {
     margin: 0 0 1.35rem;
+    text-align: justify;
+    text-align-last: start;
+    text-justify: inter-word;
 }
 .article-body strong {
     font-weight: 700;

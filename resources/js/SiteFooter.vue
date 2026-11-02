@@ -12,7 +12,7 @@ const socialNetworks = ACTIVE_SOCIAL_NETWORKS;
 <template>
     <footer class="sf-footer" dir="rtl">
         <div class="sf-container">
-            <div class="sf-footer-invitation"><div><h2>انتخاب‌های شما، کنار هم.</h2><p>حساب گالری؛ برای نگه‌داشتن علاقه‌مندی‌ها و پیگیری سفارش‌ها.</p></div><a href="/account" class="sf-button">ورود به حساب گالری ←</a></div>
+            <div class="sf-footer-invitation"><div><h2>انتخاب‌هایی برای سبک شما</h2><p>حساب کاربری ROYA؛ برای نگهداری علاقه‌مندی‌ها و پیگیری سفارش‌ها.</p></div><a href="/account" class="sf-button">ورود به حساب ROYA ←</a></div>
             <div class="sf-footer-grid">
                 <div class="sf-footer-brand">
                     <a href="/" class="sf-wordmark" aria-label="گالری؛ صفحه اصلی"><img :src="LOGO_SRC" alt="ROYA" width="42" height="42" /></a>

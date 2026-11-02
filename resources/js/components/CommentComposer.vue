@@ -127,18 +127,14 @@ onBeforeUnmount(() => {
                             >
                                 <div class="flex items-start justify-between gap-6">
                                     <div>
-                                        <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-[color:var(--sf-text-muted)]">
-                                            {{
-                                                isProduct
-                                                    ? 'Ship a Review'
-                                                    : 'Join the Discussion'
-                                            }}
+                                        <p class="text-[10px] font-bold tracking-[0.18em] text-[color:var(--sf-text-muted)]">
+                                            {{ isProduct ? 'تجربه خرید' : 'مجله ROYA' }}
                                         </p>
                                         <h2 class="mt-1.5 serif text-2xl leading-none text-[color:var(--sf-text)]">
                                             {{
                                                 isProduct
                                                     ? 'تجربه\u200cات را بنویس'
-                                                    : 'در گفتگو شرکت کن'
+                                                    : 'در گفت‌وگو شرکت کنید'
                                             }}
                                         </h2>
                                     </div>
