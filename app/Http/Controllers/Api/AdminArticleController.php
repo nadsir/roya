@@ -9,6 +9,7 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Models\VehicleBrand;
 use App\Models\VehicleEngine;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -61,12 +62,7 @@ class AdminArticleController extends Controller
                 $data['brands']
             );
 
-            // Handle publish behavior
-            if ($data['status'] === 'published' && empty($data['published_at'])) {
-                $data['published_at'] = now();
-            } elseif ($data['status'] === 'draft') {
-                $data['published_at'] = null;
-            }
+            $data = $this->applyPublishBehavior($data, $article ?? null);
 
             $article = Article::create($data);
 
@@ -96,12 +92,7 @@ class AdminArticleController extends Controller
                 $data['brands']
             );
 
-            // Handle publish behavior
-            if ($data['status'] === 'published' && empty($data['published_at'])) {
-                $data['published_at'] = now();
-            } elseif ($data['status'] === 'draft') {
-                $data['published_at'] = null;
-            }
+            $data = $this->applyPublishBehavior($data, $article);
 
             $article->update($data);
 
@@ -118,6 +109,100 @@ class AdminArticleController extends Controller
         $article->delete();
 
         return response()->noContent();
+    }
+
+    private function applyPublishBehavior(array $data, ?Article $article = null): array
+    {
+        $status = array_key_exists('status', $data) ? ($data['status'] ?? null) : ($article?->status);
+
+        if (array_key_exists('published_at', $data)) {
+            $publishedAt = $data['published_at'];
+
+            if ($publishedAt === null || $publishedAt === '') {
+                $data['published_at'] = null;
+            } elseif (is_string($publishedAt)) {
+                $trimmed = trim($publishedAt);
+
+                if ($trimmed === '') {
+                    $data['published_at'] = null;
+                } else {
+                    try {
+                        $data['published_at'] = $this->parsePublishedAt($trimmed);
+                    } catch (\Throwable $e) {
+                        throw ValidationException::withMessages([
+                            'published_at' => ['تاریخ انتشار نامعتبر است.'],
+                        ]);
+                    }
+                }
+            } else {
+                throw ValidationException::withMessages([
+                    'published_at' => ['تاریخ انتشار نامعتبر است.'],
+                ]);
+            }
+        }
+
+        if ($status === 'published') {
+            if (empty($data['published_at'])) {
+                $data['published_at'] = now();
+            }
+        } elseif ($status === 'draft') {
+            $data['published_at'] = null;
+        }
+
+        if (array_key_exists('status', $data)) {
+            $data['status'] = $status;
+        }
+
+        return $data;
+    }
+
+    private function parsePublishedAt(string $value): Carbon
+    {
+        // Explicit timezone (Z, +HH:MM, -HH:MM) must be respected.
+        if (preg_match('/(Z|[+-]\d{2}:?\d{2})$/i', $value) === 1) {
+            $carbon = Carbon::parse($value);
+
+            if ($this->hasCarbonDateErrors() || ! $carbon instanceof Carbon) {
+                throw new \InvalidArgumentException('Invalid date.');
+            }
+
+            return $carbon->utc();
+        }
+
+        // No timezone: interpret the value as Asia/Tehran wall-clock time.
+        $normalized = str_replace('T', ' ', $value);
+
+        if (preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $normalized) === 1) {
+            $format = 'Y-m-d H:i:s';
+        } elseif (preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/', $normalized) === 1) {
+            $format = 'Y-m-d H:i';
+        } else {
+            throw new \InvalidArgumentException('Invalid date.');
+        }
+
+        $carbon = Carbon::createFromFormat($format, $normalized, 'Asia/Tehran');
+
+        if (
+            ! $carbon instanceof Carbon
+            || $this->hasCarbonDateErrors()
+            || $carbon->format($format) !== $normalized
+        ) {
+            throw new \InvalidArgumentException('Invalid date.');
+        }
+
+        return $carbon->utc();
+    }
+
+    private function hasCarbonDateErrors(): bool
+    {
+        $errors = Carbon::getLastErrors();
+
+        if (! is_array($errors)) {
+            return false;
+        }
+
+        return ($errors['warning_count'] ?? 0) > 0
+            || ($errors['error_count'] ?? 0) > 0;
     }
 
     /**

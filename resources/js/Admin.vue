@@ -547,16 +547,30 @@ function formatPrice(value) {
     );
 }
 
-function formatDate(dateString) {
+function formatDate(dateString, options = {}) {
     if (!dateString) return '';
     const date = new Date(dateString);
-    return date.toLocaleDateString('fa-IR', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-    });
+    const tz = options.timeZone || undefined;
+    try {
+        return date.toLocaleString('fa-IR', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hourCycle: 'h23',
+            timeZone: tz,
+        });
+    } catch (e) {
+        return date.toLocaleString('fa-IR', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hourCycle: 'h23',
+        });
+    }
 }
 
 function categoryName(categoryId) {
@@ -3005,7 +3019,7 @@ const CategoryTreeNode = {
                                     </div>
 
                                     <div class="col-date">
-                                        {{ article.published_at ? formatDate(article.published_at) : '—' }}
+                                        {{ article.published_at ? formatDate(article.published_at, { timeZone: 'Asia/Tehran' }) : '—' }}
                                     </div>
 
                                     <div class="col-featured">

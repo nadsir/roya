@@ -1344,6 +1344,195 @@ export function openCreateArticle() {
     loadArticleFormData();
 }
 
+const tehranDateTimeFormatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Tehran',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hourCycle: 'h23',
+});
+
+function padDatePart(value) {
+    return String(value).padStart(2, '0');
+}
+
+function getTehranDateTimeParts(date) {
+    const values = {};
+
+    for (const part of tehranDateTimeFormatter.formatToParts(date)) {
+        if (part.type !== 'literal') {
+            values[part.type] = part.value;
+        }
+    }
+
+    return {
+        year: Number(values.year),
+        month: Number(values.month),
+        day: Number(values.day),
+        hour: Number(values.hour),
+        minute: Number(values.minute),
+        second: Number(values.second),
+    };
+}
+
+function parseDateTimeInput(value) {
+    const match = /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::(\d{2}))?(Z|[+-]\d{2}:?\d{2})?$/.exec(value);
+
+    if (!match) {
+        return null;
+    }
+
+    const parts = {
+        year: Number(match[1]),
+        month: Number(match[2]),
+        day: Number(match[3]),
+        hour: Number(match[4]),
+        minute: Number(match[5]),
+        second: Number(match[6] || 0),
+        zone: match[7] || null,
+    };
+
+    if (
+        parts.month < 1 || parts.month > 12 ||
+        parts.day < 1 || parts.day > 31 ||
+        parts.hour > 23 || parts.minute > 59 || parts.second > 59
+    ) {
+        return null;
+    }
+
+    const check = new Date(Date.UTC(
+        parts.year,
+        parts.month - 1,
+        parts.day,
+        parts.hour,
+        parts.minute,
+        parts.second,
+    ));
+
+    if (
+        check.getUTCFullYear() !== parts.year ||
+        check.getUTCMonth() !== parts.month - 1 ||
+        check.getUTCDate() !== parts.day ||
+        check.getUTCHours() !== parts.hour ||
+        check.getUTCMinutes() !== parts.minute ||
+        check.getUTCSeconds() !== parts.second
+    ) {
+        return null;
+    }
+
+    return parts;
+}
+
+function partsAsUtcTimestamp(parts) {
+    return Date.UTC(
+        parts.year,
+        parts.month - 1,
+        parts.day,
+        parts.hour,
+        parts.minute,
+        parts.second,
+    );
+}
+
+function timezoneOffsetMinutes(zone) {
+    if (!zone) {
+        return 0;
+    }
+
+    if (zone.toUpperCase() === 'Z') {
+        return 0;
+    }
+
+    const match = /^([+-])(\d{2}):?(\d{2})$/.exec(zone);
+
+    if (!match) {
+        return null;
+    }
+
+    const hours = Number(match[2]);
+    const minutes = Number(match[3]);
+
+    if (hours > 23 || minutes > 59) {
+        return null;
+    }
+
+    const total = hours * 60 + minutes;
+
+    return match[1] === '-' ? -total : total;
+}
+
+function formatUtcDateTime(date) {
+    return `${date.getUTCFullYear()}-${padDatePart(date.getUTCMonth() + 1)}-${padDatePart(date.getUTCDate())} ${padDatePart(date.getUTCHours())}:${padDatePart(date.getUTCMinutes())}:${padDatePart(date.getUTCSeconds())}`;
+}
+
+function toTehranDatetimeLocal(utcDateTime) {
+    if (!utcDateTime) return null;
+
+    const date = new Date(utcDateTime);
+
+    if (Number.isNaN(date.getTime())) return null;
+
+    try {
+        const parts = getTehranDateTimeParts(date);
+
+        return `${String(parts.year).padStart(4, '0')}-${padDatePart(parts.month)}-${padDatePart(parts.day)}T${padDatePart(parts.hour)}:${padDatePart(parts.minute)}`;
+    } catch {
+        return null;
+    }
+}
+
+function fromTehranDatetimeLocal(localDateTime) {
+    if (localDateTime === null || localDateTime === undefined || localDateTime === '') {
+        return null;
+    }
+
+    const value = String(localDateTime).trim();
+
+    if (value === '') {
+        return null;
+    }
+
+    const parts = parseDateTimeInput(value);
+
+    if (!parts) {
+        return undefined;
+    }
+
+    let utcDate;
+
+    if (parts.zone) {
+        const offset = timezoneOffsetMinutes(parts.zone);
+
+        if (offset === null) {
+            return undefined;
+        }
+
+        utcDate = new Date(partsAsUtcTimestamp(parts) - offset * 60 * 1000);
+    } else {
+        const targetAsUtc = partsAsUtcTimestamp(parts);
+        let guess = targetAsUtc;
+
+        for (let i = 0; i < 3; i += 1) {
+            const tehran = getTehranDateTimeParts(new Date(guess));
+            const offset = partsAsUtcTimestamp(tehran) - guess;
+            const next = targetAsUtc - offset;
+
+            if (next === guess) {
+                break;
+            }
+
+            guess = next;
+        }
+
+        utcDate = new Date(guess);
+    }
+
+    return formatUtcDateTime(utcDate);
+}
+
 export function openEditArticle(article) {
     articleEditingId.value = article.id;
     articleForm.value = {
@@ -1353,7 +1542,7 @@ export function openEditArticle(article) {
         content: article.content || '',
         featured_image: article.featured_image || '',
         status: article.status || 'draft',
-        published_at: article.published_at || null,
+        published_at: toTehranDatetimeLocal(article.published_at),
         meta_title: article.meta_title || '',
         meta_description: article.meta_description || '',
         canonical_url: article.canonical_url || '',
@@ -1448,6 +1637,21 @@ export async function saveArticle() {
 
     try {
         const data = { ...form };
+        if (data.published_at === '' || data.published_at === undefined) {
+            data.published_at = null;
+        } else if (data.published_at) {
+            const converted = fromTehranDatetimeLocal(data.published_at);
+            if (converted === undefined) {
+                adminArticleError.value = 'تاریخ انتشار نامعتبر است.';
+                articleFormErrors.value = { ...(articleFormErrors.value || {}), published_at: 'تاریخ انتشار نامعتبر است.' };
+                articleValidationSummary = true;
+                articleSaving.value = false;
+                return;
+            }
+            data.published_at = converted;
+        } else {
+            data.published_at = null;
+        }
 
         if (articleEditingId.value) {
             const response = await axios.put(`/api/admin/articles/${articleEditingId.value}`, data);
